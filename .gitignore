@@ -1,16 +1,7 @@
-# Python
 __pycache__/
-*.py[cod]
-venv/
+*.pyc
 .env
-
-# Node
 node_modules/
 dist/
-
-# Docker
-*.log
-
-# IDE
-.vscode/
-.idea/
+.mypy_cache/
+*.egg-info/

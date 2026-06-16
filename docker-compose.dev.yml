@@ -1,0 +1,30 @@
+services:
+  frontend:
+    # On remplace l'image construite par un serveur de dev
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev   # ou on utilise une image node directement
+    ports:
+      - "5173:5173"   # port par défaut de Vite
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules   # évite d'écraser les modules installés
+    command: npm run dev -- --host 0.0.0.0
+    depends_on:
+      - api
+    networks:
+      - frontend
+
+  api:
+    volumes:
+      - ./backend:/app
+    command: flask run --host=0.0.0.0 --port=5000
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app:create_app
+    # Pas besoin de rebuild à chaque modification
+
+  db:
+    ports:
+      - "5432:5432"   # pour accéder à la DB depuis l'hôte avec un client
+    # On garde le reste
