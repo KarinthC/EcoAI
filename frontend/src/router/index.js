@@ -8,8 +8,6 @@ const routes = [
     name: 'home',
     component: HomeView
   }
-  // Tu ajouteras plus tard :
-  // { path: '/editor', name: 'editor', component: () => import('../views/EditorView.vue') },
 ]
 
 const router = createRouter({
