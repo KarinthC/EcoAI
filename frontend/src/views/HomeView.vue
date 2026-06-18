@@ -9,6 +9,7 @@ const store = usePipelineStore()
 const { onConnect, addEdges } = useVueFlow()
 const { onDragOver, onDrop, onDragLeave, isDragOver } = useDragAndDrop()
 
+
 onConnect(addEdges)
 </script>
 
@@ -23,8 +24,8 @@ onConnect(addEdges)
 
     <div class="dnd-flow" @drop="onDrop">
       <VueFlow
-        :nodes="store.nodes"
-        :edges="store.edges"
+        v-model:nodes="store.nodes"
+        v-model:edges="store.edges"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
       >
