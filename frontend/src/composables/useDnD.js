@@ -1,4 +1,3 @@
-// src/composables/useDnD.js
 import { useVueFlow } from '@vue-flow/core'
 import { ref, watch } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
@@ -8,14 +7,13 @@ function getId() {
   return `dndnode_${id++}`
 }
 
-const state = {
-  draggedType: ref(null),
-  isDragOver: ref(false),
-  isDragging: ref(false),
-}
+// État partagé (hors de la fonction pour être global au module)
+const draggedType = ref(null)
+const draggedLabel = ref(null)
+const isDragOver = ref(false)
+const isDragging = ref(false)
 
 export default function useDragAndDrop() {
-  const { draggedType, isDragOver, isDragging } = state
   const { screenToFlowCoordinate, onNodesInitialized, updateNode } = useVueFlow()
   const store = usePipelineStore()
 
@@ -23,12 +21,13 @@ export default function useDragAndDrop() {
     document.body.style.userSelect = dragging ? 'none' : ''
   })
 
-  function onDragStart(event, type) {
+  function onDragStart(event, type, label) {
     if (event.dataTransfer) {
       event.dataTransfer.setData('application/vueflow', type)
       event.dataTransfer.effectAllowed = 'move'
     }
     draggedType.value = type
+    draggedLabel.value = label || type
     isDragging.value = true
     document.addEventListener('drop', onDragEnd)
   }
@@ -51,6 +50,7 @@ export default function useDragAndDrop() {
     isDragging.value = false
     isDragOver.value = false
     draggedType.value = null
+    draggedLabel.value = null
     document.removeEventListener('drop', onDragEnd)
   }
 
@@ -65,7 +65,7 @@ export default function useDragAndDrop() {
       id: nodeId,
       type: draggedType.value,
       position,
-      data: { label: draggedType.value },
+      data: { label: draggedLabel.value },
     }
 
     const { off } = onNodesInitialized(() => {
@@ -82,7 +82,6 @@ export default function useDragAndDrop() {
   }
 
   return {
-    draggedType,
     isDragOver,
     isDragging,
     onDragStart,

@@ -4,11 +4,18 @@ import { usePipelineStore } from '@/stores/usePipelineStore'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
 import useDragAndDrop from '@/composables/useDnD'
+import { markRaw } from 'vue'
+import CustomNode from '@/components/pipeline/CustomNode.vue'
+
 
 const store = usePipelineStore()
 const { onConnect, addEdges } = useVueFlow()
 const { onDragOver, onDrop, onDragLeave, isDragOver } = useDragAndDrop()
 
+
+const nodeTypes = {
+  custom: markRaw(CustomNode)
+}
 
 onConnect(addEdges)
 </script>
@@ -26,6 +33,7 @@ onConnect(addEdges)
       <VueFlow
         v-model:nodes="store.nodes"
         v-model:edges="store.edges"
+        :node-types="nodeTypes"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
       >

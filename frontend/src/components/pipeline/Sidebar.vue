@@ -10,28 +10,49 @@ const { onDragStart } = useDragAndDrop()
 
     <div class="nodes">
       <div
-        class="vue-flow__node-input"
+        class="sidebar-node sidebar-node-datasource"
         :draggable="true"
-        @dragstart="onDragStart($event, 'input')"
+        @dragstart="onDragStart($event, 'custom', 'Données')"
       >
         Données
       </div>
 
       <div
-        class="vue-flow__node-default"
+        class="sidebar-node sidebar-node-training"
         :draggable="true"
-        @dragstart="onDragStart($event, 'default')"
+        @dragstart="onDragStart($event, 'custom', 'Entraînement')"
       >
         Entraînement
       </div>
 
       <div
-        class="vue-flow__node-output"
+        class="sidebar-node sidebar-node-inference"
         :draggable="true"
-        @dragstart="onDragStart($event, 'output')"
+        @dragstart="onDragStart($event, 'custom', 'Inférence')"
       >
         Inférence
       </div>
     </div>
   </aside>
 </template>
+
+<style scoped>
+.sidebar-node {
+  margin-bottom: 10px;
+  cursor: grab;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 6px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.15);
+  color: white;
+}
+.sidebar-node-datasource {
+  background: #3182ce;
+}
+.sidebar-node-training {
+  background: #805ad5;
+}
+.sidebar-node-inference {
+  background: #38a169;
+}
+</style>

@@ -1,50 +1,40 @@
 <script setup>
-const nodeTypes = [
-  { type: 'input', label: 'Données (CSV)' },
-  { type: 'training', label: 'Entraînement'},
-  { type: 'inference', label: 'Inférence'}
-]
+import { Handle, Position } from '@vue-flow/core'
 
-function onDragStart(event, nodeType) {
-  event.dataTransfer.setData('nodeType', nodeType)
-  event.dataTransfer.effectAllowed = 'move'
-}
+const props = defineProps({
+  id: String,
+  data: Object
+})
 </script>
 
 <template>
-  <div class="palette">
-    <h3>Types de nœuds</h3>
-    <div
-      v-for="nt in nodeTypes"
-      :key="nt.type"
-      class="palette-item"
-      draggable="true"
-      @dragstart="onDragStart($event, nt.type)"
-    >
-      <span class="icon">{{ nt.icon }}</span>
-      {{ nt.label }}
+  <div class="custom-node">
+    <div class="node-header">{{ data.label }}</div>
+    <div class="node-body">
+      <small>Cliquer pour configurer</small>
     </div>
+    <Handle type="target" :position="Position.Left" />
+    <Handle type="source" :position="Position.Right" />
   </div>
 </template>
 
 <style scoped>
-.palette {
-  width: 200px;
-  background: #f7fafc;
-  padding: 1rem;
-  border-right: 1px solid #e2e8f0;
-  height: 100%;
-}
-.palette-item {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
+.custom-node {
   background: white;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  cursor: grab;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  border: 2px solid #3182ce;
+  border-radius: 8px;
+  padding: 8px 12px;
+  min-width: 120px;
+  text-align: center;
+  font-family: sans-serif;
 }
-.icon { font-size: 1.2rem; }
+.node-header {
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.node-body {
+  font-size: 0.75em;
+  color: #a0aec0;
+  margin-top: 4px;
+}
 </style>
