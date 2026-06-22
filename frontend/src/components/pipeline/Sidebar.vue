@@ -51,10 +51,6 @@ aside .description {
   margin-bottom: 10px;
 }
 
-aside .nodes {
-  /* conteneur des nœuds */
-}
-
 aside .nodes > * {
   margin-bottom: 10px;
   cursor: grab;
