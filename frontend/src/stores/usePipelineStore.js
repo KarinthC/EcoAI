@@ -41,17 +41,34 @@ export const usePipelineStore = defineStore('pipeline', () => {
     })
 
     function getPipelineJSON() {
-        return {
-        nodes: nodes.value,
-        edges: edges.value,
-        }
-  }
+    // Nettoyer les nœuds : ne garder que ce qui est utile
+    const cleanNodes = nodes.value.map(node => ({
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        data: node.data,
+        class: node.class
+    }))
+
+    // Nettoyer les arêtes : ne garder que la structure de connexion
+    const cleanEdges = edges.value.map(edge => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        sourceHandle: edge.sourceHandle,
+        targetHandle: edge.targetHandle
+    }))
+
+    return {
+        nodes: cleanNodes,
+        edges: cleanEdges
+    }
+    }
 
     function exportJSON() {
-        const json = getPipelineJSON()
-        console.log('Pipeline JSON:', JSON.stringify(json, null, 2))
-        alert('JSON affiché dans la console (F12)')
-        // Plus tard : axios.post('/api/pipelines', json)
+    const json = getPipelineJSON()
+    console.log('Pipeline JSON (nettoyé) :', JSON.stringify(json, null, 2))
+    // Plus tard : axios.post('/api/pipelines', json)
     }
 
     return {
