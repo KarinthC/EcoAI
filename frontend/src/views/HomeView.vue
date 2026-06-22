@@ -38,9 +38,9 @@ onConnect(addEdges)
         <ConnectionIndicator />
         <UserIdentification />
       </div>
-      <button class="btn-export" @click="store.exportJSON()">
-        📤 Exporter le pipeline
-      </button>
+    <button class="btn-export" @click="store.savePipeline('Test depuis UI')">
+      📤 Sauvegarder
+    </button>
     </header>
 
 

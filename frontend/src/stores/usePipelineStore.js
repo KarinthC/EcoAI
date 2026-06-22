@@ -1,6 +1,7 @@
 // src/stores/usePipelineStore.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
 export const usePipelineStore = defineStore('pipeline', () => {
     const nodes = ref([])
@@ -71,6 +72,32 @@ export const usePipelineStore = defineStore('pipeline', () => {
     // Plus tard : axios.post('/api/pipelines', json)
     }
 
+
+    async function savePipeline(name = 'Sans nom') {
+    const json = getPipelineJSON()
+    try {
+        const response = await axios.post('/api/pipelines', {
+        name: name,
+        graph_json: json
+        })
+        console.log('Pipeline sauvegardé, id:', response.data.id)
+        return response.data
+    } catch (e) {
+        console.error('Erreur sauvegarde pipeline', e)
+        throw e
+    }
+    }
+
+    // On peut aussi ajouter une fonction pour charger un pipeline :
+    async function loadPipeline(pipelineId) {
+    const response = await axios.get(`/api/pipelines/${pipelineId}`)
+    const pipeline = response.data
+    // Reconstituer le graphe dans le store
+    nodes.value = pipeline.graph_json.nodes || []
+    edges.value = pipeline.graph_json.edges || []
+    pipelineName.value = pipeline.name
+    }
+
     return {
         selectedNodeId,
         selectedNode,
@@ -84,5 +111,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         addEdge,
         getPipelineJSON,
         exportJSON,
+        savePipeline,
+        loadPipeline
     }
 })
