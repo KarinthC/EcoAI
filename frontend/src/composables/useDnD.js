@@ -17,6 +17,13 @@ export default function useDragAndDrop() {
   const { screenToFlowCoordinate, onNodesInitialized, updateNode } = useVueFlow()
   const store = usePipelineStore()
 
+  const borderClassMap = {
+  'Données': 'node-border-datasource',
+  'Entrainement': 'node-border-training',
+  'Inférence': 'node-border-inference',
+  }
+
+
   watch(isDragging, (dragging) => {
     document.body.style.userSelect = dragging ? 'none' : ''
   })
@@ -66,6 +73,7 @@ export default function useDragAndDrop() {
       type: draggedType.value,
       position,
       data: { label: draggedLabel.value },
+      class: borderClassMap[draggedLabel.value] || ''
     }
 
     const { off } = onNodesInitialized(() => {

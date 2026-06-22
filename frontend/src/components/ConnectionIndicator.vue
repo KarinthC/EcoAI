@@ -28,25 +28,30 @@ onMounted(() => checkConnection())
   display: flex;
   align-items: center;
   gap: 6px;
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  font-size: 0.85rem;
-  color: #555;
+  font-size: 0.8rem;
+  color: #a0aec0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .dot {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #a0aec0;  /* gris = loading */
+  background: #a0aec0;
+  flex-shrink: 0;
 }
 
 .dot.online {
-  background: #48bb78;  /* vert */
+  background: #48bb78;
 }
 
 .dot.error {
-  background: #f56565;  /* rouge */
+  background: #f56565;
+}
+
+.label {
+  color: #e2e8f0;
 }
 </style>

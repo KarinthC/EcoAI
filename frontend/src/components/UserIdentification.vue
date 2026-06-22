@@ -57,20 +57,15 @@ onMounted(() => checkConnection())
 .indicator {
   display: flex;
   align-items: center;
-  gap: 8px;
-  position: fixed;
-  top: 3.5rem;  /* décalé pour laisser la place au ConnectionIndicator */
-  right: 1rem;
-  font-size: 0.85rem;
-  color: #555;
-  background: white;
-  padding: 6px 12px;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  padding: 4px 10px;
   border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
-
 .username {
-  color: #2d3748;
+  color: white;
   font-weight: 500;
 }
 
@@ -78,14 +73,14 @@ onMounted(() => checkConnection())
   color: #a0aec0;
   font-style: italic;
   cursor: pointer;
-  border-bottom: 1px dashed #cbd5e0;
+  border-bottom: 1px dashed #718096;
 }
 
 .anonymous:hover {
-  color: #4a5568;
+  color: #e2e8f0;
 }
 
 .label {
-  color: #718096;
+  color: #a0aec0;
 }
 </style>

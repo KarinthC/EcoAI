@@ -4,8 +4,13 @@ import { usePipelineStore } from '@/stores/usePipelineStore'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
 import useDragAndDrop from '@/composables/useDnD'
-import { markRaw } from 'vue'
+import { markRaw, ref } from 'vue'
 import CustomNode from '@/components/pipeline/CustomNode.vue'
+import ParameterPanel from '@/components/pipeline/ParameterPanel.vue'
+import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
+import UserIdentification from '@/components/UserIdentification.vue'
+
+const selectedNode = ref(null)
 
 
 const store = usePipelineStore()
@@ -17,25 +22,39 @@ const nodeTypes = {
   custom: markRaw(CustomNode)
 }
 
+function onPaneClick() {
+  store.clearSelection()
+}
+
+
 onConnect(addEdges)
 </script>
 
 <template>
   <div class="home-layout">
     <header class="app-header">
-      <h1>EcoAI</h1>
+      <div class="header-left">
+        <h1>EcoAI</h1>
+        <ConnectionIndicator />
+        <UserIdentification />
+      </div>
       <button class="btn-export" @click="store.exportJSON()">
         📤 Exporter le pipeline
       </button>
     </header>
 
+
     <div class="dnd-flow" @drop="onDrop">
+
+      <Sidebar />
+
       <VueFlow
         v-model:nodes="store.nodes"
         v-model:edges="store.edges"
         :node-types="nodeTypes"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
+        @pane-click="onPaneClick"
       >
         <DropzoneBackground
           :style="{
@@ -47,9 +66,14 @@ onConnect(addEdges)
         </DropzoneBackground>
       </VueFlow>
 
-      <Sidebar />
+
+  <ParameterPanel
+          v-if="store.selectedNode"
+          :node="store.selectedNode"
+          @close="store.clearSelection"
+        />
+      </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
@@ -59,15 +83,20 @@ onConnect(addEdges)
   height: 100vh;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 .app-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; 
+  gap: 1rem;
   padding: 0.5rem 1rem;
   background: #2d3748;
   color: white;
 }
-
 .app-header h1 {
   margin: 0;
   font-size: 1.2rem;

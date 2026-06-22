@@ -1,10 +1,11 @@
 // src/stores/usePipelineStore.js
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 export const usePipelineStore = defineStore('pipeline', () => {
     const nodes = ref([])
     const edges = ref([])
+    const selectedNodeId = ref(null)
 
         function addNode(node) {
         nodes.value.push(node)
@@ -27,6 +28,17 @@ export const usePipelineStore = defineStore('pipeline', () => {
         }
     }
 
+    function selectNode(nodeId) {
+        selectedNodeId.value = nodeId
+    }
+
+    function clearSelection() {
+        selectedNodeId.value = null
+    }
+
+    const selectedNode = computed(() => {
+        return nodes.value.find(n => n.id === selectedNodeId.value) || null
+    })
 
     function getPipelineJSON() {
         return {
@@ -43,6 +55,10 @@ export const usePipelineStore = defineStore('pipeline', () => {
     }
 
     return {
+        selectedNodeId,
+        selectedNode,
+        selectNode,
+        clearSelection,
         nodes,
         edges,
         addNode,
