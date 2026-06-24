@@ -62,6 +62,7 @@ async function submit() {
 }
 .modal {
   background: white;
+  color: #2d3748; 
   padding: 2rem;
   border-radius: 8px;
   text-align: center;

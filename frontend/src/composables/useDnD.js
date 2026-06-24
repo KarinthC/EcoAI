@@ -2,9 +2,8 @@ import { useVueFlow } from '@vue-flow/core'
 import { ref, watch } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 
-let id = 0
 function getId() {
-  return `dndnode_${id++}`
+  return `dndnode_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
 // État partagé (hors de la fonction pour être global au module)
