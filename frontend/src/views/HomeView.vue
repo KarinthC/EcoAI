@@ -51,7 +51,13 @@ onConnect(addEdges)
       <button class="btn-export" @click="store.saveCurrent('Test depuis UI')">
         📤 Sauvegarder Pipeline
       </button>
-      <button v-if="store.activePipeline" class="btn-delete" @click="store.deletePipeline(store.activeId)">
+      <button
+        v-if="store.activePipeline"
+        class="btn-delete"
+        :class="{ 'btn-delete-disabled': store.isAnalyzing }"
+        :disabled="store.isAnalyzing"
+        @click="store.deletePipeline(store.activeId)"
+      >
         🗑 Supprimer Pipeline
       </button>
     </div>
@@ -144,6 +150,12 @@ onConnect(addEdges)
 }
 .btn-delete:hover {
   background: #c53030;
+}
+
+.btn-delete:disabled,
+.btn-delete-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-export {
