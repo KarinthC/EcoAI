@@ -16,6 +16,7 @@ function handleClick() {
 
 <template>
   <div class="custom-node" @click.stop="handleClick">
+    <div v-if="data.impactLevel" class="impact-badge" :class="'impact-' + data.impactLevel"></div>
     <div class="node-header">{{ data.label }}</div>
     <div class="node-body">
       <small v-if="data.params && Object.keys(data.params).length">
@@ -32,6 +33,7 @@ function handleClick() {
 
 <style scoped>
 .custom-node {
+  position: relative;
   background: white;
   border: 2px solid #3182ce;
   border-radius: 8px;
@@ -55,5 +57,18 @@ function handleClick() {
   color: #4a5568;
   margin: 2px 0;
 }
+.impact-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid white;
+  z-index: 10;
+}
+.impact-low { background: #48bb78; }
+.impact-medium { background: #f6e05e; }
+.impact-high { background: #fc8181; }
 
 </style>

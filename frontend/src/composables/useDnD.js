@@ -2,6 +2,7 @@ import { useVueFlow } from '@vue-flow/core'
 import { ref, watch } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 
+
 function getId() {
   return `dndnode_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
@@ -39,6 +40,7 @@ export default function useDragAndDrop() {
   }
 
   function onDragOver(event) {
+    if (store.isAnalyzing) return
     event.preventDefault()
     if (draggedType.value) {
       isDragOver.value = true
@@ -61,6 +63,7 @@ export default function useDragAndDrop() {
   }
 
   function onDrop(event) {
+    if (store.isAnalyzing) return
     const position = screenToFlowCoordinate({
       x: event.clientX,
       y: event.clientY,

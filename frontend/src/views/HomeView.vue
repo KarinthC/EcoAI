@@ -10,6 +10,7 @@ import ParameterPanel from '@/components/pipeline/ParameterPanel.vue'
 import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
 import UserIdentification from '@/components/UserIdentification.vue'
 import PipelineTabs from '@/components/pipeline/PipelineTabs.vue'
+import AnalysisOverlay from '@/components/pipeline/AnalysisOverlay.vue'
 
 const selectedNode = ref(null)
 
@@ -83,7 +84,7 @@ onConnect(addEdges)
         </DropzoneBackground>
       </VueFlow>
 
-
+  <AnalysisOverlay v-if="store.isAnalyzing" />
   <ParameterPanel
           v-if="store.selectedNode"
           :node="store.selectedNode"

@@ -13,6 +13,10 @@ export const usePipelineStore = defineStore('pipeline', () => {
         return pipelines.value[activeId.value] || null
     })
 
+    // Propriétées liées à l'analyse
+    const analysisResult = ref(null)
+    const isAnalyzing = computed(() => analysisResult.value !== null)
+
     // Propriétés exposées (liées au pipeline actif)
     const nodes = computed(() => activePipeline.value?.nodes || [])
     const edges = computed(() => activePipeline.value?.edges || [])
@@ -211,6 +215,41 @@ export const usePipelineStore = defineStore('pipeline', () => {
         }
     }
 
+    // Lancer l'analyse
+    async function analyzePipeline() {
+    if (!activePipeline.value) return
+    const json = getPipelineJSON()
+    try {
+        const response = await axios.post('/api/analyze', json)
+        analysisResult.value = response.data
+        // Mettre à jour les nœuds avec leur niveau d'impact
+        if (activePipeline.value && response.data.nodes) {
+        response.data.nodes.forEach(item => {
+            const node = activePipeline.value.nodes.find(n => n.id === item.id)
+            if (node) {
+            node.data = { ...node.data, impactLevel: item.level }
+            }
+        })
+        }
+    } catch (e) {
+        console.error('Erreur analyse', e)
+        throw e
+    }
+    }
+
+    // Annuler l'analyse et revenir à l'édition
+    function clearAnalysis() {
+    analysisResult.value = null
+    // Supprimer les impactLevel des nœuds
+    if (activePipeline.value) {
+        activePipeline.value.nodes.forEach(node => {
+        if (node.data.impactLevel) {
+            delete node.data.impactLevel
+        }
+        })
+    }
+    }    
+
     return {
         pipelines,
         activeId,
@@ -221,6 +260,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
         clearSelection,
         nodes,
         edges,
+        analysisResult,
+        isAnalyzing,
         addNode,
         updateNodeData,
         removeNode,
@@ -233,6 +274,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
         closePipeline,
         saveCurrent,
         loadPipelines,
-        deletePipeline
+        deletePipeline,
+        analyzePipeline,
+        clearAnalysis
     }
 })

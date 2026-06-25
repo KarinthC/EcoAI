@@ -1,14 +1,32 @@
 <script setup>
 import useDragAndDrop from '@/composables/useDnD'
+import { usePipelineStore } from '@/stores/usePipelineStore'
+import { ref } from 'vue'
 
+const store = usePipelineStore()
+
+const analyzing = ref(false)
+
+async function toggleAnalysis() {
+  if (store.isAnalyzing) {
+    store.clearAnalysis()
+  } else {
+    analyzing.value = true
+    try {
+      await store.analyzePipeline()
+    } finally {
+      analyzing.value = false
+    }
+  }
+}
 const { onDragStart } = useDragAndDrop()
 </script>
 
 <template>
   <aside>
-    <div class="description">Glissez-déposez ces nœuds sur le canvas.</div>
+    <div class="description" v-if="!store.isAnalyzing">Glissez-déposez ces nœuds sur le canvas.</div>
 
-    <div class="nodes">
+    <div class="nodes" v-if="!store.isAnalyzing">
       <div
         class="sidebar-node sidebar-node-datasource"
         :draggable="true"
@@ -33,10 +51,33 @@ const { onDragStart } = useDragAndDrop()
         Inférence
       </div>
     </div>
+    <div class="sidebar-footer">
+    <button class="analyze-btn" @click="toggleAnalysis" :disabled="analyzing">
+      <span v-if="analyzing">⏳ Analyse...</span>
+      <span v-else>{{ store.isAnalyzing ? '🔙 Retour à l\'édition' : '🔍 Lancer l\'analyse' }}</span>
+    </button>
+  </div>
   </aside>
 </template>
 
 <style scoped>
+
+.analyze-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: white;
+  color: #2d3748;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.analyze-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+
 aside {
   color: #fff;
   font-weight: 700;
@@ -78,6 +119,12 @@ aside .nodes > * {
   background: #38a169;
 }
 
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.3);
+}
+
 @media screen and (min-width: 640px) {
   aside {
     min-width: 15%;
@@ -91,4 +138,7 @@ aside .nodes > * {
     gap: 5px;
   }
 }
+
+
+
 </style>
