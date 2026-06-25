@@ -215,19 +215,24 @@ export const usePipelineStore = defineStore('pipeline', () => {
         }
     }
 
-    // Lancer l'analyse
+        // Lancer l'analyse
     async function analyzePipeline() {
     if (!activePipeline.value) return
     const json = getPipelineJSON()
     try {
         const response = await axios.post('/api/analyze', json)
         analysisResult.value = response.data
-        // Mettre à jour les nœuds avec leur niveau d'impact
+        // Mettre à jour les nœuds avec leurs données d'impact
         if (activePipeline.value && response.data.nodes) {
         response.data.nodes.forEach(item => {
             const node = activePipeline.value.nodes.find(n => n.id === item.id)
             if (node) {
-            node.data = { ...node.data, impactLevel: item.level }
+            node.data = {
+                ...node.data,
+                impactLevel: item.level,
+                impact_kg: item.impact_kg,
+                impactMessage: item.message || ''
+            }
             }
         })
         }
@@ -237,18 +242,16 @@ export const usePipelineStore = defineStore('pipeline', () => {
     }
     }
 
-    // Annuler l'analyse et revenir à l'édition
     function clearAnalysis() {
     analysisResult.value = null
-    // Supprimer les impactLevel des nœuds
     if (activePipeline.value) {
         activePipeline.value.nodes.forEach(node => {
-        if (node.data.impactLevel) {
-            delete node.data.impactLevel
-        }
+        delete node.data.impactLevel
+        delete node.data.impact_kg
+        delete node.data.impactMessage
         })
     }
-    }    
+    }   
 
     return {
         pipelines,

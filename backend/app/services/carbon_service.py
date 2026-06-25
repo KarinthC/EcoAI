@@ -1,13 +1,9 @@
 def compute_impact(pipeline: dict) -> dict:
-    """
-    Calcule l'impact carbone d'un pipeline à partir de son JSON.
-    Retourne un dictionnaire contenant le total, l'impact par nœud, et des suggestions.
-    """
-    # Coefficients par type (kgCO2 par unité). À affiner plus tard.
+    # Coefficients par type (kgCO2 par unité).
     COEFFS = {
-        'Source de données': {'base': 0.0, 'par_go': 0.01},    # 0.01 kg par Go
-        'Apprentissage': {'base': 0.5, 'par_param': 0.0001, 'par_epoch': 0.05, 'par_batch': 0.001},
-        'Prédiction': {'base': 0.1, 'par_lot': 0.0002}
+        'Données': {'base': 0.0, 'par_go': 0.01},            # 0.01 kg par Go
+        'Entrainement': {'base': 0.5, 'par_param': 0.0001, 'par_epoch': 0.05, 'par_batch': 0.001},
+        'Inférence': {'base': 0.1, 'par_lot': 0.0002}
     }
     
     total_impact = 0.0
@@ -22,17 +18,17 @@ def compute_impact(pipeline: dict) -> dict:
         coeff = COEFFS.get(label, {})
         impact += coeff.get('base', 0)
         
-        if label == 'Source de données':
+        if label == 'Données':
             taille = float(params.get('taille', 0))
             impact += taille * coeff.get('par_go', 0)
-        elif label == 'Apprentissage':
+        elif label == 'Entrainement':
             nb_param = float(params.get('parametres', 0))
             nb_epochs = float(params.get('epochs', 0))
             batch_size = float(params.get('batch_size', 1))
             impact += nb_param * coeff.get('par_param', 0)
             impact += nb_epochs * coeff.get('par_epoch', 0)
             impact += batch_size * coeff.get('par_batch', 0)
-        elif label == 'Prédiction':
+        elif label == 'Inférence':
             taille_lot = float(params.get('taille_lot', 0))
             impact += taille_lot * coeff.get('par_lot', 0)
         
@@ -60,8 +56,15 @@ def compute_impact(pipeline: dict) -> dict:
     if total_impact > 10:
         global_suggestions.append("Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact.")
     
+    equivalences = {
+        'km_voiture': round(total_impact * 4.5, 1),
+        'heures_streaming': round(total_impact * 2.3, 1),
+        'repas_equivalent': round(total_impact * 0.1, 1)
+    }
+
     return {
         'total_impact_kg': round(total_impact, 2),
         'nodes': nodes_analysis,
-        'suggestions': global_suggestions
+        'suggestions': global_suggestions,
+        'equivalences': equivalences
     }

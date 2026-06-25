@@ -1,7 +1,7 @@
 <script setup>
 import useDragAndDrop from '@/composables/useDnD'
 import { usePipelineStore } from '@/stores/usePipelineStore'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const store = usePipelineStore()
 
@@ -19,11 +19,20 @@ async function toggleAnalysis() {
     }
   }
 }
+
+const asideClass = computed(() => {
+  if (!store.isAnalyzing || !store.analysisResult) return ''
+  const total = store.analysisResult.total_impact_kg
+  if (total < 5) return 'sidebar-green'
+  if (total < 20) return 'sidebar-yellow'
+  return 'sidebar-red'
+})
+
 const { onDragStart } = useDragAndDrop()
 </script>
 
 <template>
-  <aside>
+  <aside :class="asideClass">
     <div class="description" v-if="!store.isAnalyzing">Glissez-déposez ces nœuds sur le canvas.</div>
 
     <div class="nodes" v-if="!store.isAnalyzing">
@@ -51,6 +60,18 @@ const { onDragStart } = useDragAndDrop()
         Inférence
       </div>
     </div>
+
+    <div v-if="store.isAnalyzing" class="analysis-summary">
+      <div class="total-score">
+        {{ store.analysisResult.total_impact_kg }} <small>kg CO₂</small>
+      </div>
+      <div class="equivalences">
+        <div class="equiv-item">🚗 {{ store.analysisResult.equivalences.km_voiture }} km</div>
+        <div class="equiv-item">📺 {{ store.analysisResult.equivalences.heures_streaming }} h</div>
+        <div class="equiv-item">🥗 {{ store.analysisResult.equivalences.repas_equivalent }} repas</div>
+      </div>
+    </div>
+
     <div class="sidebar-footer">
     <button class="analyze-btn" @click="toggleAnalysis" :disabled="analyzing">
       <span v-if="analyzing">⏳ Analyse...</span>
@@ -99,6 +120,23 @@ aside .nodes > * {
   box-shadow: 5px 5px 10px 2px #00000040;
 }
 
+.analysis-summary {
+  color: white;
+  padding: 1rem 0;
+  text-align: center;
+}
+.total-score {
+  font-size: 2rem;
+  font-weight: bold;
+}
+.equivalences {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+.equiv-item {
+  margin-bottom: 0.5rem;
+}
+
 .sidebar-node {
   margin-bottom: 10px;
   cursor: grab;
@@ -118,6 +156,12 @@ aside .nodes > * {
 .sidebar-node-inference {
   background: #38a169;
 }
+
+.sidebar-green { background: #38a169 !important; }
+.sidebar-yellow { background: #d69e2e !important; }
+.sidebar-red { background: #e53e3e !important; }
+
+
 
 .sidebar-footer {
   margin-top: auto;

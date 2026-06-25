@@ -11,6 +11,7 @@ import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
 import UserIdentification from '@/components/UserIdentification.vue'
 import PipelineTabs from '@/components/pipeline/PipelineTabs.vue'
 import AnalysisOverlay from '@/components/pipeline/AnalysisOverlay.vue'
+import AnalysisNodePanel from '@/components/pipeline/AnalysisNodePanel.vue'
 
 const selectedNode = ref(null)
 
@@ -59,8 +60,7 @@ onConnect(addEdges)
     <PipelineTabs />
 
 
-    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline">
-
+    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline"">
       <Sidebar />
       <VueFlow
         v-model:nodes="store.activePipeline.nodes"
@@ -84,12 +84,17 @@ onConnect(addEdges)
         </DropzoneBackground>
       </VueFlow>
 
-  <AnalysisOverlay v-if="store.isAnalyzing" />
-  <ParameterPanel
-          v-if="store.selectedNode"
-          :node="store.selectedNode"
-          @close="store.clearSelection"
-        />
+      <AnalysisOverlay v-if="store.isAnalyzing" />
+
+      <ParameterPanel
+        v-if="store.selectedNode && !store.isAnalyzing"
+        :node="store.selectedNode"
+        @close="store.clearSelection"
+      />
+      <AnalysisNodePanel
+        v-if="store.selectedNode && store.isAnalyzing"
+        :node="store.selectedNode"
+      />
       </div>
     </div>
 </template>
@@ -156,6 +161,7 @@ onConnect(addEdges)
 }
 
 .dnd-flow {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
