@@ -38,3 +38,12 @@ body,
   border-color: #38a169;
   background-color: #edf7f0;
 }
+
+.vue-flow__edge-path {
+  stroke: #718096;       
+  stroke-width: 2;
+}
+
+.vue-flow__edge-text {
+  font-size: 0.75rem;
+}

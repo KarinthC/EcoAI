@@ -1,5 +1,5 @@
 <script setup>
-import { VueFlow, useVueFlow } from '@vue-flow/core'
+import { VueFlow, useVueFlow, MarkerType } from '@vue-flow/core'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
@@ -61,11 +61,14 @@ onConnect(addEdges)
     <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline">
 
       <Sidebar />
-
       <VueFlow
         v-model:nodes="store.activePipeline.nodes"
         v-model:edges="store.activePipeline.edges"
         :node-types="nodeTypes"
+        :default-edge-options="{
+          markerEnd: MarkerType.ArrowClosed,
+          style: { strokeWidth: '3px' }
+        }"
         @dragover="onDragOver"
         @dragleave="onDragLeave"
         @pane-click="onPaneClick"
