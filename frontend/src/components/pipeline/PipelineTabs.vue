@@ -9,13 +9,15 @@ const store = usePipelineStore()
       v-for="(pipe, id) in store.pipelines"
       :key="id"
       class="tab"
-      :class="{ active: store.activeId === id }"
-      @click="store.switchTo(id)"
+      :class="{ active: store.activeId === id,
+      disabled: store.isAnalyzing && store.activeId !== id
+      }"
+      @click="!store.isAnalyzing && store.switchTo(id)"
     >
       <span class="tab-name">{{ pipe.name }}</span>
-      <span class="tab-close" @click.stop="store.closePipeline(id)">✕</span>
+      <span class="tab-close"   v-if="!store.isAnalyzing" @click.stop="store.closePipeline(id)">✕</span>
     </div>
-    <button class="tab-add" @click="store.createPipeline('Nouveau pipeline')">+</button>
+    <button class="tab-add"  v-if="!store.isAnalyzing"  @click="store.createPipeline('Nouveau pipeline')">+</button>
   </div>
 </template>
 
@@ -63,5 +65,10 @@ const store = usePipelineStore()
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0 0.5rem;
+}
+
+.tab.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
