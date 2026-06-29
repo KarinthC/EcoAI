@@ -4,25 +4,51 @@ import { usePipelineStore } from '@/stores/usePipelineStore'
 import { nodeFields } from '@/components/pipeline/nodeConfig.js'
 
 const props = defineProps({
-  node: Object  // le nœud sélectionné, ou null si rien n'est sélectionné
+  node: Object
 })
 
 const emit = defineEmits(['close'])
-
 const store = usePipelineStore()
 
 // Formulaire local
 const params = ref({})
 
-// Quand le nœud change, initialiser le formulaire
+// Initialisation des paramètres quand le nœud change
 watch(() => props.node, (newNode) => {
-  if (newNode && newNode.data.params) {
+  if (newNode && newNode.data && newNode.data.params) {
     params.value = { ...newNode.data.params }
   } else {
     params.value = {}
   }
 }, { immediate: true })
 
+// Réinitialiser la valeur du champ dépendant si le parent change
+watch(params, (newParams, oldParams) => {
+  if (!props.node) return
+  const fields = nodeFields[props.node.data.label] || []
+  for (const field of fields) {
+    if (field.dependsOn && newParams[field.dependsOn] !== oldParams?.[field.dependsOn]) {
+      const validOptions = field.optionsMapping?.[newParams[field.dependsOn]] || []
+      if (!validOptions.includes(newParams[field.key])) {
+        params.value[field.key] = ''
+      }
+    }
+  }
+}, { deep: true })
+
+function getFieldOptions(field) {
+  if (field.dependsOn && field.optionsMapping) {
+    const parentValue = params.value[field.dependsOn]
+    console.log(`getFieldOptions pour ${field.key}: parentValue =`, parentValue, 'mapping =', field.optionsMapping)
+    return field.optionsMapping[parentValue] || []
+  }
+  if (field.options) {
+    return field.options
+  }
+  return []
+}
+
+// Sauvegarde les paramètres
 function save() {
   if (props.node) {
     store.updateNodeData(props.node.id, { params: { ...params.value } })
@@ -39,29 +65,33 @@ function save() {
     </div>
 
     <div class="panel-body">
-      <div v-for="field in nodeFields[node.data.label]" :key="field.key" class="field">
+      <div v-for="field in (nodeFields[node.data.label] || [])" :key="field.key" class="field">
         <label>{{ field.label }}</label>
-      <select
-        v-if="field.type === 'select'"
-        v-model="params[field.key]"
-        class="field-select"
-      >
-        <option value="" disabled selected v-if="!params[field.key]">
-          -- Choisir --
-        </option>
-        <option
-          v-for="opt in field.options"
-          :key="opt"
-          :value="opt"
-        >{{ opt }}</option>
-      </select>
 
-      <input
-        v-else
-        :type="field.type"
-        v-model="params[field.key]"
-        :placeholder="field.placeholder"
-      />
+        <!-- Menu déroulant si type === 'select' -->
+        <select
+          v-if="field.type === 'select'"
+          v-model="params[field.key]"
+          class="field-select"
+          :disabled="field.dependsOn && !params[field.dependsOn]"
+        >
+          <option value="" disabled selected v-if="!params[field.key]">
+            -- Choisir --
+          </option>
+          <option
+            v-for="opt in getFieldOptions(field)"
+            :key="opt"
+            :value="opt"
+          >{{ opt }}</option>
+        </select>
+
+        <!-- Sinon, champ texte/nombre -->
+        <input
+          v-else
+          :type="field.type"
+          v-model="params[field.key]"
+          :placeholder="field.placeholder"
+        />
       </div>
     </div>
 

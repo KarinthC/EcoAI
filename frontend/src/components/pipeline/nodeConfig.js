@@ -41,11 +41,18 @@ export const nodeFields = {
       type: 'select',
       options: ['openai', 'anthropic', 'google', 'mistral', 'cohere']
     },
-    {
+      {
       key: 'model',
       label: 'Modèle',
       type: 'select',
-      options: ['gpt-4o', 'gpt-4-turbo', 'claude-3-opus', 'claude-3-sonnet', 'gemini-pro', 'mistral-large']
+      dependsOn: 'provider',                    
+      optionsMapping: {                        
+        'openai': ['gpt-4o', 'gpt-4-turbo'],
+        'anthropic': ['claude-3-opus', 'claude-3-sonnet'],
+        'google': ['gemini-pro'],
+        'mistral': ['mistral-large'],
+        'cohere': ['command-r-plus']
+      }
     },
     { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '100' },
     { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' }
@@ -58,11 +65,17 @@ export const nodeFields = {
       type: 'select',
       options: ['openai', 'anthropic', 'google', 'mistral']
     },
-    {
+     {
       key: 'model',
       label: 'Modèle',
       type: 'select',
-      options: ['gpt-4o', 'claude-3-opus', 'gemini-ultra']
+      dependsOn: 'provider',
+      optionsMapping: {
+        'openai': ['gpt-4o'],
+        'anthropic': ['claude-3-opus', 'claude-3-sonnet'],
+        'google': ['gemini-ultra'],
+        'mistral': ['mistral-large']
+      }
     },
     { key: 'active_params', label: 'Param. actifs (milliards)', type: 'number', placeholder: '7' },
     { key: 'total_params', label: 'Param. totaux (milliards)', type: 'number', placeholder: '10' },
