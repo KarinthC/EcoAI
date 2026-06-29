@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
+import { nodeFields } from '@/components/pipeline/nodeConfig.js'
 
 const props = defineProps({
   node: Object  // le nœud sélectionné, ou null si rien n'est sélectionné
@@ -28,40 +29,6 @@ function save() {
     emit('close')
   }
 }
-
-// Champs spécifiques selon le type
-const fields = {
-  'Données': [
-    { key: 'format', label: 'Format', type: 'text', placeholder: 'CSV, JSON...' },
-    { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
-    { key: 'echantillons', label: 'Échantillons', type: 'number', placeholder: '10000' }
-  ],
-  'Entrainement': [
-    { key: 'modele', label: 'Modèle', type: 'text', placeholder: 'RNN, CNN...' },
-    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' },
-    { key: 'epochs', label: 'Epochs', type: 'number', placeholder: '300' },
-    { key: 'batch_size', label: 'Batch size', type: 'number', placeholder: '50' }
-  ],
-  'Inférence': [
-    { key: 'modele_utilise', label: 'Modèle utilisé', type: 'text', placeholder: 'Nom du modèle' },
-    { key: 'taille_lot', label: 'Taille du lot', type: 'number', placeholder: '1000' }
-  ],
-  'LLM Call': [   // ← Espace au lieu du tiret
-    { key: 'provider', label: 'Fournisseur', type: 'text', placeholder: 'openai, anthropic...' },
-    { key: 'model', label: 'Modèle', type: 'text', placeholder: 'gpt-4o, claude-3-opus...' },
-    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '100' },
-    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' }
-  ],
-  'LLM Expert': [
-    { key: 'active_params', label: 'Param. actifs (milliards)', type: 'number', placeholder: '7' },
-    { key: 'total_params', label: 'Param. totaux (milliards)', type: 'number', placeholder: '10' },
-    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '250' },
-    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' },
-    { key: 'mix_gwp', label: 'Mix GWP (kgCO2eq/kWh)', type: 'number', placeholder: '0.5088 (monde)' },
-    { key: 'mix_adpe', label: 'Mix ADPe (kgSbeq/kWh)', type: 'number', placeholder: '0.0000442 (monde)' },
-    { key: 'mix_pe', label: 'Mix PE (MJ/kWh)', type: 'number', placeholder: '4.484 (monde)' }
-  ]
-}
 </script>
 
 <template>
@@ -72,13 +39,29 @@ const fields = {
     </div>
 
     <div class="panel-body">
-      <div v-for="field in fields[node.data.label]" :key="field.key" class="field">
+      <div v-for="field in nodeFields[node.data.label]" :key="field.key" class="field">
         <label>{{ field.label }}</label>
-        <input
-          :type="field.type"
-          v-model="params[field.key]"
-          :placeholder="field.placeholder"
-        />
+      <select
+        v-if="field.type === 'select'"
+        v-model="params[field.key]"
+        class="field-select"
+      >
+        <option value="" disabled selected v-if="!params[field.key]">
+          -- Choisir --
+        </option>
+        <option
+          v-for="opt in field.options"
+          :key="opt"
+          :value="opt"
+        >{{ opt }}</option>
+      </select>
+
+      <input
+        v-else
+        :type="field.type"
+        v-model="params[field.key]"
+        :placeholder="field.placeholder"
+      />
       </div>
     </div>
 
@@ -158,5 +141,19 @@ const fields = {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+.field select.field-select {
+  width: 100%;
+  padding: 0.4rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+}
+.field select.field-select:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
 }
 </style>
