@@ -21,6 +21,8 @@ export default function useDragAndDrop() {
   'Données': 'node-border-datasource',
   'Entrainement': 'node-border-training',
   'Inférence': 'node-border-inference',
+  'LLM Call': 'node-border-llm',        
+  'LLM Expert': 'node-border-llm'
   }
 
 

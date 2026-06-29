@@ -59,6 +59,15 @@ const { onDragStart } = useDragAndDrop()
       >
         Inférence
       </div>
+       <div class="sidebar-node sidebar-node-llm" :draggable="true"
+       @dragstart="onDragStart($event, 'custom', 'LLM Call')">
+       LLM Call
+      </div>
+      
+       <div class="sidebar-node sidebar-node-llm" :draggable="true"
+       @dragstart="onDragStart($event, 'custom', 'LLM Expert')">
+       LLM Expert
+      </div>
     </div>
 
     <div v-if="store.isAnalyzing" class="analysis-summary">
@@ -155,6 +164,9 @@ aside .nodes > * {
 }
 .sidebar-node-inference {
   background: #38a169;
+}
+.sidebar-node-llm {
+  background: #dd6b20;   /* orange */
 }
 
 .sidebar-green { background: #38a169 !important; }

@@ -45,6 +45,21 @@ const fields = {
   'Inférence': [
     { key: 'modele_utilise', label: 'Modèle utilisé', type: 'text', placeholder: 'Nom du modèle' },
     { key: 'taille_lot', label: 'Taille du lot', type: 'number', placeholder: '1000' }
+  ],
+  'LLM Call': [   // ← Espace au lieu du tiret
+    { key: 'provider', label: 'Fournisseur', type: 'text', placeholder: 'openai, anthropic...' },
+    { key: 'model', label: 'Modèle', type: 'text', placeholder: 'gpt-4o, claude-3-opus...' },
+    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '100' },
+    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' }
+  ],
+  'LLM Expert': [
+    { key: 'active_params', label: 'Param. actifs (milliards)', type: 'number', placeholder: '7' },
+    { key: 'total_params', label: 'Param. totaux (milliards)', type: 'number', placeholder: '10' },
+    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '250' },
+    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' },
+    { key: 'mix_gwp', label: 'Mix GWP (kgCO2eq/kWh)', type: 'number', placeholder: '0.5088 (monde)' },
+    { key: 'mix_adpe', label: 'Mix ADPe (kgSbeq/kWh)', type: 'number', placeholder: '0.0000442 (monde)' },
+    { key: 'mix_pe', label: 'Mix PE (MJ/kWh)', type: 'number', placeholder: '4.484 (monde)' }
   ]
 }
 </script>

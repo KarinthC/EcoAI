@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from app.services.user_service import get_or_create_user
-from app.services.carbon_service import compute_impact
+from app.services.carbon.orchestrator import compute_impact
 
 analysis_bp = Blueprint('analysis', __name__)
 
