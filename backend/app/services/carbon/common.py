@@ -1,7 +1,8 @@
-# backend/app/services/carbon/common.py
+import logging
+
+logger = logging.getLogger(__name__)
 
 def get_level(impact_kg: float) -> str:
-    """Détermine le niveau de criticité en fonction de l'impact."""
     if impact_kg < 0.1:
         return 'low'
     elif impact_kg < 1.0:
@@ -11,14 +12,21 @@ def get_level(impact_kg: float) -> str:
 
 def extract_gwp(impacts) -> float:
     """Extrait la valeur GWP (kgCO₂eq) d'un objet Impacts ecologits.
-    Prend en charge les RangeValue (moyenne min/max) ou les valeurs fixes."""
-    if hasattr(impacts.gwp, 'value'):
-        gwp_range = impacts.gwp.value
-        return (gwp_range.min + gwp_range.max) / 2
-    return impacts.gwp.magnitude
+    Retourne 0.0 si l'objet est None ou mal formé."""
+    if impacts is None:
+        logger.warning("extract_gwp : impacts est None")
+        return 0.0
+    try:
+        if hasattr(impacts.gwp, 'value'):
+            gwp_range = impacts.gwp.value
+            return (gwp_range.min + gwp_range.max) / 2
+        else:
+            return impacts.gwp.magnitude
+    except Exception as e:
+        logger.error(f"Erreur extraction GWP : {e}")
+        return 0.0
 
 def compute_equivalences(total_impact_kg: float) -> dict:
-    """Retourne les équivalences grand public."""
     return {
         'km_voiture': round(total_impact_kg * 4.5, 1),
         'heures_streaming': round(total_impact_kg * 2.3, 1),

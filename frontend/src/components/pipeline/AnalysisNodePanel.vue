@@ -9,7 +9,7 @@ const store = usePipelineStore()
 </script>
 
 <template>
-  <div class="panel analysis-panel">
+  <div v-if="node && node.data" class="panel analysis-panel">  <div class="panel analysis-panel">
     <div class="panel-header">
       <h3>{{ node.data.label }}</h3>
       <button class="close-btn" @click="store.clearSelection">✕</button>
@@ -24,6 +24,7 @@ const store = usePipelineStore()
       <p v-if="node.data.impactMessage" class="impact-message">{{ node.data.impactMessage }}</p>
     </div>
   </div>
+    </div>
 </template>
 
 <style scoped>
