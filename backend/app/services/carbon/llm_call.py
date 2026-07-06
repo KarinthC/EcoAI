@@ -6,10 +6,12 @@ from .common import get_level, extract_gwp, extract_energy
 logger = logging.getLogger(__name__)
 
 def compute(params: dict) -> dict:
-    provider       = params.get('provider')
-    model          = params.get('model')
-    output_tokens  = int(params.get('output_tokens', 100))
-    request_latency = float(params.get('request_latency', 100))
+    provider = params.get('provider')
+    model = params.get('model')
+    
+    # Protéger contre les null : utilise la valeur par défaut si None ou absent
+    output_tokens = int(params.get('output_tokens') or 100)
+    request_latency = float(params.get('request_latency') or 100)
 
     if not provider or not model:
         raise ValueError("provider et model sont obligatoires pour LLM Call")
