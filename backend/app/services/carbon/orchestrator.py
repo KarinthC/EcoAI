@@ -1,12 +1,11 @@
 # backend/app/services/carbon/orchestrator.py
 import logging
-from .common import compute_equivalences
 from . import datasource, training, inference, llm_call, llm_expert
+from .equivalences import compute_global_equivalences, format_equivalences
 
 logger = logging.getLogger(__name__)
 
 # Mapping label -> fonction compute
-#liste des noeuds
 NODE_COMPUTERS = {
     'Données': datasource.compute,
     'Entrainement': training.compute,
@@ -26,7 +25,6 @@ def compute_impact(pipeline: dict) -> dict:
 
         compute_func = NODE_COMPUTERS.get(label)
         if not compute_func:
-            # Nœud inconnu : impact nul
             nodes_analysis.append({
                 'id': node_id,
                 'impact_kg': 0.0,
@@ -47,13 +45,21 @@ def compute_impact(pipeline: dict) -> dict:
             })
             continue
 
-        nodes_analysis.append({
+        node_impact = result['impact_kg']
+        node_entry = {
             'id': node_id,
-            'impact_kg': result['impact_kg'],
+            'impact_kg': node_impact,
             'level': result['level'],
             'message': result.get('message', '')
-        })
-        total_impact += result['impact_kg']
+        }
+
+        # Si le résultat contient l'énergie (cas des nœuds LLM), on ajoute les équivalences
+        if 'energy_kwh' in result:
+            node_entry['energy_kwh'] = result['energy_kwh']
+            node_entry['equivalences'] = format_equivalences(node_impact, result['energy_kwh'])
+
+        nodes_analysis.append(node_entry)
+        total_impact += node_impact
 
     # Suggestions globales
     global_suggestions = []
@@ -62,7 +68,8 @@ def compute_impact(pipeline: dict) -> dict:
     if total_impact > 10:
         global_suggestions.append("Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact.")
 
-    equivalences = compute_equivalences(total_impact)
+    # Équivalences globales basées sur ecologits
+    equivalences = compute_global_equivalences(total_impact)
 
     return {
         'total_impact_kg': round(total_impact, 2),

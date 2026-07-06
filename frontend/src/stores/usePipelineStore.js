@@ -231,7 +231,9 @@ export const usePipelineStore = defineStore('pipeline', () => {
                 ...node.data,
                 impactLevel: item.level,
                 impact_kg: item.impact_kg,
-                impactMessage: item.message || ''
+                impactMessage: item.message || '',
+                ...(item.energy_kwh !== undefined && { energy_kwh: item.energy_kwh }),
+                ...(item.equivalences && { equivalences: item.equivalences })
             }
             }
         })

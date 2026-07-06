@@ -1,15 +1,16 @@
 # backend/app/services/carbon/llm_expert.py
 import logging
 from ecologits.impacts.llm import compute_llm_impacts
-from .common import get_level, extract_gwp
+from .common import get_level, extract_gwp, extract_energy
 
 logger = logging.getLogger(__name__)
 
 def compute(params: dict) -> dict:
-    active_params = float(params.get('active_params', 0))
-    total_params = float(params.get('total_params', 0))
-    output_tokens = int(params.get('output_tokens', 100))
-    request_latency = float(params.get('request_latency', 100))
+    active_params = float(params.get('active_params', 7))      # 7 milliards par défaut (ex: LLaMA-7B)
+    total_params   = float(params.get('total_params', 10))     # 10 milliards
+    output_tokens  = int(params.get('output_tokens', 250))     # 250 tokens
+    request_latency = float(params.get('request_latency', 100)) # ms
+
     
     mix_gwp = float(params.get('mix_gwp', 0.508759))
     mix_adpe = float(params.get('mix_adpe', 0.00004420127244))
@@ -32,11 +33,13 @@ def compute(params: dict) -> dict:
         datacenter_pue=datacenter_pue,
         datacenter_wue=datacenter_wue
     )
-    impact = extract_gwp(impacts)
-    message = f"Impact estimé via ecologits (LLM Expert)"
-    
+
+    gwp_kg   = extract_gwp(impacts)
+    energy_kwh = extract_energy(impacts)
+
     return {
-        'impact_kg': round(impact, 4),
-        'level': get_level(impact),
-        'message': message
+        'impact_kg': round(gwp_kg, 6),
+        'energy_kwh': round(energy_kwh, 6),
+        'level': get_level(gwp_kg),
+        'message': f"Impact estimé via ecologits (LLM Expert)"
     }
