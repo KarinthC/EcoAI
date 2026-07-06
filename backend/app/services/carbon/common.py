@@ -28,6 +28,8 @@ def _extract_value(impact_obj) -> float:
             logger.warning("impact_obj.value is None, returning 0.0")
             return 0.0
         
+        if hasattr(val, 'mean'):
+            return float(val.mean)
         # Si c'est un objet avec .min et .max (RangeValue)
         if hasattr(val, 'min') and hasattr(val, 'max'):
             return (val.min + val.max) / 2

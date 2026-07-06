@@ -150,5 +150,45 @@ export const nodeFields = {
     { key: 'mix_gwp', label: 'Mix GWP (kgCO2eq/kWh)', type: 'number', placeholder: '0.5088' },
     { key: 'mix_adpe', label: 'Mix ADPe (kgSbeq/kWh)', type: 'number', placeholder: '0.0000442' },
     { key: 'mix_pe', label: 'Mix PE (MJ/kWh)', type: 'number', placeholder: '4.484' }
-  ]
+  ],
+
+  'Video Generation': [
+    {
+        key: 'model_name',
+        label: 'Modèle',
+        type: 'select',
+        options: [
+            'alibaba/wan2.1',
+            'alibaba/wan2.2',
+            'bytedance/seedance-1.0',
+            'bytedance/seedance-1.5-pro',
+            'google/veo-3.0',
+            'google/veo-3.0-fast',
+            'google/veo-3.1',
+            'google/veo-3.1-fast',
+            'klingai/kling-v1.6',
+            'klingai/kling-v2.6',
+            'klingai/kling-v3',
+            'lightricks/ltx-2-t2v',
+            'lightricks/ltx-2-t2va',
+            'openai/sora-2-pro',
+            'runway/gen-4.5',
+            'tencent/hunyuanvideo',
+            'tencent/hunyuanvideo-1.5'
+        ]
+    },
+    {
+        key: 'resolution',
+        label: 'Résolution',
+        type: 'select',
+        options: ['720p', '1080p', '4k', '1024x576']  // d'autres formats peuvent être ajoutés manuellement via un input text si besoin, mais le select couvre l'essentiel
+    },
+    { key: 'duration', label: 'Durée (secondes)', type: 'number', placeholder: '10' },
+    {
+        key: 'with_audio',
+        label: 'Avec audio',
+        type: 'select',
+        options: ['true', 'false']
+    }
+]
 }

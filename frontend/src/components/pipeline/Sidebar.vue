@@ -64,11 +64,17 @@ const { onDragStart } = useDragAndDrop()
        LLM Call
       </div>
       
+      <div class="sidebar-node sidebar-node-llm" :draggable="true"
+      @dragstart="onDragStart($event, 'custom', 'LLM Expert')">
+      LLM Expert
+      </div>
+
        <div class="sidebar-node sidebar-node-llm" :draggable="true"
-       @dragstart="onDragStart($event, 'custom', 'LLM Expert')">
-       LLM Expert
+       @dragstart="onDragStart($event, 'custom', 'Video Generation')">
+       Video Generation
       </div>
     </div>
+    
 
     <div v-if="store.isAnalyzing" class="analysis-summary">
       <div class="total-score">
@@ -166,7 +172,7 @@ aside .nodes > * {
   background: #38a169;
 }
 .sidebar-node-llm {
-  background: #dd6b20;   /* orange */
+  background: #dd6b20;   
 }
 
 .sidebar-green { background: #38a169 !important; }

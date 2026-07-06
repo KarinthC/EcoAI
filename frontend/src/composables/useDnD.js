@@ -22,7 +22,8 @@ export default function useDragAndDrop() {
   'Entrainement': 'node-border-training',
   'Inférence': 'node-border-inference',
   'LLM Call': 'node-border-llm',        
-  'LLM Expert': 'node-border-llm'
+  'LLM Expert': 'node-border-llm',
+  'Video Generation': 'node-border-llm'
   }
 
 

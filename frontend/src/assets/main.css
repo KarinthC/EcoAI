@@ -39,8 +39,8 @@ body,
   background-color: #edf7f0;
 }
 .node-border-llm .custom-node {
-  border-color: #dd6b20;        /* orange */
-  background-color: #fffaf0;    /* fond orange très pâle */
+  border-color: #dd6b20;        
+  background-color: #fffaf0;   
 }
 .vue-flow__edge-path {
   stroke: #718096;       

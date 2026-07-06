@@ -1,6 +1,6 @@
 # backend/app/services/carbon/orchestrator.py
 import logging
-from . import datasource, training, inference, llm_call, llm_expert
+from . import datasource, training, inference, llm_call, llm_expert,video
 from .equivalences import compute_global_equivalences, format_equivalences
 
 logger = logging.getLogger(__name__)
@@ -12,6 +12,7 @@ NODE_COMPUTERS = {
     'Inférence': inference.compute,
     'LLM Call': llm_call.compute,
     'LLM Expert': llm_expert.compute,
+    'Video Generation': video.compute, 
 }
 
 def compute_impact(pipeline: dict) -> dict:
