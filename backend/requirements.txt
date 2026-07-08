@@ -6,3 +6,4 @@ Flask-CORS==4.0.*
 psycopg2-binary==2.9.*
 gunicorn==21.2.*
 ecologits>=0.8.0
+pytest
