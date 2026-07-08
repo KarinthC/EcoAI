@@ -10,6 +10,7 @@ def compute(params: dict) -> dict:
     total_params   = float(params.get('total_params', 10))     # 10 milliards
     output_tokens  = int(params.get('output_tokens', 250))     # 250 tokens
     request_latency = float(params.get('request_latency', 100)) # ms
+    nb_call = int(params.get('nb_call') or 1)
 
     
     mix_gwp = float(params.get('mix_gwp', 0.508759))
@@ -34,8 +35,8 @@ def compute(params: dict) -> dict:
         datacenter_wue=datacenter_wue
     )
 
-    gwp_kg   = extract_gwp(impacts)
-    energy_kwh = extract_energy(impacts)
+    gwp_kg   = nb_call * extract_gwp(impacts)
+    energy_kwh =nb_call * extract_energy(impacts)
 
     return {
         'impact_kg': round(gwp_kg, 6),

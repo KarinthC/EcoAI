@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 def compute(params: dict) -> dict:
     provider = params.get('provider')
     model = params.get('model')
-    
+    nb_call = int(params.get('nb_call') or 1)
+
     # Protéger contre les null : utilise la valeur par défaut si None ou absent
     output_tokens = int(params.get('output_tokens') or 100)
     request_latency = float(params.get('request_latency') or 100)
@@ -23,8 +24,8 @@ def compute(params: dict) -> dict:
         request_latency=request_latency
     )
 
-    gwp_kg   = extract_gwp(impacts)
-    energy_kwh = extract_energy(impacts)   # nouvelle fonction à ajouter dans common.py
+    gwp_kg   = nb_call * extract_gwp(impacts)
+    energy_kwh = nb_call * extract_energy(impacts)   # nouvelle fonction à ajouter dans common.py
 
     return {
         'impact_kg': round(gwp_kg, 6),

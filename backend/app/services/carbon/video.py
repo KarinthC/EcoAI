@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 
 def compute(params: dict) -> dict:
     model_name = params.get('model_name')
+    nb_call = int(params.get('nb_call') or 1)
+
     if not model_name:
         raise ValueError("model_name est obligatoire pour Video Generation")
 
@@ -47,8 +49,8 @@ def compute(params: dict) -> dict:
         logger.exception("Erreur lors de l'appel à video_impacts")
         raise
 
-    gwp_kg = extract_gwp(impacts)
-    energy_kwh = extract_energy(impacts)
+    gwp_kg = nb_call * extract_gwp(impacts)
+    energy_kwh =nb_call * extract_energy(impacts)
     level = get_level(gwp_kg)
 
     # Construction du message avec conseils personnalisés

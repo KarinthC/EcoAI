@@ -36,6 +36,12 @@ export const nodeFields = {
 
   'LLM Call': [
     {
+      key: 'nb_call',
+      label: 'Nombre d\'appels',
+      type: 'number',
+      placeholder: '1'
+    },
+    {
       key: 'provider',
       label: 'Fournisseur',
       type: 'select',
@@ -323,6 +329,7 @@ export const nodeFields = {
   ],
 
   'LLM Expert': [
+    {key: 'nb_call',label: 'Nombre d\'appels',type: 'number',placeholder: '1'},
     { key: 'active_params', label: 'Param. actifs (milliards)', type: 'number', placeholder: '7' },
     { key: 'total_params', label: 'Param. totaux (milliards)', type: 'number', placeholder: '10' },
     { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '250' },
@@ -333,6 +340,7 @@ export const nodeFields = {
   ],
 
   'Video Generation': [
+    {key: 'nb_call',label: 'Nombre d\'appels',type: 'number',placeholder: '1'},
     {
         key: 'model_name',
         label: 'Modèle',
