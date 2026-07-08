@@ -336,7 +336,11 @@ export const nodeFields = {
     { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' },
     { key: 'mix_gwp', label: 'Mix GWP (kgCO2eq/kWh)', type: 'number', placeholder: '0.5088' },
     { key: 'mix_adpe', label: 'Mix ADPe (kgSbeq/kWh)', type: 'number', placeholder: '0.0000442' },
-    { key: 'mix_pe', label: 'Mix PE (MJ/kWh)', type: 'number', placeholder: '4.484' }
+    { key: 'mix_pe', label: 'Mix PE (MJ/kWh)', type: 'number', placeholder: '4.484' },
+    { key: 'datacenter_pue', label: 'PUE Datacenter', type: 'number', placeholder: '1.58' },
+    { key: 'datacenter_wue', label: 'WUE Datacenter', type: 'number', placeholder: '1.8' },
+    { key: 'if_electricity_mix_wue', label: 'Electricity mix wue', type: 'number', placeholder: '0' }
+
   ],
 
   'Video Generation': [
@@ -377,6 +381,9 @@ export const nodeFields = {
         label: 'Avec audio',
         type: 'select',
         options: ['true', 'false']
-    }
+    },
+    { key: 'datacenter_pue', label: 'PUE Datacenter', type: 'number', placeholder: '1.58' },
+    { key: 'datacenter_wue', label: 'WUE Datacenter', type: 'number', placeholder: '1.8' },
+    
 ]
 }

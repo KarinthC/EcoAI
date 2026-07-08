@@ -13,14 +13,14 @@ def compute(params: dict) -> dict:
     nb_call = int(params.get('nb_call') or 1)
 
     
-    mix_gwp = float(params.get('mix_gwp', 0.508759))
-    mix_adpe = float(params.get('mix_adpe', 0.00004420127244))
-    mix_pe = float(params.get('mix_pe', 4.484))
+    mix_gwp = float(params.get('mix_gwp' or 0.508759))
+    mix_adpe = float(params.get('mix_adpe' or 0.00004420127244))
+    mix_pe = float(params.get('mix_pe' or 4.484))
     
     # PUE moyen mondial ~1.58, WUE ~1.8 L/kWh, etc. Ajuste selon tes sources.
-    datacenter_pue = float(params.get('datacenter_pue', 1.58))
-    datacenter_wue = float(params.get('datacenter_wue', 1.8))
-    if_electricity_mix_wue = float(params.get('if_electricity_mix_wue', 0.0))  # souvent indisponible
+    datacenter_pue = float(params.get('datacenter_pue' or 1.58))
+    datacenter_wue = float(params.get('datacenter_wue' or 1.8))
+    if_electricity_mix_wue = float(params.get('if_electricity_mix_wue' or 0.0))  # souvent indisponible
 
     impacts = compute_llm_impacts(
         model_active_parameter_count=active_params,
