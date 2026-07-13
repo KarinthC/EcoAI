@@ -107,9 +107,10 @@ L’application est disponible sur http://localhost (Nginx écoute sur le port 8
     7. Revenir à l’édition avec le même bouton.
 
 
-## Tests
+### Tests
 
 Des tests unitaires sont disponibles pour les modules de calcul carbone (backend).
+
 ```bash
 
 # Dans le conteneur api, ou en local avec les dépendances
@@ -190,8 +191,6 @@ frontend/
 │   │   └── UsernameModal.vue          # Modale de saisie du pseudonyme
 │   ├── composables/
 │   │   └── useDnD.js          # Logique de drag & drop réutilisable
-│   ├── config/
-│   │   └── nodeConfigs.js     # (si déplacé) Configuration des champs
 │   ├── stores/
 │   │   └── usePipelineStore.js # État global (nœuds, arêtes, analyse, onglets)
 │   ├── router/
@@ -216,7 +215,3 @@ frontend/
     Les composants de la palette (Sidebar.vue), du canvas (CustomNode.vue) et des paramètres (ParameterPanel.vue) communiquent via le store, sans dépendances directes entre eux.
 
     Les appels HTTP vers le backend (sauvegarde, chargement, analyse) sont encapsulés dans les actions du store, mais pourraient être extraits dans un dossier api/ à l’avenir.
-
-## Licence
-
-Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
