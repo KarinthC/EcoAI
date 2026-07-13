@@ -104,7 +104,8 @@ L’application est disponible sur http://localhost (Nginx écoute sur le port 8
 
     6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition, affiche les impacts et des conseils.
 
-    6. Revenir à l’édition avec le même bouton.
+    7. Revenir à l’édition avec le même bouton.
+
 
 ## Tests
 
@@ -118,37 +119,103 @@ pytest tests/
 ```
 
 Pour l’instant, un test vérifie les combinaisons valides de provider/modèle pour les nœuds LLM Call (tests/test_llm_call.py). Ajoutez vos propres tests au fur et à mesure.
-Structure du projet
+
+
+## Structure détaillée du projet
+### Dossier backend
+
+Le backend suit une architecture modulaire avec séparation des responsabilités : les routes (API), la logique métier (services) et les modèles de données (models). Le sous‑dossier services/carbon applique le même principe pour les calculs d’impact.
 ```text
 
-.
-├── backend/
-│   ├── app/
-│   │   ├── api/                # Blueprints Flask (endpoints)
-│   │   ├── models/             # Modèles SQLAlchemy
-│   │   ├── services/           # Logique métier
-│   │   │   └── carbon/         # Calculs d'impact par type de nœud
-│   │   ├── config.py           # Configuration Flask
-│   │   ├── extensions.py       # Extensions (SQLAlchemy, Migrate)
-│   │   └── __init__.py         # Factory create_app()
-│   ├── migrations/             # Scripts Alembic
-│   ├── tests/                  # Tests unitaires
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── components/         # Composants Vue
-│   │   │   └── pipeline/       # Composants de l’éditeur
-│   │   ├── composables/        # Composables (drag & drop)
-│   │   ├── config/             # Configuration statique (champs nœuds)
-│   │   ├── stores/             # Pinia stores
-│   │   ├── views/              # Vues (pages)
-│   │   └── router/             # Vue Router
-│   ├── Dockerfile
-│   └── vite.config.js
-├── docker-compose.yml          # Configuration production
-├── docker-compose.dev.yml      # Surcharge développement
-└── README.md
+backend/
+├── app/
+│   ├── api/                    # Endpoints REST (blueprints Flask)
+│   │   ├── analysis.py         # POST /api/analyze (lance l'analyse carbone)
+│   │   ├── health.py           # GET  /api/health (contrôle de l'état)
+│   │   ├── pipelines.py        # CRUD /api/pipelines (gestion des pipelines)
+│   │   ├── session.py          # GET  /api/session (infos de session utilisateur)
+│   │   └── username.py         # POST /api/username (choix du pseudonyme)
+│   ├── models/                 # Modèles SQLAlchemy (tables BDD)
+│   │   ├── pipeline.py         # Table pipelines (id, user_id, nom, JSON du graphe)
+│   │   └── user.py             # Table users (id, public_id, username, dates)
+│   ├── services/               # Logique métier (appelée par les blueprints)
+│   │   ├── carbon/             # Calcul d’impact carbone par type de nœud
+│   │   │   ├── common.py       # Fonctions partagées (seuils, extraction GWP, équivalences)
+│   │   │   ├── datasource.py   # Nœud “Données”
+│   │   │   ├── training.py     # Nœud “Entrainement”
+│   │   │   ├── inference.py    # Nœud “Inférence”
+│   │   │   ├── llm_call.py     # Nœud “LLM Call” (via ecologits)
+│   │   │   ├── llm_expert.py   # Nœud “LLM Expert” (via ecologits)
+│   │   │   └── orchestrator.py # Dispatcheur : appelle le bon module selon le type
+│   │   ├── pipeline_service.py # CRUD pipelines
+│   │   └── user_service.py     # Gestion des utilisateurs (cookie session)
+│   ├── config.py               # Configuration Flask (variables d’environnement)
+│   ├── extensions.py           # Instanciation SQLAlchemy et Flask-Migrate
+│   └── __init__.py             # Factory create_app() – assemble l’application
+├── migrations/                 # Scripts Alembic (historique du schéma)
+├── tests/                      # Tests unitaires et fonctionnels
+└── Dockerfile
 ```
+### Interactions
+
+    Les blueprints (api/) reçoivent les requêtes HTTP et délèguent aux services (services/).
+
+    Les services interagissent avec les modèles (models/) pour lire/écrire en base.
+
+    Le sous‑package carbon/ est isolé : l’orchestrateur parcourt les nœuds et appelle la fonction compute() du module correspondant.
+
+    Les extensions (extensions.py) sont importées dans la factory pour lier SQLAlchemy et Flask-Migrate à l’application.
+
+### Dossier frontend
+
+Le frontend est organisé autour de composants Vue réutilisables, d’un store centralisé (Pinia) et d’un routeur. Les fichiers de configuration statique (comme la définition des champs par type de nœud) sont rangés dans un dossier config/.
+```text
+
+frontend/
+├── src/
+│   ├── assets/
+│   │   └── main.css            # Styles globaux (VueFlow, bordures de nœuds)
+│   ├── components/
+│   │   ├── pipeline/           # Composants spécifiques à l’éditeur
+│   │   │   ├── AnalysisNodePanel.vue  # Panneau de détail en mode analyse
+│   │   │   ├── AnalysisOverlay.vue    # Bandeau inférieur (score + suggestions)
+│   │   │   ├── CustomNode.vue         # Rendu d’un nœud dans le graphe
+│   │   │   ├── DropzoneBackground.vue # Fond du canvas avec grille
+│   │   │   ├── ParameterPanel.vue     # Édition des paramètres d’un nœud
+│   │   │   ├── PipelineTabs.vue       # Barre d’onglets (multi‑pipelines)
+│   │   │   ├── Sidebar.vue            # Palette de nœuds + bouton analyse
+│   │   │   └── nodeConfig.js          # Définition des champs par type de nœud
+│   │   ├── ConnectionIndicator.vue    # Indicateur de connexion API
+│   │   ├── UserIdentification.vue     # Affichage du pseudonyme
+│   │   └── UsernameModal.vue          # Modale de saisie du pseudonyme
+│   ├── composables/
+│   │   └── useDnD.js          # Logique de drag & drop réutilisable
+│   ├── config/
+│   │   └── nodeConfigs.js     # (si déplacé) Configuration des champs
+│   ├── stores/
+│   │   └── usePipelineStore.js # État global (nœuds, arêtes, analyse, onglets)
+│   ├── router/
+│   │   └── index.js           # Définition des routes (actuellement /)
+│   ├── views/
+│   │   └── HomeView.vue       # Page principale (éditeur + analyse)
+│   ├── App.vue                # Composant racine (layout global)
+│   └── main.js                # Initialisation de Vue, Pinia, Router
+├── Dockerfile
+├── nginx.conf                 # Configuration du reverse proxy
+└── vite.config.js             # Configuration Vite (alias, proxy dev)
+```
+
+### Interactions
+
+    HomeView.vue orchestre les composants de l’éditeur et la logique d’analyse, en s’appuyant sur le store.
+
+    usePipelineStore.js centralise les données du pipeline actif et expose des actions (ajout de nœuds, sauvegarde, analyse…). Il est consommé par tous les composants pipeline.
+
+    Le composable useDnD.js fournit la mécanique de glisser‑déposer ; il utilise également le store pour ajouter les nœuds.
+
+    Les composants de la palette (Sidebar.vue), du canvas (CustomNode.vue) et des paramètres (ParameterPanel.vue) communiquent via le store, sans dépendances directes entre eux.
+
+    Les appels HTTP vers le backend (sauvegarde, chargement, analyse) sont encapsulés dans les actions du store, mais pourraient être extraits dans un dossier api/ à l’avenir.
 
 ## Licence
 
