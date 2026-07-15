@@ -19,11 +19,15 @@ export default function useDragAndDrop() {
 
   const borderClassMap = {
   'Données': 'node-border-datasource',
-  'Entrainement': 'node-border-training',
-  'Inférence': 'node-border-inference',
-  'LLM Call': 'node-border-llm',        
-  'LLM Expert': 'node-border-llm',
-  'Video Generation': 'node-border-llm'
+  'Modèle ML' : 'node-border-ml',
+  'Entrainement': 'node-border-operator',
+  'Inférence': 'node-border-operator',
+  'LLM Call': 'node-border-operator',        
+  'LLM Expert': 'node-border-operator',
+  'Video Generation': 'node-border-operator',
+  'Opérateur': 'node-border-operator',
+  'Préprocessing': 'node-border-operator'
+
   }
 
 

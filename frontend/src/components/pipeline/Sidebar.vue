@@ -45,7 +45,31 @@ const { onDragStart } = useDragAndDrop()
       </div>
 
       <div
-        class="sidebar-node sidebar-node-training"
+        class="sidebar-node sidebar-node-ml"
+        :draggable="true"
+        @dragstart="onDragStart($event, 'custom', 'Modèle ML')"
+      >
+        Modèle ML
+      </div>
+
+      <div
+        class="sidebar-node sidebar-node-operator"
+        :draggable="true"
+        @dragstart="onDragStart($event, 'custom', 'Opérateur')"
+      >
+        Opérateur
+      </div>
+
+      <div
+        class="sidebar-node sidebar-node-operator"
+        :draggable="true"
+        @dragstart="onDragStart($event, 'custom', 'Préprocessing')"
+      >
+        Préprocessing
+      </div>
+
+      <div
+        class="sidebar-node sidebar-node-operator"
         :draggable="true"
         @dragstart="onDragStart($event, 'custom', 'Entrainement')"
       >
@@ -53,23 +77,23 @@ const { onDragStart } = useDragAndDrop()
       </div>
 
       <div
-        class="sidebar-node sidebar-node-inference"
+        class="sidebar-node sidebar-node-operator"
         :draggable="true"
         @dragstart="onDragStart($event, 'custom', 'Inférence')"
       >
         Inférence
       </div>
-       <div class="sidebar-node sidebar-node-llm" :draggable="true"
+       <div class="sidebar-node sidebar-node-operator" :draggable="true"
        @dragstart="onDragStart($event, 'custom', 'LLM Call')">
        LLM Call
       </div>
       
-      <div class="sidebar-node sidebar-node-llm" :draggable="true"
+      <div class="sidebar-node sidebar-node-operator" :draggable="true"
       @dragstart="onDragStart($event, 'custom', 'LLM Expert')">
       LLM Expert
       </div>
 
-       <div class="sidebar-node sidebar-node-llm" :draggable="true"
+       <div class="sidebar-node sidebar-node-operator" :draggable="true"
        @dragstart="onDragStart($event, 'custom', 'Video Generation')">
        Video Generation
       </div>
@@ -165,13 +189,13 @@ aside .nodes > * {
 .sidebar-node-datasource {
   background: #3182ce;
 }
-.sidebar-node-training {
+.sidebar-node-result {
   background: #805ad5;
 }
-.sidebar-node-inference {
+.sidebar-node-ml {
   background: #38a169;
 }
-.sidebar-node-llm {
+.sidebar-node-operator {
   background: #dd6b20;   
 }
 

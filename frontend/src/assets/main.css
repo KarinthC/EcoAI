@@ -30,15 +30,15 @@ body,
   border-color: #3182ce;
   background-color: #ebf4ff;
 }
-.node-border-training .custom-node {
+.node-border-result .custom-node {
   border-color: #805ad5;
   background-color: #f3effa;
 }
-.node-border-inference .custom-node {
+.node-border-ml .custom-node {
   border-color: #38a169;
   background-color: #edf7f0;
 }
-.node-border-llm .custom-node {
+.node-border-operator .custom-node {
   border-color: #dd6b20;        
   background-color: #fffaf0;   
 }

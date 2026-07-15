@@ -107,7 +107,8 @@ L’application est disponible sur http://localhost (Nginx écoute sur le port 8
     7. Revenir à l’édition avec le même bouton.
 
 
-### Tests
+
+## Tests
 
 Des tests unitaires sont disponibles pour les modules de calcul carbone (backend).
 

@@ -1,38 +1,47 @@
 // src/config/nodeConfigs.js
 
 export const nodeFields = {
-  'Données': [
+   'Données': [
     {
       key: 'format',
       label: 'Format',
       type: 'select',
-      options: ['CSV', 'JSON', 'Parquet', 'Base de données']
+      options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
     },
     { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
-    { key: 'echantillons', label: 'Échantillons', type: 'number', placeholder: '10000' }
+    { key: 'echantillons', label: 'Échantillons', type: 'number', placeholder: '10000' },
+    { key: 'structure ', label: 'structure', type: 'select',   options: ['structuré', 'non structuré']
+ }
+
   ],
 
+  'Modèle ML':[
+      { key: 'nom', label: 'nom', type: 'text'  },
+      { key: 'version', label: 'version', type: 'number'  },
+      { key: 'architecture', label: 'architecture', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
+      { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
+  ],
   'Entrainement': [
-    {
-      key: 'modele',
-      label: 'Modèle',
-      type: 'select',
-      options: ['CNN', 'RNN', 'Transformer', 'LSTM', 'GPT']
-    },
-    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' },
+
     { key: 'epochs', label: 'Epochs', type: 'number', placeholder: '300' },
     { key: 'batch_size', label: 'Batch size', type: 'number', placeholder: '50' }
   ],
 
   'Inférence': [
-    {
-      key: 'modele_utilise',
-      label: 'Modèle utilisé',
-      type: 'select',
-      options: ['CNN', 'RNN', 'Transformer', 'LSTM']
-    },
-    { key: 'taille_lot', label: 'Taille du lot', type: 'number', placeholder: '1000' }
+    { key: 'appels', label: 'Nombre d\'appels', type: 'number', placeholder: '300' },
   ],
+
+ 'Préprocessing': [
+    { key: 'Volume', label: 'Volume (Go)', type: 'number', placeholder: '50' },
+    { key: 'temps', label: 'temps (s)', type: 'number', placeholder: '15' }
+
+  ],
+
+
+  'Opérateur': [
+      { key: 'nom', label: 'nom', type: 'text'  }
+  ],
+
 
   'LLM Call': [
     {
