@@ -37,7 +37,7 @@ Navigateur ──► Nginx (reverse proxy + fichiers statiques)
 ### 1. Cloner le projet
 ```bash
 
-git clone <url-du-repo>
+git clone https://github.com/KarinthC/EcoAI
 cd ecoai
 ```
 
