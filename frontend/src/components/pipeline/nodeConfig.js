@@ -24,11 +24,15 @@ export const nodeFields = {
   'Entrainement': [
 
     { key: 'epochs', label: 'Epochs', type: 'number', placeholder: '300' },
-    { key: 'batch_size', label: 'Batch size', type: 'number', placeholder: '50' }
+    { key: 'batch_size', label: 'Batch size', type: 'number', placeholder: '50' }, 
+    { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
+    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
   ],
 
   'Inférence': [
     { key: 'appels', label: 'Nombre d\'appels', type: 'number', placeholder: '300' },
+    { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
+    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
   ],
 
  'Préprocessing': [
