@@ -18,7 +18,7 @@ export const nodeFields = {
   'Modèle ML':[
       { key: 'nom', label: 'nom', type: 'text'  },
       { key: 'version', label: 'version', type: 'number'  },
-      { key: 'architecture', label: 'architecture', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
+      { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
       { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
   ],
   'Entrainement': [
@@ -39,7 +39,9 @@ export const nodeFields = {
 
 
   'Opérateur': [
-      { key: 'nom', label: 'nom', type: 'text'  }
+      { key: 'nom', label: 'nom', type: 'text'  },
+      { key: 'type', label: 'type', type: 'text'  }
+
   ],
 
 
