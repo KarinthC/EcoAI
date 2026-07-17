@@ -252,8 +252,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         delete node.data.impact_kg
         delete node.data.impactMessage
         })
-    }
-    }   
+    }}
 
     return {
         pipelines,
