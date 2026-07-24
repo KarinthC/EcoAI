@@ -22,8 +22,10 @@ export const usePipelineStore = defineStore('pipeline', () => {
     const edges = computed(() => activePipeline.value?.edges || [])
     const selectedNodeId = computed(() => activePipeline.value?.selectedNodeId || null)
 
-    function createPipeline(name = 'Sans nom', graphJson = null) {
+    function createPipeline(graphJson = null) {
         const id = `pipe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        const name = 'pipeline'.concat(String(id).slice(4, -1))
+
         pipelines.value[id] = {
         name,
         nodes: graphJson?.nodes || [],

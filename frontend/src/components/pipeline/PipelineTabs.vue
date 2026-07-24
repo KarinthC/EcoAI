@@ -17,7 +17,7 @@ const store = usePipelineStore()
       <span class="tab-name">{{ pipe.name }}</span>
       <span class="tab-close"   v-if="!store.isAnalyzing" @click.stop="store.closePipeline(id)">✕</span>
     </div>
-    <button class="tab-add"  v-if="!store.isAnalyzing"  @click="store.createPipeline('Nouveau pipeline')">+</button>
+    <button class="tab-add"  v-if="!store.isAnalyzing"  @click="store.createPipeline()">+</button>
   </div>
 </template>
 
