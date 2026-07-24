@@ -5,7 +5,7 @@ import { convertMoMaAPToVueFlow } from '@/stores/MoMatoVueFlow'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
 import useDragAndDrop from '@/composables/useDnD'
-import { markRaw, ref, onMounted } from 'vue'
+import { markRaw, ref, onMounted, watch } from 'vue'
 import CustomNode from '@/components/pipeline/CustomNode.vue'
 import ParameterPanel from '@/components/pipeline/ParameterPanel.vue'
 import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
@@ -18,7 +18,7 @@ const selectedNode = ref(null)
 
 
 const store = usePipelineStore()
-const { onConnect, addEdges } = useVueFlow()
+const { onConnect, addEdges, setViewport } = useVueFlow()
 const { onDragOver, onDrop, onDragLeave, isDragOver } = useDragAndDrop()
 
 const nodeTypes = {
@@ -29,11 +29,23 @@ function onPaneClick() {
   store.clearSelection()
 }
 
+function onViewportChange(viewport) {
+  store.updateViewport(viewport)
+}
+
+// Appliquer le viewport sauvegardé quand l'onglet actif change
+watch(() => store.activeId, () => {
+  if (store.activePipeline) {
+    store.applyViewport(setViewport)
+  }
+})
+
 onMounted(async () => {
   await store.loadPipelines()
   if (!store.activePipeline) {
     store.createPipeline('Sans nom')
   }
+  store.applyViewport(setViewport)
 })
 
 onConnect(addEdges)
@@ -78,6 +90,7 @@ if (import.meta.env.DEV) {
     <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline"">
       <Sidebar />
       <VueFlow
+        :key="store.activeId"
         v-model:nodes="store.activePipeline.nodes"
         v-model:edges="store.activePipeline.edges"
         :node-types="nodeTypes"
@@ -88,6 +101,7 @@ if (import.meta.env.DEV) {
         @dragover="onDragOver"
         @dragleave="onDragLeave"
         @pane-click="onPaneClick"
+        @viewport-change="onViewportChange"
       >
         <DropzoneBackground
           :style="{

@@ -29,7 +29,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         nodes: graphJson?.nodes || [],
         edges: graphJson?.edges || [],
         selectedNodeId: null,
-        backendId: null   // sera renseigné après sauvegarde
+        backendId: null   
         }
         activeId.value = id
         return id
@@ -254,6 +254,22 @@ export const usePipelineStore = defineStore('pipeline', () => {
         })
     }}
 
+    function updateViewport(viewport) {
+    if (activePipeline.value) {
+        activePipeline.value.viewport = { ...viewport }
+    }
+    }
+
+    function applyViewport(setViewportFn) {
+    if (activePipeline.value?.viewport) {
+        const v = activePipeline.value.viewport
+        // utiliser requestAnimationFrame pour être sûr que le composant est monté
+        requestAnimationFrame(() => {
+        setViewportFn({ x: v.x, y: v.y, zoom: v.zoom }, { duration: 0 })
+        })
+    }
+    }
+
     return {
         pipelines,
         activeId,
@@ -280,6 +296,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
         loadPipelines,
         deletePipeline,
         analyzePipeline,
-        clearAnalysis
+        clearAnalysis,
+        applyViewport,
+        updateViewport
     }
 })
