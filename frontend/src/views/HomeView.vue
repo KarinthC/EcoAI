@@ -1,7 +1,6 @@
 <script setup>
 import { VueFlow, useVueFlow, MarkerType } from '@vue-flow/core'
 import { usePipelineStore } from '@/stores/usePipelineStore'
-import { convertMoMaAPToVueFlow } from '@/stores/MoMatoVueFlow'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
 import useDragAndDrop from '@/composables/useDnD'
@@ -50,13 +49,6 @@ onMounted(async () => {
 
 onConnect(addEdges)
 
-// Dans <script setup> de ton composant principal (Canvas.vue, App.vue, etc.)
-
-// Exposer pour les tests console
-if (import.meta.env.DEV) {
-  window.convertMoMaAPToVueFlow = convertMoMaAPToVueFlow
-  window.getPipelineStore = () => usePipelineStore()
-}
 </script>
 
 <template>
