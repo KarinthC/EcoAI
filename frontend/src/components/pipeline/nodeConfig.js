@@ -1,5 +1,29 @@
 // src/config/nodeConfigs.js
 
+// Parc serveurs : chaque serveur expose 1 à N types de GPUs.
+// Doit rester cohérent avec SERVERS côté backend (acv/gpu_models.py).
+const SERVERS = {
+  lig1: ['GTX 1080 Ti'],
+  lig2: ['GTX 1080 Ti'],
+  lig3: ['GTX 1080 Ti'],
+  lig4: ['GTX 1080 Ti'],
+  lig5: ['GTX 1080 Ti'],
+  lig6: ['GTX 1080 Ti'],
+  lig7: ['GTX 1080 Ti'],
+  lig8: ['GTX 1080 Ti'],
+  lig9: ['GTX 1080 Ti'],
+  lig10: ['GTX 1080 Ti'],
+}
+
+// Champs communs aux nœuds Entrainement et Inférence (calcul ACV).
+// La liste des GPUs dépend du serveur sélectionné (dependsOn/optionsMapping).
+const GPU_SERVER_FIELDS = [
+  { key: 'server_id', label: 'Serveur', type: 'select', options: Object.keys(SERVERS) },
+  { key: 'gpu_type', label: 'GPU', type: 'select', dependsOn: 'server_id', optionsMapping: SERVERS },
+  { key: 'nb_gpu', label: 'Nombre de GPU', type: 'number', placeholder: '1' },
+  { key: 'heures', label: "Nombre d'heures", type: 'number', placeholder: '1' },
+]
+
 export const nodeFields = {
    'Données': [
     {
@@ -21,19 +45,9 @@ export const nodeFields = {
       { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
       { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
   ],
-  'Entrainement': [
+  'Entrainement': GPU_SERVER_FIELDS,
 
-    { key: 'epochs', label: 'Epochs', type: 'number', placeholder: '300' },
-    { key: 'batch_size', label: 'Batch size', type: 'number', placeholder: '50' }, 
-    { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
-    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
-  ],
-
-  'Inférence': [
-    { key: 'appels', label: 'Nombre d\'appels', type: 'number', placeholder: '300' },
-    { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
-    { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
-  ],
+  'Inférence': GPU_SERVER_FIELDS,
 
  'Préprocessing': [
     { key: 'Volume', label: 'Volume (Go)', type: 'number', placeholder: '50' },

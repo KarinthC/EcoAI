@@ -235,7 +235,10 @@ export const usePipelineStore = defineStore('pipeline', () => {
                 impact_kg: item.impact_kg,
                 impactMessage: item.message || '',
                 ...(item.energy_kwh !== undefined && { energy_kwh: item.energy_kwh }),
-                ...(item.equivalences && { equivalences: item.equivalences })
+                ...(item.equivalences && { equivalences: item.equivalences }),
+                ...(item.indicators && { indicators: item.indicators }),
+                ...(item.method && { method: item.method }),
+                ...(item.confidence && { confidence: item.confidence })
             }
             }
         })

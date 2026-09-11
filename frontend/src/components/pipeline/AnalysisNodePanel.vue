@@ -23,7 +23,25 @@ const store = usePipelineStore()
       <div class="impact-level-badge" :class="'badge-' + node.data.impactLevel">
         {{ node.data.impactLevel === 'low' ? 'Faible' : node.data.impactLevel === 'medium' ? 'Moyen' : 'Élevé' }}
       </div>
+
+      <!-- Fiabilité de la méthode de calcul (acv = données ACV, ecologits = ordre de grandeur) -->
+      <div v-if="node.data.confidence" class="confidence" :class="'confidence-' + node.data.confidence">
+        <span v-if="node.data.confidence === 'high'">✔️ Confiance élevée (données ACV)</span>
+        <span v-else-if="node.data.confidence === 'low'">⚠️ Confiance faible (estimation peu précise)</span>
+        <span v-else>Confiance : {{ node.data.confidence }}</span>
+      </div>
+
       <p v-if="node.data.impactMessage" class="impact-message">{{ node.data.impactMessage }}</p>
+
+      <!-- Indicateurs ACV (PEF) : le GWP n'est qu'un indicateur parmi d'autres -->
+      <div v-if="node.data.indicators" class="indicators-box">
+        <h4>Indicateurs ACV (PEF)</h4>
+        <ul>
+          <li v-for="(value, key) in node.data.indicators" :key="key">
+            {{ key }} : {{ Number(value).toExponential(3) }}
+          </li>
+        </ul>
+      </div>
 
       <!-- Affichage des équivalences si le nœud est LLM -->
       <div v-if="node.data.equivalences" class="equivalences-box">
@@ -73,6 +91,40 @@ const store = usePipelineStore()
 .badge-low { background: #48bb78; }
 .badge-medium { background: #d69e2e; }
 .badge-high { background: #e53e3e; }
+.confidence {
+  display: block;
+  font-size: 0.8rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+.confidence-high {
+  background: #c6f6d5;
+  color: #22543d;
+}
+.confidence-low {
+  background: #fefcbf;
+  color: #744210;
+}
+.indicators-box {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+.indicators-box h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+.indicators-box ul {
+  list-style: none;
+  padding-left: 0.5rem;
+}
+.indicators-box li {
+  margin-bottom: 0.2rem;
+  font-family: monospace;
+}
 .impact-message { font-size: 0.9rem; color: #4a5568; }
 .equivalences-box {
   margin-top: 1rem;
