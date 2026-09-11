@@ -1,19 +1,41 @@
 # backend/app/services/carbon/orchestrator.py
 import logging
-from . import datasource, training, inference, llm_call, llm_expert,video
+
+# Famille ACV (données ACV documentées, multi-indicateurs)
+from .acv import datasource as acv_datasource, training as acv_training, inference as acv_inference
+# Famille Ecologits (estimations, vouées à évoluer)
+from .ecologits import llm_call, llm_expert, video
 from .equivalences import compute_global_equivalences, format_equivalences
 
 logger = logging.getLogger(__name__)
 
-# Mapping label -> fonction compute
+# Dispatch explicite label -> fonction compute.
+# Les nœuds sont regroupés par famille : ACV (stable) puis Ecologits (volatile).
 NODE_COMPUTERS = {
-    'Données': datasource.compute,
-    'Entrainement': training.compute,
-    'Inférence': inference.compute,
+    # --- Famille ACV ---
+    'Données': acv_datasource.compute,
+    'Entrainement': acv_training.compute,
+    'Inférence': acv_inference.compute,
+    # --- Famille Ecologits (voués à changer) ---
     'LLM Call': llm_call.compute,
     'LLM Expert': llm_expert.compute,
     'Video Generation': video.compute, 
 }
+
+
+def _aggregate_indicators(nodes_analysis: list) -> dict:
+    """Agrège les indicateurs ACV de tous les nœuds qui en exposent.
+
+    Additionne indicateur par indicateur. Seuls les nœuds portant une clé
+    `indicators` (nœuds ACV) sont inclus : les indicateurs ecologits ne sont
+    pas comparables et ne sont donc pas mélangés ici.
+    """
+    total = {}
+    for node in nodes_analysis:
+        for key, value in node.get('indicators', {}).items():
+            total[key] = total.get(key, 0.0) + value
+    return {k: round(v, 6) for k, v in total.items()}
+
 
 def compute_impact(pipeline: dict) -> dict:
     total_impact = 0.0
@@ -51,13 +73,21 @@ def compute_impact(pipeline: dict) -> dict:
             'id': node_id,
             'impact_kg': node_impact,
             'level': result['level'],
-            'message': result.get('message', '')
+            'message': result.get('message', ''),
+            # Métadonnées de méthode (prépare l'UI : ecologits = peu précis).
+            'method': result.get('method', 'unknown'),
+            'confidence': result.get('confidence', 'unknown'),
         }
 
-        # Si le résultat contient l'énergie (cas des nœuds LLM), on ajoute les équivalences
+        # Enrichissement piloté par le CONTENU du résultat (pas par le label) :
+        # ajouter un nœud ne casse donc rien ici.
         if 'energy_kwh' in result:
             node_entry['energy_kwh'] = result['energy_kwh']
             node_entry['equivalences'] = format_equivalences(node_impact, result['energy_kwh'])
+
+        # Bloc ACV complet : tous les indicateurs, pas seulement le GWP.
+        if 'indicators' in result:
+            node_entry['indicators'] = result['indicators']
 
         nodes_analysis.append(node_entry)
         total_impact += node_impact
@@ -74,6 +104,7 @@ def compute_impact(pipeline: dict) -> dict:
 
     return {
         'total_impact_kg': round(total_impact, 2),
+        'total_indicators': _aggregate_indicators(nodes_analysis),
         'nodes': nodes_analysis,
         'suggestions': global_suggestions,
         'equivalences': equivalences

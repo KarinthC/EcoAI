@@ -1,9 +1,11 @@
-# backend/app/services/carbon/llm_call.py
+# backend/app/services/carbon/ecologits/llm_call.py
 import logging
 from ecologits.tracers.utils import llm_impacts
-from .common import get_level, extract_gwp, extract_energy
+
+from ..common import get_level, extract_gwp, extract_energy
 
 logger = logging.getLogger(__name__)
+
 
 def compute(params: dict) -> dict:
     provider = params.get('provider')
@@ -24,12 +26,14 @@ def compute(params: dict) -> dict:
         request_latency=request_latency
     )
 
-    gwp_kg   = nb_call * extract_gwp(impacts)
-    energy_kwh = nb_call * extract_energy(impacts)   # nouvelle fonction à ajouter dans common.py
+    gwp_kg = nb_call * extract_gwp(impacts)
+    energy_kwh = nb_call * extract_energy(impacts)
 
     return {
         'impact_kg': round(gwp_kg, 6),
         'energy_kwh': round(energy_kwh, 6),
+        'method': 'ecologits',
+        'confidence': 'low',
         'level': get_level(gwp_kg),
-        'message': f"Impact estimé via ecologits (LLM Call)"
+        'message': "Impact estimé via ecologits (LLM Call)"
     }

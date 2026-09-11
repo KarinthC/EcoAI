@@ -120,7 +120,12 @@ pip install -r requirements.txt
 pytest tests/
 ```
 
-Pour l’instant, un test vérifie les combinaisons valides de provider/modèle pour les nœuds LLM Call (tests/test_llm_call.py). Ajoutez vos propres tests au fur et à mesure.
+Les tests disponibles :
+
+- `tests/test_llm_call.py` : combinaisons valides de provider/modèle pour les nœuds LLM Call.
+- `tests/test_acv.py` : moteur ACV (linéarité heures/nb_gpu), parc serveurs/GPUs et nœuds Entrainement/Inférence.
+
+Ajoutez vos propres tests au fur et à mesure.
 
 
 ## Structure détaillée du projet

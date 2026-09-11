@@ -1,5 +1,5 @@
 import pytest
-from app.services.carbon.llm_call import compute
+from app.services.carbon.ecologits.llm_call import compute
 
 # ============================================================================
 # Liste exhaustive des combinaisons (provider, model) valides
