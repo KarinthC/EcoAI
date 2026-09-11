@@ -146,14 +146,19 @@ backend/
 │   │   ├── pipeline.py         # Table pipelines (id, user_id, nom, JSON du graphe)
 │   │   └── user.py             # Table users (id, public_id, username, dates)
 │   ├── services/               # Logique métier (appelée par les blueprints)
-│   │   ├── carbon/             # Calcul d’impact carbone par type de nœud
-│   │   │   ├── common.py       # Fonctions partagées (seuils, extraction GWP, équivalences)
-│   │   │   ├── datasource.py   # Nœud “Données”
-│   │   │   ├── training.py     # Nœud “Entrainement”
-│   │   │   ├── inference.py    # Nœud “Inférence”
-│   │   │   ├── llm_call.py     # Nœud “LLM Call” (via ecologits)
-│   │   │   ├── llm_expert.py   # Nœud “LLM Expert” (via ecologits)
-│   │   │   └── orchestrator.py # Dispatcheur : appelle le bon module selon le type
+│   │   ├── carbon/             # Calcul d’impact carbone (2 familles de nœuds)
+│   │   │   ├── common.py       # Fonctions partagées (seuils, extraction GWP/énergie)
+│   │   │   ├── equivalences.py # Équivalences parlantes (streaming, marche, course, VE)
+│   │   │   ├── orchestrator.py # Dispatcheur : label -> compute() du bon module
+│   │   │   ├── acv/            # Famille ACV (données documentées, multi-indicateurs PEF)
+│   │   │   │   ├── gpu_models.py # Modèles ACV GPUs + parc serveurs + moteur compute_acv()
+│   │   │   │   ├── datasource.py # Nœud “Données”
+│   │   │   │   ├── training.py   # Nœud “Entrainement” (charge 100%)
+│   │   │   │   └── inference.py  # Nœud “Inférence” (charge 33%)
+│   │   │   └── ecologits/      # Famille ecologits (estimations, vouée à évoluer)
+│   │   │       ├── llm_call.py   # Nœud “LLM Call”
+│   │   │       ├── llm_expert.py # Nœud “LLM Expert”
+│   │   │       └── video.py      # Nœud “Video Generation”
 │   │   ├── pipeline_service.py # CRUD pipelines
 │   │   └── user_service.py     # Gestion des utilisateurs (cookie session)
 │   ├── config.py               # Configuration Flask (variables d’environnement)
@@ -169,7 +174,7 @@ backend/
 
     Les services interagissent avec les modèles (models/) pour lire/écrire en base.
 
-    Le sous‑package carbon/ est isolé : l’orchestrateur parcourt les nœuds et appelle la fonction compute() du module correspondant.
+    Le sous‑package carbon/ est isolé et organisé en deux familles de nœuds : `acv/` (calculs ACV documentés, multi‑indicateurs PEF, confiance `high`) et `ecologits/` (estimations, confiance `low`, vouées à évoluer). L’orchestrateur mappe chaque label de nœud vers la fonction `compute()` du module correspondant, puis agrège les impacts et les indicateurs.
 
     Les extensions (extensions.py) sont importées dans la factory pour lier SQLAlchemy et Flask-Migrate à l’application.
 
