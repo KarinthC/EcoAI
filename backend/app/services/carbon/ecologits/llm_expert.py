@@ -3,7 +3,10 @@ import logging
 from ecologits.impacts.llm import compute_llm_impacts
 from ecologits.electricity_mix_repository import electricity_mixes
 
-from ..common import get_level, extract_gwp, extract_energy, normalize_location
+from ..common import (
+    get_level, extract_gwp, extract_energy, normalize_location,
+    extract_ecologits_indicators,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +57,7 @@ def compute(params: dict) -> dict:
     return {
         'impact_kg': round(gwp_kg, 6),
         'energy_kwh': round(energy_kwh, 6),
+        'indicators': extract_ecologits_indicators(impacts, nb_call),
         'method': 'ecologits',
         'confidence': 'low',
         'level': get_level(gwp_kg),
