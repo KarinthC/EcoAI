@@ -48,6 +48,16 @@ function getFieldOptions(field) {
   return []
 }
 
+// Une option peut être soit une simple chaîne, soit un objet { value, label }.
+// On normalise ici pour que le rendu du <select> gère les deux formats.
+function optOptionValue(opt) {
+  return opt && typeof opt === 'object' ? opt.value : opt
+}
+
+function optOptionLabel(opt) {
+  return opt && typeof opt === 'object' ? opt.label : opt
+}
+
 // Sauvegarde les paramètres
 function save() {
   if (props.node) {
@@ -80,9 +90,9 @@ function save() {
           </option>
           <option
             v-for="opt in getFieldOptions(field)"
-            :key="opt"
-            :value="opt"
-          >{{ opt }}</option>
+            :key="optOptionValue(opt)"
+            :value="optOptionValue(opt)"
+          >{{ optOptionLabel(opt) }}</option>
         </select>
 
         <!-- Sinon, champ texte/nombre -->

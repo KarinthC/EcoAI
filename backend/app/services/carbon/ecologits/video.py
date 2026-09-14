@@ -2,7 +2,7 @@
 import logging
 from ecologits.estimations import video_impacts
 
-from ..common import get_level, extract_gwp, extract_energy
+from ..common import get_level, extract_gwp, extract_energy, normalize_location
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,8 @@ def compute(params: dict) -> dict:
 
     # Paramètres optionnels
     kwargs = {}
-    if 'datacenter_location' in params and params['datacenter_location']:
-        kwargs['datacenter_location'] = params['datacenter_location']
+    # Localisation du datacenter (ISO 3166-1 alpha-3). WOR (monde) par défaut.
+    kwargs['datacenter_location'] = normalize_location(params.get('datacenter_location'))
     if 'datacenter_pue' in params and params['datacenter_pue'] is not None:
         try:
             kwargs['datacenter_pue'] = float(params['datacenter_pue'])

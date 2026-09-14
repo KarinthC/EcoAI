@@ -3,6 +3,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Zone de mix électrique par défaut : WOR = moyenne mondiale (comportement ecologits).
+DEFAULT_LOCATION = "WOR"
+
+
+def normalize_location(location) -> str:
+    """Normalise un code de localisation datacenter (ISO 3166-1 alpha-3).
+
+    Retourne DEFAULT_LOCATION ("WOR") si la valeur est absente, vide ou None.
+    La valeur est mise en majuscules pour tolérer les saisies en minuscules.
+    """
+    if location is None:
+        return DEFAULT_LOCATION
+    location = str(location).strip().upper()
+    return location or DEFAULT_LOCATION
+
+
 def get_level(impact_kg: float) -> str:
     """Détermine le niveau de criticité en fonction de l'impact."""
     if impact_kg < 0.1:

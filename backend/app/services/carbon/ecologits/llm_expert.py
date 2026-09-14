@@ -1,8 +1,9 @@
 # backend/app/services/carbon/ecologits/llm_expert.py
 import logging
 from ecologits.impacts.llm import compute_llm_impacts
+from ecologits.electricity_mix_repository import electricity_mixes
 
-from ..common import get_level, extract_gwp, extract_energy
+from ..common import get_level, extract_gwp, extract_energy, normalize_location
 
 logger = logging.getLogger(__name__)
 
@@ -14,14 +15,25 @@ def compute(params: dict) -> dict:
     request_latency = float(params.get('request_latency', 100))  # ms
     nb_call = int(params.get('nb_call') or 1)
 
-    mix_gwp = float(params.get('mix_gwp' or 0.508759))
-    mix_adpe = float(params.get('mix_adpe' or 0.00004420127244))
-    mix_pe = float(params.get('mix_pe' or 4.484))
+    # Localisation du datacenter : determine le mix electrique (GWP, ADPe, PE, WUE).
+    # WOR (moyenne mondiale) par defaut si non fourni.
+    datacenter_location = normalize_location(params.get('datacenter_location'))
+    mix = electricity_mixes.find_electricity_mix(zone=datacenter_location)
+    if mix is None:
+        logger.warning(
+            "Zone de mix electrique inconnue '%s', repli sur WOR",
+            datacenter_location
+        )
+        mix = electricity_mixes.find_electricity_mix(zone="WOR")
+
+    mix_gwp = mix.gwp
+    mix_adpe = mix.adpe
+    mix_pe = mix.pe
 
     # PUE moyen mondial ~1.58, WUE ~1.8 L/kWh, etc. Ajuste selon tes sources.
-    datacenter_pue = float(params.get('datacenter_pue' or 1.58))
-    datacenter_wue = float(params.get('datacenter_wue' or 1.8))
-    if_electricity_mix_wue = float(params.get('if_electricity_mix_wue' or 0.0))  # souvent indisponible
+    datacenter_pue = float(params.get('datacenter_pue') or 1.58)
+    datacenter_wue = float(params.get('datacenter_wue') or 1.8)
+    if_electricity_mix_wue = mix.wue
 
     impacts = compute_llm_impacts(
         model_active_parameter_count=active_params,
