@@ -2,7 +2,12 @@
 import logging
 
 # Famille ACV (données ACV documentées, multi-indicateurs)
-from .acv import datasource as acv_datasource, training as acv_training, inference as acv_inference
+from .acv import (
+    datasource as acv_datasource,
+    training as acv_training,
+    inference as acv_inference,
+    operator as acv_operator,
+)
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, llm_expert, video
 from .common import (
@@ -25,6 +30,7 @@ NODE_COMPUTERS = {
     'Données': acv_datasource.compute,
     'Entrainement': acv_training.compute,
     'Inférence': acv_inference.compute,
+    'Opérateur': acv_operator.compute,
     # --- Famille Ecologits (voués à changer) ---
     'LLM Call': llm_call.compute,
     'LLM Expert': llm_expert.compute,

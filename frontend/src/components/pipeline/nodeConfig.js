@@ -24,6 +24,14 @@ const GPU_SERVER_FIELDS = [
   { key: 'heures', label: "Nombre d'heures", type: 'number', placeholder: '1' },
 ]
 
+// Champs du nœud Opérateur : nom libre + paramètres matériels (calcul ACV),
+// avec un taux de charge paramétrable (défaut 100% si vide).
+const OPERATOR_FIELDS = [
+  { key: 'nom', label: 'Nom', type: 'text' },
+  ...GPU_SERVER_FIELDS,
+  { key: 'charge', label: 'Taux de charge (%)', type: 'number', placeholder: '100' },
+]
+
 // Zones de mix électrique supportées par ecologits (codes ISO 3166-1 alpha-3).
 // Doit rester cohérent avec ecologits/data/electricity_mixes.json (repère : WOR = monde).
 // La localisation du datacenter détermine le mix (GWP, ADPe, PE, WUE) utilisé dans le calcul.
@@ -246,6 +254,7 @@ export const DATACENTER_LOCATIONS = [
 
 export const nodeFields = {
    'Données': [
+    { key: 'nom', label: 'Nom', type: 'text' },
     {
       key: 'format',
       label: 'Format',
@@ -269,11 +278,7 @@ export const nodeFields = {
 
   'Inférence': GPU_SERVER_FIELDS,
 
-  'Opérateur': [
-      { key: 'nom', label: 'nom', type: 'text'  },
-      { key: 'type', label: 'type', type: 'text'  }
-
-  ],
+  'Opérateur': OPERATOR_FIELDS,
 
 
   'LLM Call': [

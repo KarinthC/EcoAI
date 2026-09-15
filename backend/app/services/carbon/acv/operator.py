@@ -1,0 +1,88 @@
+"""Nœud « Opérateur » — calcul d'impact via le modèle ACV.
+
+L'opérateur représente l'exécution d'une charge sur un GPU serveur documenté
+(ACV), comme l'entraînement ou l'inférence, MAIS :
+
+  - la charge (taux d'utilisation) est paramétrable par l'utilisateur
+    (défaut 100% si vide ou absent) ;
+  - si aucun paramètre matériel n'est fourni (pas de GPU / pas d'heures),
+    l'impact est NUL : un opérateur peut n'avoir qu'un nom et ne tourner
+    nulle part.
+
+Paramètres attendus (envoyés par le front) :
+  - nom       : nom libre de l'opérateur (n'intervient pas dans le calcul)
+  - server_id : identifiant du serveur (ex: "lig1")
+  - gpu_type  : type de GPU disponible sur le serveur (ex: "GTX 1080 Ti")
+  - nb_gpu    : nombre de GPUs utilisés en parallèle
+  - heures    : nombre d'heures d'utilisation (par GPU)
+  - charge    : taux de charge en pourcent (0..100), défaut 100
+"""
+
+import logging
+
+from ..common import get_level_from_indicators
+from .gpu_models import compute_acv, available_gpus, gpu_exists_on_server
+
+logger = logging.getLogger(__name__)
+
+# Taux de charge par défaut (pourcent) : 100%.
+DEFAULT_CHARGE_PERCENT = 100.0
+
+
+def _impact_nul(message: str = '') -> dict:
+    """Résultat neutre : aucun impact (opérateur non déployé)."""
+    return {
+        'impact_kg': 0.0,
+        'energy_kwh': 0.0,
+        'indicators': {},
+        'method': 'acv',
+        'confidence': 'high',
+        'level': 'low',
+        'message': message,
+    }
+
+
+def compute(params: dict) -> dict:
+    # Sans matériel renseigné, l'opérateur ne tourne nulle part : impact nul.
+    server_id = params.get('server_id')
+    gpu_type = params.get('gpu_type')
+    heures = params.get('heures')
+
+    if not server_id or not gpu_type or heures in (None, '', 0, '0'):
+        return _impact_nul("Opérateur sans matériel : impact nul.")
+
+    heures = float(heures)
+    nb_gpu = int(params.get('nb_gpu') or 1)
+
+    # Taux de charge : vide/absent -> 100%. Saisi en pourcent, converti en fraction.
+    charge_percent = params.get('charge')
+    if charge_percent in (None, ''):
+        charge_percent = DEFAULT_CHARGE_PERCENT
+    charge = max(0.0, min(1.0, float(charge_percent) / 100.0))
+
+    if not gpu_exists_on_server(server_id, gpu_type):
+        raise ValueError(
+            f"Le GPU '{gpu_type}' n'est pas disponible sur le serveur '{server_id}' "
+            f"(disponibles : {available_gpus(server_id)})"
+        )
+
+    acv = compute_acv(gpu_type, hours=heures, charge=charge, nb_gpu=nb_gpu)
+    indicators = acv['indicators']
+    gwp = indicators['PEF-GWP']
+
+    message = (
+        f"Impact ACV pour {heures:.2f} h d'opération sur "
+        f"{nb_gpu} x {gpu_type} (serveur {server_id}, charge {charge * 100:.0f}%, mix FR)."
+    )
+    if gwp >= 20:
+        message += " Impact GWP élevé : réduire la durée ou optimiser le GPU."
+
+    return {
+        'impact_kg': round(gwp, 6),
+        'energy_kwh': round(acv['energy_kwh'], 6),
+        'indicators': indicators,
+        'method': 'acv',
+        'confidence': 'high',
+        'level': get_level_from_indicators(indicators),
+        'message': message,
+    }
