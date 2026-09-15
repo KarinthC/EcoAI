@@ -121,14 +121,6 @@ const { onDragStart } = useDragAndDrop()
       <div
         class="sidebar-node sidebar-node-operator"
         :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Préprocessing')"
-      >
-        Préprocessing
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-operator"
-        :draggable="true"
         @dragstart="onDragStart($event, 'custom', 'Entrainement')"
       >
         Entrainement

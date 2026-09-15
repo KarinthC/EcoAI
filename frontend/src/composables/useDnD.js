@@ -25,9 +25,7 @@ export default function useDragAndDrop() {
   'LLM Call': 'node-border-operator',        
   'LLM Expert': 'node-border-operator',
   'Video Generation': 'node-border-operator',
-  'Opérateur': 'node-border-operator',
-  'Préprocessing': 'node-border-operator'
-
+  'Opérateur': 'node-border-operator'
   }
 
 

@@ -208,7 +208,6 @@ export const DATACENTER_LOCATIONS = [
   { value: 'SEN', label: '🇸🇳 Sénégal' },
   { value: 'TJK', label: '🇹🇯 Tadjikistan' },
   { value: 'TZA', label: '🇹🇿 Tanzanie' },
-  { value: 'TWN', label: '🇹🇼 Taïwan' },
   { value: 'TCD', label: '🇹🇩 Tchad' },
   { value: 'CZE', label: '🇨🇿 Tchéquie' },
   { value: 'THA', label: '🇹🇭 Thaïlande' },
@@ -269,13 +268,6 @@ export const nodeFields = {
   'Entrainement': GPU_SERVER_FIELDS,
 
   'Inférence': GPU_SERVER_FIELDS,
-
- 'Préprocessing': [
-    { key: 'Volume', label: 'Volume (Go)', type: 'number', placeholder: '50' },
-    { key: 'temps', label: 'temps (s)', type: 'number', placeholder: '15' }
-
-  ],
-
 
   'Opérateur': [
       { key: 'nom', label: 'nom', type: 'text'  },
