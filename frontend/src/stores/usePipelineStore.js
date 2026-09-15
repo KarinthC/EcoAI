@@ -232,10 +232,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
             node.data = {
                 ...node.data,
                 impactLevel: item.level,
-                impact_kg: item.impact_kg,
-                impactMessage: item.message || '',
                 ...(item.energy_kwh !== undefined && { energy_kwh: item.energy_kwh }),
-                ...(item.equivalences && { equivalences: item.equivalences }),
                 ...(item.indicators && { indicators: item.indicators }),
                 ...(item.method && { method: item.method }),
                 ...(item.confidence && { confidence: item.confidence })
@@ -254,8 +251,6 @@ export const usePipelineStore = defineStore('pipeline', () => {
     if (activePipeline.value) {
         activePipeline.value.nodes.forEach(node => {
         delete node.data.impactLevel
-        delete node.data.impact_kg
-        delete node.data.impactMessage
         })
     }}
 

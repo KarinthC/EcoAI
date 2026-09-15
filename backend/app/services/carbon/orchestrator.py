@@ -5,7 +5,6 @@ import logging
 from .acv import datasource as acv_datasource, training as acv_training, inference as acv_inference
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, llm_expert, video
-from .equivalences import compute_global_equivalences, format_equivalences
 from .common import (
     ACV_CRITERIA, CRITERIA_KEYS, ECOLOGITS_CRITERIA, WATER_ECOLOGITS_KEY,
 )
@@ -187,7 +186,6 @@ def compute_impact(pipeline: dict) -> dict:
         # ajouter un nœud ne casse donc rien ici.
         if 'energy_kwh' in result:
             node_entry['energy_kwh'] = result['energy_kwh']
-            node_entry['equivalences'] = format_equivalences(node_impact, result['energy_kwh'])
 
         # Bloc d'indicateurs : tous les critères portés par le nœud.
         if 'indicators' in result:
@@ -203,9 +201,6 @@ def compute_impact(pipeline: dict) -> dict:
     if total_impact > 10:
         global_suggestions.append("Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact.")
 
-    # Équivalences globales basées sur ecologits
-    equivalences = compute_global_equivalences(total_impact)
-
     # Agrégat de tous les critères + construction de l'affichage "à égalité".
     total_indicators = _aggregate_indicators(nodes_analysis)
     has_ecologits = _has_ecologits_node(nodes_analysis)
@@ -218,6 +213,5 @@ def compute_impact(pipeline: dict) -> dict:
         'has_ecologits_node': has_ecologits,
         'global_level': _global_level(criteria),
         'nodes': nodes_analysis,
-        'suggestions': global_suggestions,
-        'equivalences': equivalences
+        'suggestions': global_suggestions
     }

@@ -169,6 +169,40 @@ ECOLOGITS_CRITERIA = {
 }
 
 
+def get_level_from_indicators(indicators: dict) -> str:
+    """Niveau de criticité d'un nœud = PIRE facteur (ratio valeur/seuil mensuel ADEME).
+
+    Le GWP (CO₂) n'a pas de statut supérieur : tous les indicateurs sont
+    comparés à leur seuil mensuel par habitant, et c'est le ratio le plus
+    élevé qui détermine le niveau.
+
+    Paliers (sur le ratio maximum) :
+      - ratio >= 0.15  -> 'high'   (rouge)
+      - ratio >= 0.03  -> 'medium' (jaune)
+      - sinon          -> 'low'    (vert)
+    """
+    worst = 0.0
+    for key, value in (indicators or {}).items():
+        # L'eau ecologits (litres) n'est pas comparable aux seuils (m³ eq).
+        if key == WATER_ECOLOGITS_KEY:
+            continue
+        meta = ACV_CRITERIA.get(key)
+        if not meta or not meta.get('pb_monthly'):
+            continue
+        try:
+            ratio = abs(float(value)) / meta['pb_monthly']
+        except (TypeError, ValueError):
+            continue
+        if ratio > worst:
+            worst = ratio
+
+    if worst >= 0.15:
+        return 'high'
+    if worst >= 0.03:
+        return 'medium'
+    return 'low'
+
+
 
 def _extract_value(impact_obj) -> float:
     """

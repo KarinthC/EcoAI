@@ -1,6 +1,6 @@
 <script setup>
+import { computed } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
-import { watch } from 'vue'
 
 const props = defineProps({
   node: Object
@@ -8,6 +8,88 @@ const props = defineProps({
 
 const store = usePipelineStore()
 
+// Libellé du niveau d'impact (couleur appliquée via la classe impact-level-*).
+const levelLabel = computed(() => {
+  const level = props.node?.data?.impactLevel
+  if (level === 'high') return 'Impact élevé'
+  if (level === 'medium') return 'Impact moyen'
+  if (level === 'low') return 'Impact faible'
+  return null
+})
+
+// Mapping clé d'indicateur -> unité, construit depuis les critères de l'analyse.
+const unitByKey = computed(() => {
+  const map = {}
+  for (const c of (store.analysisResult?.criteria || [])) {
+    map[c.key] = c.unit
+  }
+  // L'eau ecologits est exposée en litres (clé dédiée, absente de criteria).
+  map['PEF-WU_ecologits'] = 'L (ecologits)'
+  return map
+})
+
+function unitFor(key) {
+  return unitByKey.value[key] || ''
+}
+
+// Indicateurs du nœud, remis dans le MÊME ORDRE que le panel de gauche
+// (ordre de store.analysisResult.criteria), avec nom, valeur, unité.
+// On n'affiche que les indicateurs réellement portés par le nœud.
+const orderedIndicators = computed(() => {
+  const indicators = props.node?.data?.indicators
+  if (!indicators) return []
+
+  const rows = []
+  const handled = new Set()
+
+  for (const c of (store.analysisResult?.criteria || [])) {
+    const key = c.key
+    if (!(key in indicators)) continue
+    handled.add(key)
+    rows.push({
+      key,
+      name: c.label,
+      value: indicators[key],
+      unit: c.unit,
+      // Ligne « eau » ecologits affichée juste après PEF-WU.
+      extraEcologits: key === 'PEF-WU' && ('PEF-WU_ecologits' in indicators)
+        ? indicators['PEF-WU_ecologits']
+        : null,
+    })
+    if (key === 'PEF-WU') handled.add('PEF-WU_ecologits')
+  }
+
+  // Indicateurs éventuels hors criteria (ex. clés inconnues) : repli.
+  for (const [key, value] of Object.entries(indicators)) {
+    if (handled.has(key)) continue
+    rows.push({
+      key,
+      name: fallbackName(key),
+      value,
+      unit: unitFor(key),
+      extraEcologits: null,
+    })
+  }
+
+  return rows
+})
+
+// Nom de repli pour les clés absentes de criteria.
+function fallbackName(key) {
+  if (key === 'PEF-WU_ecologits') return "Utilisation de l'eau"
+  return String(key).replace(/^PEF-/, '')
+}
+
+// Formatage identique au panel de gauche.
+function formatValue(v) {
+  if (v === null || v === undefined) return '—'
+  if (v === 0) return '0'
+  const abs = Math.abs(v)
+  if (abs >= 1e-3 && abs < 1e5) {
+    return v.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+  }
+  return v.toExponential(2)
+}
 </script>
 
 <template>
@@ -17,40 +99,40 @@ const store = usePipelineStore()
       <button class="close-btn" @click="store.clearSelection">✕</button>
     </div>
     <div class="panel-body">
-      <div class="impact-value" :class="'impact-text-' + node.data.impactLevel">
-        {{ node.data.impact_kg }} kg CO₂
-      </div>
-      <div class="impact-level-badge" :class="'badge-' + node.data.impactLevel">
-        {{ node.data.impactLevel === 'low' ? 'Faible' : node.data.impactLevel === 'medium' ? 'Moyen' : 'Élevé' }}
+      <!-- Niveau d'impact : juste sous le nom du nœud, coloré (rouge/jaune/vert) -->
+      <div
+        v-if="levelLabel"
+        class="impact-level-label"
+        :class="'impact-level-' + node.data.impactLevel"
+      >
+        {{ levelLabel }}
       </div>
 
-      <!-- Fiabilité de la méthode de calcul (acv = données ACV, ecologits = ordre de grandeur) -->
+      <!-- Fiabilité de la méthode de calcul -->
       <div v-if="node.data.confidence" class="confidence" :class="'confidence-' + node.data.confidence">
-        <span v-if="node.data.confidence === 'high'">✔️ Confiance élevée (données ACV)</span>
-        <span v-else-if="node.data.confidence === 'low'">⚠️ Confiance faible (estimation peu précise)</span>
+        <span v-if="node.data.confidence === 'high'">✔️ Confiance élevée (données ADEME)</span>
+        <template v-else-if="node.data.confidence === 'low'">
+          <span class="confidence-title">Confiance faible</span>
+          <span class="confidence-detail">⚠️ Manque de transparence des acteurs</span>
+        </template>
         <span v-else>Confiance : {{ node.data.confidence }}</span>
       </div>
 
-      <p v-if="node.data.impactMessage" class="impact-message">{{ node.data.impactMessage }}</p>
-
-      <!-- Indicateurs ACV (PEF) : le GWP n'est qu'un indicateur parmi d'autres -->
-      <div v-if="node.data.indicators" class="indicators-box">
-        <h4>Indicateurs ACV (PEF)</h4>
+      <!-- Indicateurs (PEF) : mêmes noms et même ordre que le panel de gauche -->
+      <div v-if="orderedIndicators.length" class="indicators-box">
+        <h4>Indicateurs</h4>
         <ul>
-          <li v-for="(value, key) in node.data.indicators" :key="key">
-            {{ key }} : {{ Number(value).toExponential(3) }}
+          <li v-for="row in orderedIndicators" :key="row.key" class="indicator-item">
+            <span class="indicator-name">{{ row.name }}</span>
+            <span class="indicator-value">
+              {{ formatValue(row.value) }}
+              <span v-if="row.unit" class="indicator-unit">{{ row.unit }}</span>
+            </span>
+            <span v-if="row.extraEcologits !== null" class="indicator-extra">
+              + {{ formatValue(row.extraEcologits) }}
+              <span class="indicator-unit">L (ecologits)</span>
+            </span>
           </li>
-        </ul>
-      </div>
-
-      <!-- Affichage des équivalences si le nœud est LLM -->
-      <div v-if="node.data.equivalences" class="equivalences-box">
-        <h4>Équivalences</h4>
-        <ul>
-          <li v-if="node.data.equivalences.streaming">{{ node.data.equivalences.streaming }}</li>
-          <li v-if="node.data.equivalences.walking">{{ node.data.equivalences.walking }}</li>
-          <li v-if="node.data.equivalences.running">{{ node.data.equivalences.running }}</li>
-          <li v-if="node.data.equivalences.ev">{{ node.data.equivalences.ev }}</li>
         </ul>
       </div>
     </div>
@@ -76,21 +158,14 @@ const store = usePipelineStore()
 .panel-header h3 { margin: 0; font-size: 1rem; }
 .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
 .panel-body { padding: 1rem; }
-.impact-value { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; }
-.impact-text-low { color: #48bb78; }
-.impact-text-medium { color: #d69e2e; }
-.impact-text-high { color: #e53e3e; }
-.impact-level-badge {
-  display: inline-block;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: white;
-  margin-bottom: 1rem;
+.impact-level-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
 }
-.badge-low { background: #48bb78; }
-.badge-medium { background: #d69e2e; }
-.badge-high { background: #e53e3e; }
+.impact-level-low { color: #38a169; }
+.impact-level-medium { color: #d69e2e; }
+.impact-level-high { color: #e53e3e; }
 .confidence {
   display: block;
   font-size: 0.8rem;
@@ -106,6 +181,14 @@ const store = usePipelineStore()
   background: #fefcbf;
   color: #744210;
 }
+.confidence-low .confidence-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.confidence-low .confidence-detail {
+  display: block;
+}
 .indicators-box {
   margin-top: 1rem;
   padding: 0.5rem;
@@ -119,29 +202,24 @@ const store = usePipelineStore()
 }
 .indicators-box ul {
   list-style: none;
-  padding-left: 0.5rem;
+  padding-left: 0;
 }
-.indicators-box li {
-  margin-bottom: 0.2rem;
-  font-family: monospace;
+.indicator-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
 }
-.impact-message { font-size: 0.9rem; color: #4a5568; }
-.equivalences-box {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #f7fafc;
-  border-radius: 6px;
-  font-size: 0.85rem;
+.indicator-name {
+  font-weight: 600;
+  color: #2d3748;
 }
-.equivalences-box h4 {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
+.indicator-value {
+  font-variant-numeric: tabular-nums;
 }
-.equivalences-box ul {
-  list-style: none;
-  padding-left: 0.5rem;
+.indicator-extra {
+  font-variant-numeric: tabular-nums;
 }
-.equivalences-box li {
-  margin-bottom: 0.25rem;
+.indicator-unit {
+  color: #718096;
 }
 </style>

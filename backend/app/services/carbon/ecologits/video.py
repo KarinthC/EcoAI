@@ -3,7 +3,7 @@ import logging
 from ecologits.estimations import video_impacts
 
 from ..common import (
-    get_level, extract_gwp, extract_energy, normalize_location,
+    get_level_from_indicators, extract_gwp, extract_energy, normalize_location,
     extract_ecologits_indicators,
 )
 
@@ -56,7 +56,8 @@ def compute(params: dict) -> dict:
 
     gwp_kg = nb_call * extract_gwp(impacts)
     energy_kwh = nb_call * extract_energy(impacts)
-    level = get_level(gwp_kg)
+    indicators = extract_ecologits_indicators(impacts, nb_call)
+    level = get_level_from_indicators(indicators)
 
     # Construction du message avec conseils personnalisés
     suggestions = []
@@ -83,7 +84,7 @@ def compute(params: dict) -> dict:
     return {
         'impact_kg': round(gwp_kg, 6),
         'energy_kwh': round(energy_kwh, 6),
-        'indicators': extract_ecologits_indicators(impacts, nb_call),
+        'indicators': indicators,
         'method': 'ecologits',
         'confidence': 'low',
         'level': level,

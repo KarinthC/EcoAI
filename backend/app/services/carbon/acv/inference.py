@@ -14,7 +14,7 @@ Paramètres attendus (envoyés par le front) :
 
 import logging
 
-from ..common import get_level
+from ..common import get_level_from_indicators
 from .gpu_models import compute_acv, available_gpus, gpu_exists_on_server
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,6 @@ def compute(params: dict) -> dict:
         'indicators': indicators,
         'method': 'acv',
         'confidence': 'high',
-        'level': get_level(gwp),
+        'level': get_level_from_indicators(indicators),
         'message': message,
     }
