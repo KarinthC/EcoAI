@@ -24,6 +24,8 @@ pour l'agrégat `total_impact_kg` du front (transition en cours).
 
 import logging
 
+from . import parametric
+
 logger = logging.getLogger(__name__)
 
 # Hypothèses par défaut (issues du rapport ADEME)
@@ -81,6 +83,13 @@ GPUS = {
             "PEF-WU": 4.56e+2,        # m3 eq
         },
     },
+    # Carte non documentée « prête à l'emploi » dans le rapport : ses impacts
+    # embarqués sont reconstruits via le MODÈLE PARAMÉTRIQUE ADEME (Tableau 42).
+    # `tdp_w` = TDP de la carte ENTIÈRE (H100 NVL = 2 x 350 W = 700 W).
+    "H100 NVL 96Go": {
+        "tdp_w": parametric.PARAMETRIC_GPUS["H100 NVL 96Go"]["tdp_w"],
+        "embedded_total_card": parametric.embedded_total_card("H100 NVL 96Go"),
+    },
 }
 
 
@@ -98,7 +107,7 @@ SERVERS = {
     "lig7": ["GTX 1080 Ti"],
     "lig8": ["GTX 1080 Ti"],
     "lig9": ["GTX 1080 Ti"],
-    "lig10": ["GTX 1080 Ti"],
+    "lig10": ["H100 NVL 96Go"],
 }
 
 

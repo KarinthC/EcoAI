@@ -12,7 +12,7 @@ const SERVERS = {
   lig7: ['GTX 1080 Ti'],
   lig8: ['GTX 1080 Ti'],
   lig9: ['GTX 1080 Ti'],
-  lig10: ['GTX 1080 Ti'],
+  lig10: ['H100 NVL 96Go'],
 }
 
 // Champs communs aux nœuds Entrainement et Inférence (calcul ACV).
@@ -20,7 +20,7 @@ const SERVERS = {
 const GPU_SERVER_FIELDS = [
   { key: 'server_id', label: 'Serveur', type: 'select', options: Object.keys(SERVERS) },
   { key: 'gpu_type', label: 'GPU', type: 'select', dependsOn: 'server_id', optionsMapping: SERVERS },
-  { key: 'nb_gpu', label: 'Nombre de GPU', type: 'number', placeholder: '1' },
+  { key: 'nb_gpu', label: 'Nombre de cartes GPU', type: 'number', placeholder: '1' },
   { key: 'heures', label: "Nombre d'heures", type: 'number', placeholder: '1' },
 ]
 
