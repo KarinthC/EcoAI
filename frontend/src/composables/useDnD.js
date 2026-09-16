@@ -18,7 +18,8 @@ export default function useDragAndDrop() {
   const store = usePipelineStore()
 
   const borderClassMap = {
-  'Données': 'node-border-datasource',
+  'Données persistantes': 'node-border-datasource',
+  'Données SSD temporaire': 'node-border-datasource',
   'Modèle ML' : 'node-border-ml',
   'Entrainement': 'node-border-operator',
   'Inférence': 'node-border-operator',

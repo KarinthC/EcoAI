@@ -3,10 +3,10 @@ import logging
 
 # Famille ACV (données ACV documentées, multi-indicateurs)
 from .acv import (
-    datasource as acv_datasource,
     training as acv_training,
     inference as acv_inference,
     operator as acv_operator,
+    storage as acv_storage,
 )
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, llm_expert, video
@@ -26,8 +26,8 @@ ECOLOGITS_METHOD = 'ecologits'
 # Dispatch explicite label -> fonction compute.
 # Les nœuds sont regroupés par famille : ACV (stable) puis Ecologits (volatile).
 NODE_COMPUTERS = {
-    # --- Famille ACV ---
-    'Données': acv_datasource.compute,
+    'Données persistantes': acv_storage.compute_hdd,
+    'Données SSD temporaire': acv_storage.compute_ssd,
     'Entrainement': acv_training.compute,
     'Inférence': acv_inference.compute,
     'Opérateur': acv_operator.compute,

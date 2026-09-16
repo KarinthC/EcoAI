@@ -111,6 +111,10 @@ function formatValue(v) {
       <!-- Fiabilité de la méthode de calcul -->
       <div v-if="node.data.confidence" class="confidence" :class="'confidence-' + node.data.confidence">
         <span v-if="node.data.confidence === 'high'">✔️ Confiance élevée (données ADEME)</span>
+        <template v-else-if="node.data.confidence === 'medium'">
+          <span class="confidence-title">Confiance moyenne</span>
+          <span class="confidence-detail">Données d'infrastructure extrapolées, données d'impact ADEME</span>
+        </template>
         <template v-else-if="node.data.confidence === 'low'">
           <span class="confidence-title">Confiance faible</span>
           <span class="confidence-detail">⚠️ Manque de transparence des acteurs</span>
@@ -176,6 +180,18 @@ function formatValue(v) {
 .confidence-high {
   background: #c6f6d5;
   color: #22543d;
+}
+.confidence-medium {
+  background: #feebc8;
+  color: #7b341e;
+}
+.confidence-medium .confidence-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+.confidence-medium .confidence-detail {
+  display: block;
 }
 .confidence-low {
   background: #fefcbf;

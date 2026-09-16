@@ -32,6 +32,36 @@ const OPERATOR_FIELDS = [
   { key: 'charge', label: 'Taux de charge (%)', type: 'number', placeholder: '100' },
 ]
 
+// Champs COMMUNS aux nœuds de stockage (hors durée) :
+// le média (HDD/SSD) est forcé côté backend par le label ; les champs `format` et
+// `serveur_stockage` sont conservés pour la traçabilité et les recommandations
+// (suggérer un autre type de stockage si l'empreinte est élevée).
+const STORAGE_COMMON_FIELDS = [
+  { key: 'nom', label: 'Nom', type: 'text' },
+  {
+    key: 'format',
+    label: 'Format',
+    type: 'select',
+    options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
+  },
+  { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
+]
+
+// Données persistantes (HDD) : le stockage persistant se compte en ANNÉES.
+const STORAGE_PERSISTENT_FIELDS = [
+  ...STORAGE_COMMON_FIELDS,
+  { key: 'duree_ans', label: 'Durée de stockage (années)', type: 'number', placeholder: '1' },
+  { key: 'serveur_stockage', label: 'Serveur de stockage', type: 'select', options: ['LIG SUMMER'] },
+]
+
+// Données SSD temporaire (scratch) : durée en JOURS, purgée après ~30 jours
+// par convention HPC/cloud (défaut = 30 jours).
+const STORAGE_TEMPORARY_FIELDS = [
+  ...STORAGE_COMMON_FIELDS,
+  { key: 'duree_jours', label: 'Durée de stockage (jours)', type: 'number', placeholder: '30' },
+  { key: 'serveur_stockage', label: 'Serveur de stockage', type: 'select', options: ['LIG SUMMER'] },
+]
+
 // Zones de mix électrique supportées par ecologits (codes ISO 3166-1 alpha-3).
 // Doit rester cohérent avec ecologits/data/electricity_mixes.json (repère : WOR = monde).
 // La localisation du datacenter détermine le mix (GWP, ADPe, PE, WUE) utilisé dans le calcul.
@@ -253,27 +283,16 @@ export const DATACENTER_LOCATIONS = [
 ]
 
 export const nodeFields = {
-   'Données': [
-    { key: 'nom', label: 'Nom', type: 'text' },
-    {
-      key: 'format',
-      label: 'Format',
-      type: 'select',
-      options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
-    },
-    { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
-    { key: 'echantillons', label: 'Échantillons', type: 'number', placeholder: '10000' },
-    { key: 'structure ', label: 'structure', type: 'select',   options: ['structuré', 'non structuré']
- }
-
-  ],
-
   'Modèle ML':[
       { key: 'nom', label: 'nom', type: 'text'  },
       { key: 'version', label: 'version', type: 'number'  },
       { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
       { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
   ],
+  'Données persistantes': STORAGE_PERSISTENT_FIELDS,
+
+  'Données SSD temporaire': STORAGE_TEMPORARY_FIELDS,
+
   'Entrainement': GPU_SERVER_FIELDS,
 
   'Inférence': GPU_SERVER_FIELDS,
