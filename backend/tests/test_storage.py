@@ -1,7 +1,7 @@
 """Tests unitaires pour les nœuds de stockage.
 
   - « Données persistantes » (HDD) : durée en ANNÉES (`duree_ans`).
-  - « Données SSD temporaire » (SSD, scratch) : durée en JOURS (`duree_jours`),
+  - « Données SSD temporaires » (SSD, scratch) : durée en JOURS (`duree_jours`),
     purgée après ~30 jours par convention (défaut = 30 j si non fournie).
 
 Couvrent :

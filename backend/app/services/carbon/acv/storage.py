@@ -1,5 +1,5 @@
 # backend/app/services/carbon/acv/storage.py
-"""Nœuds de stockage — « Données persistantes » (HDD) et « Données SSD temporaire » (SSD).
+"""Nœuds de stockage — « Données persistantes » (HDD) et « Données SSD temporaires » (SSD).
 
 Modèle ACV paramétrique couvrant les 16 catégories d'impact EF 3.1, adapté des
 valeurs de l'ACV du stockage SUMMER. L'impact est décomposé en trois postes :
@@ -222,5 +222,5 @@ def compute_hdd(params: dict) -> dict:
 
 def compute_ssd(params: dict) -> dict:
 
-    """Nœud « Données SSD temporaire » : stockage SSD NVMe (SCRATCH / Intensive)."""
+    """Nœud « Données SSD temporaires » : stockage SSD NVMe (SCRATCH / Intensive)."""
     return compute_storage('SSD', params)

@@ -54,7 +54,7 @@ const STORAGE_PERSISTENT_FIELDS = [
   { key: 'serveur_stockage', label: 'Serveur de stockage', type: 'select', options: ['LIG SUMMER'] },
 ]
 
-// Données SSD temporaire (scratch) : durée en JOURS, purgée après ~30 jours
+// Données SSD temporaires (scratch) : durée en JOURS, purgée après ~30 jours
 // par convention HPC/cloud (défaut = 30 jours).
 const STORAGE_TEMPORARY_FIELDS = [
   ...STORAGE_COMMON_FIELDS,
@@ -291,7 +291,7 @@ export const nodeFields = {
   ],
   'Données persistantes': STORAGE_PERSISTENT_FIELDS,
 
-  'Données SSD temporaire': STORAGE_TEMPORARY_FIELDS,
+  'Données SSD temporaires': STORAGE_TEMPORARY_FIELDS,
 
   'Entrainement': GPU_SERVER_FIELDS,
 

@@ -27,7 +27,7 @@ ECOLOGITS_METHOD = 'ecologits'
 # Les nœuds sont regroupés par famille : ACV (stable) puis Ecologits (volatile).
 NODE_COMPUTERS = {
     'Données persistantes': acv_storage.compute_hdd,
-    'Données SSD temporaire': acv_storage.compute_ssd,
+    'Données SSD temporaires': acv_storage.compute_ssd,
     'Entrainement': acv_training.compute,
     'Inférence': acv_inference.compute,
     'Opérateur': acv_operator.compute,

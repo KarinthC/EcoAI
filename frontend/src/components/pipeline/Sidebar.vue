@@ -105,9 +105,9 @@ const { onDragStart } = useDragAndDrop()
       <div
         class="sidebar-node sidebar-node-datasource"
         :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Données SSD temporaire')"
+        @dragstart="onDragStart($event, 'custom', 'Données SSD temporaires')"
       >
-        Données SSD temporaire
+        Données SSD temporaires
       </div>
 
       <div
