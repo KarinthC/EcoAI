@@ -3,6 +3,7 @@ import logging
 
 # Famille ACV (données ACV documentées, multi-indicateurs)
 from .acv import (
+    datasource as acv_datasource,
     training as acv_training,
     inference as acv_inference,
     operator as acv_operator,
@@ -26,6 +27,9 @@ ECOLOGITS_METHOD = 'ecologits'
 # Dispatch explicite label -> fonction compute.
 # Les nœuds sont regroupés par famille : ACV (stable) puis Ecologits (volatile).
 NODE_COMPUTERS = {
+    # Nœuds de représentation, sans calcul (impact neutre).
+    'Données': acv_datasource.compute,
+    'Modèle ML': acv_datasource.compute,
     'Données persistantes': acv_storage.compute_hdd,
     'Données SSD temporaires': acv_storage.compute_ssd,
     'Entrainement': acv_training.compute,
@@ -157,11 +161,16 @@ def compute_impact(pipeline: dict) -> dict:
 
         compute_func = NODE_COMPUTERS.get(label)
         if not compute_func:
+            # Nœud non répertorié : traité comme un nœud de représentation
+            # (aucun calcul, donc exclu de l'affichage d'impact).
             nodes_analysis.append({
                 'id': node_id,
                 'impact_kg': 0.0,
+                'computed': False,
                 'level': 'low',
-                'message': f"Type de nœud inconnu : {label}"
+                'method': 'placeholder',
+                'confidence': 'none',
+                'message': f"Aucun modèle de calcul pour « {label} » (nœud non pris en compte)."
             })
             continue
 
@@ -169,18 +178,26 @@ def compute_impact(pipeline: dict) -> dict:
             result = compute_func(params)
         except Exception as e:
             logger.error(f"Erreur lors du calcul du nœud {label} (id={node_id}): {e}")
+            # En cas d'erreur, on n'affiche pas de faux niveau d'impact.
             nodes_analysis.append({
                 'id': node_id,
                 'impact_kg': 0.0,
+                'computed': False,
                 'level': 'low',
+                'method': 'unknown',
+                'confidence': 'none',
                 'message': f"Erreur de calcul : {e}"
             })
             continue
 
         node_impact = result['impact_kg']
+        # Par défaut un nœud est calculé ; `computed=False` signale un nœud de
+        # représentation (aucun modèle) à exclure de l'affichage d'impact.
+        node_computed = result.get('computed', True)
         node_entry = {
             'id': node_id,
             'impact_kg': node_impact,
+            'computed': node_computed,
             'level': result['level'],
             'message': result.get('message', ''),
             # Métadonnées de méthode (prépare l'UI : ecologits = peu précis).

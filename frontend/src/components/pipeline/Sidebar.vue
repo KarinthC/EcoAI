@@ -97,6 +97,14 @@ const { onDragStart } = useDragAndDrop()
       <div
         class="sidebar-node sidebar-node-datasource"
         :draggable="true"
+        @dragstart="onDragStart($event, 'custom', 'Données')"
+      >
+        Données
+      </div>
+
+      <div
+        class="sidebar-node sidebar-node-datasource"
+        :draggable="true"
         @dragstart="onDragStart($event, 'custom', 'Données persistantes')"
       >
         Données persistantes

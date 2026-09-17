@@ -228,7 +228,17 @@ export const usePipelineStore = defineStore('pipeline', () => {
         if (activePipeline.value && response.data.nodes) {
         response.data.nodes.forEach(item => {
             const node = activePipeline.value.nodes.find(n => n.id === item.id)
-            if (node) {
+            if (!node) return
+            // Nœud non calculé (ex. « Données ») : pas de badge d'impact.
+            if (item.computed === false) {
+                const { impactLevel, ...rest } = node.data
+                node.data = {
+                    ...rest,
+                    ...(item.method && { method: item.method }),
+                    ...(item.confidence && { confidence: item.confidence })
+                }
+                return
+            }
             node.data = {
                 ...node.data,
                 impactLevel: item.level,
@@ -236,7 +246,6 @@ export const usePipelineStore = defineStore('pipeline', () => {
                 ...(item.indicators && { indicators: item.indicators }),
                 ...(item.method && { method: item.method }),
                 ...(item.confidence && { confidence: item.confidence })
-            }
             }
         })
         }

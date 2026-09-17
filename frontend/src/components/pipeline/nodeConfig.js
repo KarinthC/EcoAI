@@ -283,6 +283,20 @@ export const DATACENTER_LOCATIONS = [
 ]
 
 export const nodeFields = {
+  // Nœud « Données » : représentation seule, SANS calcul d'impact (cf. backend
+  // acv/datasource.py). Champs : nom, type de données (clé `format` comme les
+  // autres nœuds), taille. Ni infrastructure ni type de stockage pour l'instant.
+  'Données': [
+    { key: 'nom', label: 'Nom', type: 'text' },
+    {
+      key: 'format',
+      label: 'Type de données',
+      type: 'select',
+      options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
+    },
+    { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
+  ],
+
   'Modèle ML':[
       { key: 'nom', label: 'nom', type: 'text'  },
       { key: 'version', label: 'version', type: 'number'  },

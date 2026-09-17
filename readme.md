@@ -6,7 +6,7 @@ L’application est développée avec **Vue 3** (frontend), **Flask** (backend) 
 
 ## Fonctionnalités principales
 
-- **Éditeur de pipeline visuel** : glisser-déposer de nœuds (Données persistantes, Données SSD temporaires, Entraînement, Inférence, LLM Call, LLM Expert, etc.) sur un canevas, connexion par arêtes dirigées.
+- **Éditeur de pipeline visuel** : glisser-déposer de nœuds (Données, Données persistantes, Données SSD temporaires, Entraînement, Inférence, LLM Call, LLM Expert, etc.) sur un canevas, connexion par arêtes dirigées.
 - **Paramétrage détaillé** : chaque type de nœud expose ses propres paramètres (taille des données, nombre d’epochs, modèle, fournisseur, tokens…) via un panneau latéral.
 - **Analyse carbone** : appel au backend qui utilise la librairie `ecologits` pour les nœuds LLM et des formules paramétrables pour les autres nœuds.
 - **Restitution visuelle** : badges de criticité (vert/orange/rouge) sur les nœuds, bandeau inférieur avec l’empreinte totale et suggestions, panneau de détail par nœud.
@@ -125,6 +125,7 @@ Les tests disponibles :
 - `tests/test_llm_call.py` : combinaisons valides de provider/modèle pour les nœuds LLM Call.
 - `tests/test_acv.py` : moteur ACV (linéarité heures/nb_gpu), parc serveurs/GPUs et nœuds Entrainement/Inférence.
 - `tests/test_storage.py` : nœuds de stockage (Données persistantes HDD / Données SSD temporaires), linéarité et ordres de grandeur.
+- `tests/test_datasource.py` : nœud « Données » (représentation sans calcul : impact 0, `computed=False`).
 
 Ajoutez vos propres tests au fur et à mesure.
 
@@ -153,6 +154,7 @@ backend/
 │   │   │   ├── orchestrator.py # Dispatcheur : label -> compute() du bon module
 │   │   │   ├── acv/            # Famille ACV (données documentées, multi-indicateurs PEF)
 │   │   │   │   ├── gpu_models.py # Modèles ACV GPUs + parc serveurs + moteur compute_acv()
+│   │   │   │   ├── datasource.py # Nœud “Données” (représentation, aucun calcul)
 │   │   │   │   ├── storage.py    # Nœuds “Données persistantes” (HDD) & “Données SSD temporaires” (SSD)
 │   │   │   │   ├── training.py   # Nœud “Entrainement” (charge 100%)
 │   │   │   │   ├── inference.py  # Nœud “Inférence” (charge 33%)

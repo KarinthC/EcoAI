@@ -119,6 +119,9 @@ function formatValue(v) {
           <span class="confidence-title">Confiance faible</span>
           <span class="confidence-detail">⚠️ Manque de transparence des acteurs</span>
         </template>
+        <span v-else-if="node.data.confidence === 'none'">
+          Nœud de représentation : aucun impact calculé.
+        </span>
         <span v-else>Confiance : {{ node.data.confidence }}</span>
       </div>
 
@@ -180,6 +183,10 @@ function formatValue(v) {
 .confidence-high {
   background: #c6f6d5;
   color: #22543d;
+}
+.confidence-none {
+  background: #e2e8f0;
+  color: #4a5568;
 }
 .confidence-medium {
   background: #feebc8;
