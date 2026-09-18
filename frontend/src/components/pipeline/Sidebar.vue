@@ -2,10 +2,32 @@
 import useDragAndDrop from '@/composables/useDnD'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import { ref, computed } from 'vue'
+import axios from 'axios'
 
 const store = usePipelineStore()
 
 const analyzing = ref(false)
+
+// Télécharge l'explication PDF (statique, servie par le backend) des seuils
+// et de la démarche. Récupéré en blob pour déclencher le téléchargement avec
+// un nom de fichier explicite et gérer proprement les erreurs.
+async function downloadSeuilsPdf() {
+  try {
+    const res = await axios.get('/api/docs/seuils-demarche.pdf', {
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'explication-seuils-demarche.pdf'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    console.error('Erreur téléchargement PDF', e)
+  }
+}
 
 async function toggleAnalysis() {
   if (store.isAnalyzing) {
@@ -170,6 +192,12 @@ const { onDragStart } = useDragAndDrop()
       <!-- Libellé du niveau global (couleur de fond = pire facteur) -->
       <div class="impact-level-label">{{ globalLabel }}</div>
 
+      <!-- Téléchargement de l'explication PDF des seuils et de la démarche
+           (visible uniquement en mode analyse). -->
+      <button class="download-btn" @click="downloadSeuilsPdf">
+        📄 Télécharger l'explication des seuils
+      </button>
+
       <!-- Liste des critères ACV, tous affichés à égalité -->
       <div class="criteria-list">
         <div
@@ -304,6 +332,23 @@ aside .nodes > * {
   text-align: center;
   padding: 0.15rem 0 0.4rem;
   letter-spacing: 0.02em;
+}
+
+/* Bouton de téléchargement du PDF (mode analyse uniquement) */
+.download-btn {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.download-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* Liste verticale défilable des critères ACV */
