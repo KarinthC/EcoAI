@@ -1,10 +1,12 @@
 <script setup>
 import useDragAndDrop from '@/composables/useDnD'
+import useImpactColor from '@/composables/useImpactColor'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
 const store = usePipelineStore()
+const { ratioColor } = useImpactColor()
 
 const analyzing = ref(false)
 
@@ -84,18 +86,6 @@ const globalLabel = computed(() => {
 
 // Critères ACV affichés à égalité.
 const criteria = computed(() => store.analysisResult?.criteria || [])
-
-// Couleur d'une valeur via échelle LOGARITHMIQUE sur `ratio` (valeur/seuil).
-function ratioColor(ratio) {
-  if (ratio === null || ratio === undefined) return '#4a5568'
-  if (ratio <= 0) return 'hsl(120, 60%, 40%)'
-  const lo = Math.log10(0.01)
-  const hi = Math.log10(1)
-  let t = (Math.log10(ratio) - lo) / (hi - lo)
-  t = Math.min(1, Math.max(0, t))
-  const hue = 120 * (1 - t) // 120° (vert) -> 0° (rouge)
-  return `hsl(${hue}, 75%, 42%)`
-}
 
 // Formatage compact : notation scientifique hors plage « lisible ».
 function formatValue(v) {

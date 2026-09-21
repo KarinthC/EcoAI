@@ -1,12 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
+import useImpactColor from '@/composables/useImpactColor'
 
 const props = defineProps({
   node: Object
 })
 
 const store = usePipelineStore()
+const { ratioColor } = useImpactColor()
 
 // Libellé du niveau d'impact (couleur appliquée via la classe impact-level-*).
 const levelLabel = computed(() => {
@@ -32,6 +34,27 @@ function unitFor(key) {
   return unitByKey.value[key] || ''
 }
 
+// Mapping clé d'indicateur -> seuil mensuel par habitant, construit depuis les
+// critères de l'analyse (threshold_monthly, déjà exposé au front).
+const thresholdByKey = computed(() => {
+  const map = {}
+  for (const c of (store.analysisResult?.criteria || [])) {
+    if (c.threshold_monthly) map[c.key] = c.threshold_monthly
+  }
+  return map
+})
+
+// Couleur d'un indicateur selon la MÊME logique que le panel de gauche :
+// ratio valeur/seuil passé dans le dégradé partagé (useImpactColor).
+// L'eau ecologits (litres) n'est pas comparable au seuil (m³ eq) -> neutre ;
+// critère sans seuil -> couleur neutre également.
+function indicatorColor(key, value) {
+  if (key === 'PEF-WU_ecologits') return '#4a5568'
+  const threshold = thresholdByKey.value[key]
+  if (!threshold || value === null || value === undefined) return '#4a5568'
+  return ratioColor(Math.abs(value) / threshold)
+}
+
 // Indicateurs du nœud, remis dans le MÊME ORDRE que le panel de gauche
 // (ordre de store.analysisResult.criteria), avec nom, valeur, unité.
 // On n'affiche que les indicateurs réellement portés par le nœud.
@@ -51,6 +74,7 @@ const orderedIndicators = computed(() => {
       name: c.label,
       value: indicators[key],
       unit: c.unit,
+      color: indicatorColor(key, indicators[key]),
       // Ligne « eau » ecologits affichée juste après PEF-WU.
       extraEcologits: key === 'PEF-WU' && ('PEF-WU_ecologits' in indicators)
         ? indicators['PEF-WU_ecologits']
@@ -67,6 +91,7 @@ const orderedIndicators = computed(() => {
       name: fallbackName(key),
       value,
       unit: unitFor(key),
+      color: indicatorColor(key, value),
       extraEcologits: null,
     })
   }
@@ -131,7 +156,7 @@ function formatValue(v) {
         <ul>
           <li v-for="row in orderedIndicators" :key="row.key" class="indicator-item">
             <span class="indicator-name">{{ row.name }}</span>
-            <span class="indicator-value">
+            <span class="indicator-value" :style="{ color: row.color }">
               {{ formatValue(row.value) }}
               <span v-if="row.unit" class="indicator-unit">{{ row.unit }}</span>
             </span>
