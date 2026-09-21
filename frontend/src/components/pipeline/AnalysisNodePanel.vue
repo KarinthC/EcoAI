@@ -189,8 +189,8 @@ function formatValue(v) {
   color: #4a5568;
 }
 .confidence-medium {
-  background: #feebc8;
-  color: #7b341e;
+  background: #fefcbf;
+  color: #744210;
 }
 .confidence-medium .confidence-title {
   display: block;
@@ -201,8 +201,8 @@ function formatValue(v) {
   display: block;
 }
 .confidence-low {
-  background: #fefcbf;
-  color: #744210;
+  background: #feebc8;
+  color: #7b341e;
 }
 .confidence-low .confidence-title {
   display: block;
