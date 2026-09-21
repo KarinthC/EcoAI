@@ -87,6 +87,22 @@ const globalLabel = computed(() => {
 // Critères ACV affichés à égalité.
 const criteria = computed(() => store.analysisResult?.criteria || [])
 
+// Couleur affichée pour un critère.
+// Un critère partiel (données ecologits manquantes) ne doit PAS apparaître vert
+// quand il n'est pas déjà problématique : une valeur verte par simple manque de
+// données donnerait une fausse impression de sûreté. On le grise donc, SAUF s'il
+// est de niveau « high » (ratio >= 0.15, palier du backend) : dans ce cas la
+// couleur rouge de gradient est conservée pour bien signaler le problème.
+const PARTIAL_GRAY = '#4a5568'
+const HIGH_RATIO = 0.15
+
+function criterionColor(c) {
+  if (c.has_partial && !(c.ratio >= HIGH_RATIO)) {
+    return PARTIAL_GRAY
+  }
+  return ratioColor(c.ratio)
+}
+
 // Formatage compact : notation scientifique hors plage « lisible ».
 function formatValue(v) {
   if (v === null || v === undefined) return '—'
@@ -211,7 +227,7 @@ const { onDragStart } = useDragAndDrop()
           </div>
 
           <div class="criterion-value-row">
-            <span class="criterion-value" :style="{ color: ratioColor(c.ratio) }">
+            <span class="criterion-value" :style="{ color: criterionColor(c) }">
               {{ formatValue(c.value) }}
             </span>
             <span v-if="c.has_partial" class="partial-mark" title="Contribution partielle">+ ?</span>
@@ -390,7 +406,7 @@ aside .nodes > * {
 }
 .partial-mark {
   font-size: 0.95rem;
-  color: #a0aec0;
+  color: #4a5568;
   font-weight: 700;
   cursor: help;
 }
