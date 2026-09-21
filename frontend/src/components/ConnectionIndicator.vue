@@ -1,8 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
+const { t } = useI18n()
 const status = ref('loading')  // 'loading' | 'online' | 'error'
+
+const statusTitle = computed(() => {
+  if (status.value === 'online') return t('connection.connected')
+  if (status.value === 'error') return t('connection.serverError')
+  return t('connection.checking')
+})
 
 async function checkConnection() {
   try {
@@ -17,9 +25,9 @@ onMounted(() => checkConnection())
 </script>
 
 <template>
-  <div class="indicator" :title="status === 'online' ? 'Connecté' : status === 'error' ? 'Erreur serveur' : 'Vérification...'">
+  <div class="indicator" :title="statusTitle">
     <span class="dot" :class="status"></span>
-    <span class="label">API</span>
+    <span class="label">{{ $t('connection.api') }}</span>
   </div>
 </template>
 

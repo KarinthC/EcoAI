@@ -1,7 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
+const { t } = useI18n()
 const emit = defineEmits(['username-set'])
 
 const username = ref('')
@@ -18,7 +20,7 @@ async function submit() {
     if (e.response && e.response.data.error) {
       error.value = e.response.data.error
     } else {
-      error.value = 'Erreur réseau'
+      error.value = t('username.networkError')
     }
   } finally {
     loading.value = false
@@ -29,13 +31,13 @@ async function submit() {
 <template>
   <div class="modal-overlay">
     <div class="modal">
-      <h2>Bienvenue !</h2>
-      <p>Choisissez un nom d'utilisateur pour commencer.</p>
+      <h2>{{ $t('username.welcome') }}</h2>
+      <p>{{ $t('username.chooseName') }}</p>
       <form @submit.prevent="submit">
         <input
           v-model="username"
           type="text"
-          placeholder="Votre nom..."
+          :placeholder="$t('username.placeholder')"
           minlength="2"
           maxlength="50"
           required
@@ -43,7 +45,7 @@ async function submit() {
         />
         <p v-if="error" class="error">{{ error }}</p>
         <button type="submit" :disabled="loading">
-          {{ loading ? 'Enregistrement...' : 'Valider' }}
+          {{ loading ? $t('username.saving') : $t('username.submit') }}
         </button>
       </form>
     </div>

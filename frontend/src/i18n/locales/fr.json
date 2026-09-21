@@ -71,6 +71,9 @@
   "node": {
     "configure": "Cliquer pour configurer"
   },
+  "canvas": {
+    "dropHere": "Déposer ici"
+  },
   "nodes": {
     "datasource": "Données",
     "storage_persistent": "Données persistantes",

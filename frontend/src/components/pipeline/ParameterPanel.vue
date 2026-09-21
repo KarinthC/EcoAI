@@ -1,7 +1,9 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import { nodeFields } from '@/components/pipeline/nodeConfig.js'
+import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
 
 const props = defineProps({
   node: Object
@@ -9,6 +11,19 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 const store = usePipelineStore()
+const { t } = useI18n()
+
+// ID STABLE du type de nœud (avec rétro-compatibilité des anciens graphes).
+const nodeTypeId = computed(() => resolveNodeType(props.node?.data))
+
+// Champs de config du nœud courant.
+const fields = computed(() => nodeFields[nodeTypeId.value] || [])
+
+// Libellé traduit du nœud (en-tête du panneau).
+const nodeLabel = computed(() => {
+  const key = nodeTypeLabelKey(nodeTypeId.value)
+  return key ? t(key) : (props.node?.data?.label || '')
+})
 
 // Formulaire local
 const params = ref({})
@@ -25,8 +40,7 @@ watch(() => props.node, (newNode) => {
 // Réinitialiser la valeur du champ dépendant si le parent change
 watch(params, (newParams, oldParams) => {
   if (!props.node) return
-  const fields = nodeFields[props.node.data.label] || []
-  for (const field of fields) {
+  for (const field of fields.value) {
     if (field.dependsOn && newParams[field.dependsOn] !== oldParams?.[field.dependsOn]) {
       const validOptions = field.optionsMapping?.[newParams[field.dependsOn]] || []
       if (!validOptions.includes(newParams[field.key])) {
@@ -70,13 +84,13 @@ function save() {
 <template>
   <div v-if="node" class="panel">
     <div class="panel-header">
-      <h3>{{ node.data.label }}</h3>
+      <h3>{{ nodeLabel }}</h3>
       <button class="close-btn" @click="emit('close')">✕</button>
     </div>
 
     <div class="panel-body">
-      <div v-for="field in (nodeFields[node.data.label] || [])" :key="field.key" class="field">
-        <label>{{ field.label }}</label>
+      <div v-for="field in fields" :key="field.key" class="field">
+        <label>{{ field.labelKey ? $t(field.labelKey) : field.key }}</label>
 
         <!-- Menu déroulant si type === 'select' -->
         <select
@@ -86,7 +100,7 @@ function save() {
           :disabled="field.dependsOn && !params[field.dependsOn]"
         >
           <option value="" disabled selected v-if="!params[field.key]">
-            -- Choisir --
+            {{ $t('panel.choose') }}
           </option>
           <option
             v-for="opt in getFieldOptions(field)"
@@ -106,8 +120,8 @@ function save() {
     </div>
 
     <div class="panel-footer">
-      <button class="btn-save" @click="save">💾 Appliquer</button>
-      <button class="btn-delete" @click="store.removeNode(node.id); emit('close')">🗑️ Supprimer</button>
+      <button class="btn-save" @click="save">{{ $t('panel.apply') }}</button>
+      <button class="btn-delete" @click="store.removeNode(node.id); emit('close')">{{ $t('panel.delete') }}</button>
     </div>
   </div>
 </template>

@@ -1,8 +1,10 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Handle, Position } from '@vue-flow/core'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import { nodeFields } from '@/components/pipeline/nodeConfig.js'
+import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
 
 const props = defineProps({
   id: String,
@@ -10,19 +12,41 @@ const props = defineProps({
 })
 
 const store = usePipelineStore()
+const { t } = useI18n()
 
-// Paramètres affichés dans l'ORDRE des champs définis (nodeFields) et avec
-// leurs LIBELLÉS, afin d'éviter l'ordre arbitraire des clés de l'objet après
-// un rechargement. Seuls les champs remplis sont affichés.
+// ID STABLE du type de nœud (depuis data.nodeType, ou rétro-compatibilité via
+// l'ancien data.label français). Jamais traduit.
+const nodeTypeId = computed(() => resolveNodeType(props.data))
+
+// Libellé traduit affiché en en-tête du nœud.
+const nodeLabel = computed(() => {
+  const key = nodeTypeLabelKey(nodeTypeId.value)
+  return key ? t(key) : (props.data?.label || '')
+})
+
+// Paramètres affichés dans l'ORDRE des champs définis (nodeFields), avec leurs
+// LIBELLÉS résolus via i18n (clé `labelKey`). Seuls les champs remplis le sont.
 const orderedParams = computed(() => {
   const params = props.data?.params || {}
-  const fields = nodeFields[props.data?.label] || []
+  const fields = nodeFields[nodeTypeId.value] || []
   const isFilled = (v) => v !== undefined && v !== null && v !== ''
+
+  // Valeur d'option lisible : pour un <select> à options { value, label }
+  // (ex. pays), on affiche le label de l'option ; sinon la valeur brute.
+  const displayValue = (field, value) => {
+    const options = field.options || []
+    const opt = options.find((o) => o && typeof o === 'object' && o.value === value)
+    return opt ? opt.label : value
+  }
 
   const rows = []
   for (const f of fields) {
     if (isFilled(params[f.key])) {
-      rows.push({ key: f.key, label: f.label, value: params[f.key] })
+      rows.push({
+        key: f.key,
+        label: f.labelKey ? t(f.labelKey) : f.key,
+        value: displayValue(f, params[f.key]),
+      })
     }
   }
   // Clés présentes mais absentes de la config (sécurité) : affichage brut.
@@ -42,14 +66,14 @@ function handleClick() {
 <template>
   <div class="custom-node" @click.stop="handleClick">
     <div v-if="data.impactLevel" class="impact-badge" :class="'impact-' + data.impactLevel"></div>
-    <div class="node-header">{{ data.label }}</div>
+    <div class="node-header">{{ nodeLabel }}</div>
     <div class="node-body">
       <small v-if="orderedParams.length">
         <div v-for="row in orderedParams" :key="row.key" class="param-line">
           {{ row.label }}: {{ row.value }}
         </div>
       </small>
-      <small v-else class="hint">Cliquer pour configurer</small>
+      <small v-else class="hint">{{ $t('node.configure') }}</small>
     </div>
     <Handle type="target" :position="Position.Left" />
     <Handle type="source" :position="Position.Right" />

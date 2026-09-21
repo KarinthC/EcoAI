@@ -1,6 +1,7 @@
 import { useVueFlow } from '@vue-flow/core'
 import { ref, watch } from 'vue'
 import { usePipelineStore } from '@/stores/usePipelineStore'
+import { NODE_BORDER_CLASS } from '@/components/pipeline/nodeTypes.js'
 
 
 function getId() {
@@ -9,7 +10,7 @@ function getId() {
 
 // État partagé (hors de la fonction pour être global au module)
 const draggedType = ref(null)
-const draggedLabel = ref(null)
+const draggedNodeType = ref(null)
 const isDragOver = ref(false)
 const isDragging = ref(false)
 
@@ -17,31 +18,19 @@ export default function useDragAndDrop() {
   const { screenToFlowCoordinate, onNodesInitialized, updateNode } = useVueFlow()
   const store = usePipelineStore()
 
-  const borderClassMap = {
-  'Données': 'node-border-datasource',
-  'Données persistantes': 'node-border-datasource',
-  'Données SSD temporaires': 'node-border-datasource',
-  'Modèle ML' : 'node-border-ml',
-  'Entrainement': 'node-border-operator',
-  'Inférence': 'node-border-operator',
-  'LLM Call': 'node-border-operator',        
-  'LLM Expert': 'node-border-operator',
-  'Video Generation': 'node-border-operator',
-  'Opérateur': 'node-border-operator'
-  }
-
-
   watch(isDragging, (dragging) => {
     document.body.style.userSelect = dragging ? 'none' : ''
   })
 
-  function onDragStart(event, type, label) {
+  // `nodeType` est un ID STABLE (cf. nodeTypes.js) : jamais traduit, sert de clé
+  // dans le graphe, la config des champs et le dispatch backend.
+  function onDragStart(event, type, nodeType) {
     if (event.dataTransfer) {
       event.dataTransfer.setData('application/vueflow', type)
       event.dataTransfer.effectAllowed = 'move'
     }
     draggedType.value = type
-    draggedLabel.value = label || type
+    draggedNodeType.value = nodeType || type
     isDragging.value = true
     document.addEventListener('drop', onDragEnd)
   }
@@ -65,7 +54,6 @@ export default function useDragAndDrop() {
     isDragging.value = false
     isDragOver.value = false
     draggedType.value = null
-    draggedLabel.value = null
     document.removeEventListener('drop', onDragEnd)
   }
 
@@ -81,8 +69,12 @@ export default function useDragAndDrop() {
       id: nodeId,
       type: draggedType.value,
       position,
-      data: { label: draggedLabel.value },
-      class: borderClassMap[draggedLabel.value] || ''
+
+
+      // On stocke l'ID STABLE du type de nœud. Le libellé affiché est résolu
+      // dynamiquement via i18n (cf. CustomNode.vue / Sidebar.vue).
+      data: { nodeType: draggedNodeType.value },
+      class: NODE_BORDER_CLASS[draggedNodeType.value] || ''
     }
 
     const { off } = onNodesInitialized(() => {

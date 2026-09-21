@@ -23,9 +23,9 @@ const redCount = computed(() =>
     >
       <div class="overlay-header" @click="expanded = !expanded">
         <span class="overlay-title">
-          💡 Suggestions
+          {{ $t('overlay.suggestions') }}
           <span class="global-badge" :class="`badge-${globalLevel}`">
-            {{ redCount }} critère(s) au-delà du budget mensuel
+            {{ $t('overlay.criteriaBeyondBudget', { count: redCount }) }}
           </span>
         </span>
         <button class="toggle-btn">{{ expanded ? '▾' : '▸' }}</button>
@@ -33,13 +33,13 @@ const redCount = computed(() =>
 
       <div v-if="expanded" class="overlay-body">
         <div v-if="store.analysisResult.suggestions?.length" class="suggestions">
-          <h4>Pour réduire l'impact :</h4>
+          <h4>{{ $t('overlay.reduceImpact') }}</h4>
           <ul>
             <li v-for="(s, idx) in store.analysisResult.suggestions" :key="idx">{{ s }}</li>
           </ul>
         </div>
         <div v-else class="suggestions-empty">
-          Aucune suggestion particulière pour ce pipeline.
+          {{ $t('overlay.noSuggestion') }}
         </div>
       </div>
     </div>

@@ -3,6 +3,29 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
+import { resolveNodeType, NODE_BORDER_CLASS, nodeTypeToBackendLabel } from '@/components/pipeline/nodeTypes.js'
+
+// Rétro-compatibilité : les graphes enregistrés avant i18n stockent le libellé
+// FRANÇAIS dans `data.label`. On migre chaque nœud vers l'id STABLE
+// `data.nodeType` et on recalcule sa classe CSS de bordure. Fonction pure :
+// renvoie un nouveau tableau, ne mute pas l'entrée.
+function normalizeGraphNodes(rawNodes) {
+  if (!Array.isArray(rawNodes)) return []
+  return rawNodes.map((node) => {
+    const nodeType = resolveNodeType(node?.data)
+    if (!nodeType) return node
+    const data = { ...(node.data || {}) }
+    // On conserve `label` pour l'affichage de secours mais la source de vérité
+    // devient `nodeType`.
+    data.nodeType = nodeType
+    return {
+      ...node,
+      data,
+      class: NODE_BORDER_CLASS[nodeType] || node.class || '',
+    }
+  })
+}
+
 export const usePipelineStore = defineStore('pipeline', () => {
 
     const pipelines = ref({})
@@ -28,7 +51,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
 
         pipelines.value[id] = {
         name,
-        nodes: graphJson?.nodes || [],
+
+        nodes: normalizeGraphNodes(graphJson?.nodes),
         edges: graphJson?.edges || [],
         selectedNodeId: null,
         backendId: null   
@@ -105,13 +129,25 @@ export const usePipelineStore = defineStore('pipeline', () => {
 
     function getPipelineJSON() {
         if (!activePipeline.value) return { nodes: [], edges: [] }
-        const cleanNodes = activePipeline.value.nodes.map(node => ({
-            id: node.id,
-            type: node.type,
-            position: node.position,
-            data: node.data,
-            class: node.class
-        }))
+        const cleanNodes = activePipeline.value.nodes.map(node => {
+            // On (re)génère un `label` CANONIQUE (FR) dérivé de l'id stable :
+            // c'est le contrat de transport avec le backend (dispatch
+            // NODE_COMPUTERS). Le `nodeType` est envoyé en plus pour la
+            // robustesse, mais `label` reste la clé de dispatch actuelle.
+            const nodeType = resolveNodeType(node.data)
+            const backendLabel = nodeTypeToBackendLabel(nodeType)
+            return {
+                id: node.id,
+                type: node.type,
+                position: node.position,
+                data: {
+                    ...node.data,
+                    ...(nodeType && { nodeType }),
+                    ...(backendLabel && { label: backendLabel }),
+                },
+                class: node.class
+            }
+        })
         const cleanEdges = activePipeline.value.edges.map(edge => ({
             id: edge.id,
             source: edge.source,
@@ -188,7 +224,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         for (const p of res.data) {
         pipelines.value[p.id] = {
             name: p.name,
-            nodes: p.graph_json.nodes || [],
+            nodes: normalizeGraphNodes(p.graph_json.nodes),
             edges: p.graph_json.edges || [],
             selectedNodeId: null,
             backendId: p.id

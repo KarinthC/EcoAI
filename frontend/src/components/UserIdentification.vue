@@ -1,10 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 import UsernameModal from './UsernameModal.vue'
 
+const { t } = useI18n()
 const status = ref('loading')  // 'loading' | 'online' | 'error'
 const username = ref(null)
+
+const statusTitle = computed(() => {
+  if (status.value === 'online' && username.value) {
+    return t('user.connectedAs', { username: username.value })
+  }
+  if (status.value === 'online') return t('user.anonymousClick')
+  if (status.value === 'error') return t('user.serverUnreachable')
+  return t('user.connecting')
+})
 
 async function checkConnection() {
   try {
@@ -24,26 +35,15 @@ onMounted(() => checkConnection())
 </script>
 
 <template>
-  <div
-    class="indicator"
-    :title="
-      status === 'online' && username
-        ? `Connecté en tant que ${username}`
-        : status === 'online'
-          ? 'Anonyme - Cliquez pour choisir un nom'
-          : status === 'error'
-            ? 'Serveur inaccessible'
-            : 'Connexion en cours...'
-    "
-  >
+  <div class="indicator" :title="statusTitle">
     <span v-if="status === 'online' && username" class="username">
       {{ username }}
     </span>
-    <span v-else-if="status === 'online'" class="anonymous" @click="showModal = true">
-      Anonyme
+    <span v-else-if="status === 'online'" class="anonymous">
+      {{ $t('user.anonymous') }}
     </span>
-    <span v-else-if="status === 'loading'" class="label">Connexion...</span>
-    <span v-else class="label">Hors ligne</span>
+    <span v-else-if="status === 'loading'" class="label">{{ $t('user.connecting') }}</span>
+    <span v-else class="label">{{ $t('user.online') }}</span>
   </div>
 
   <!-- La modale s'affiche si l'utilisateur est en ligne mais sans nom -->

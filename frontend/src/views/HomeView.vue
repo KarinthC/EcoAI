@@ -62,7 +62,7 @@ onConnect(addEdges)
       <div class="header-right">
 
       <button class="btn-export" @click="store.saveCurrent('Test depuis UI')">
-        📤 Sauvegarder Pipeline
+        📤 {{ $t('header.savePipeline') }}
       </button>
       <button
         v-if="store.activePipeline"
@@ -71,15 +71,14 @@ onConnect(addEdges)
         :disabled="store.isAnalyzing"
         @click="store.deletePipeline(store.activeId)"
       >
-        🗑 Supprimer Pipeline
+        🗑 {{ $t('header.deletePipeline') }}
       </button>
     </div>
     </header>
 
     <PipelineTabs />
 
-
-    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline"">
+    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline">
       <Sidebar />
       <VueFlow
         :key="store.activeId"
@@ -101,7 +100,7 @@ onConnect(addEdges)
             transition: 'background-color 0.2s ease',
           }"
         >
-          <p v-if="isDragOver">Déposer ici</p>
+          <p v-if="isDragOver">{{ $t('canvas.dropHere') }}</p>
         </DropzoneBackground>
       </VueFlow>
 
@@ -116,8 +115,9 @@ onConnect(addEdges)
         v-if="store.selectedNode && store.isAnalyzing"
         :node="store.selectedNode"
       />
-      </div>
+
     </div>
+  </div>
 </template>
 
 <style scoped>

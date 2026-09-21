@@ -1,7 +1,9 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import useImpactColor from '@/composables/useImpactColor'
+import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
 
 const props = defineProps({
   node: Object
@@ -9,13 +11,20 @@ const props = defineProps({
 
 const store = usePipelineStore()
 const { ratioColor } = useImpactColor()
+const { t } = useI18n()
+
+// Libellé traduit du nœud (en-tête du panneau).
+const nodeLabel = computed(() => {
+  const key = nodeTypeLabelKey(resolveNodeType(props.node?.data))
+  return key ? t(key) : (props.node?.data?.label || '')
+})
 
 // Libellé du niveau d'impact (couleur appliquée via la classe impact-level-*).
 const levelLabel = computed(() => {
   const level = props.node?.data?.impactLevel
-  if (level === 'high') return 'Impact élevé'
-  if (level === 'medium') return 'Impact moyen'
-  if (level === 'low') return 'Impact faible'
+  if (level === 'high') return t('analysis.levelHigh')
+  if (level === 'medium') return t('analysis.levelMedium')
+  if (level === 'low') return t('analysis.levelLow')
   return null
 })
 
@@ -101,7 +110,7 @@ const orderedIndicators = computed(() => {
 
 // Nom de repli pour les clés absentes de criteria.
 function fallbackName(key) {
-  if (key === 'PEF-WU_ecologits') return "Utilisation de l'eau"
+  if (key === 'PEF-WU_ecologits') return t('analysis.waterUsage')
   return String(key).replace(/^PEF-/, '')
 }
 
@@ -120,7 +129,7 @@ function formatValue(v) {
 <template>
   <div v-if="node && node.data" class="panel analysis-panel">
     <div class="panel-header">
-      <h3>{{ node.data.label }}</h3>
+      <h3>{{ nodeLabel }}</h3>
       <button class="close-btn" @click="store.clearSelection">✕</button>
     </div>
     <div class="panel-body">
@@ -135,24 +144,24 @@ function formatValue(v) {
 
       <!-- Fiabilité de la méthode de calcul -->
       <div v-if="node.data.confidence" class="confidence" :class="'confidence-' + node.data.confidence">
-        <span v-if="node.data.confidence === 'high'">✔️ Confiance élevée (données ADEME)</span>
+        <span v-if="node.data.confidence === 'high'">{{ $t('analysis.confidenceHigh') }}</span>
         <template v-else-if="node.data.confidence === 'medium'">
-          <span class="confidence-title">Confiance moyenne</span>
-          <span class="confidence-detail">Données d'infrastructure extrapolées, données d'impact ADEME</span>
+          <span class="confidence-title">{{ $t('analysis.confidenceMediumTitle') }}</span>
+          <span class="confidence-detail">{{ $t('analysis.confidenceMediumDetail') }}</span>
         </template>
         <template v-else-if="node.data.confidence === 'low'">
-          <span class="confidence-title">Confiance faible</span>
-          <span class="confidence-detail">⚠️ Manque de transparence des acteurs</span>
+          <span class="confidence-title">{{ $t('analysis.confidenceLowTitle') }}</span>
+          <span class="confidence-detail">{{ $t('analysis.confidenceLowDetail') }}</span>
         </template>
         <span v-else-if="node.data.confidence === 'none'">
-          Nœud de représentation : aucun impact calculé.
+          {{ $t('analysis.confidenceNone') }}
         </span>
-        <span v-else>Confiance : {{ node.data.confidence }}</span>
+        <span v-else>{{ $t('analysis.confidenceGeneric', { level: node.data.confidence }) }}</span>
       </div>
 
       <!-- Indicateurs (PEF) : mêmes noms et même ordre que le panel de gauche -->
       <div v-if="orderedIndicators.length" class="indicators-box">
-        <h4>Indicateurs</h4>
+        <h4>{{ $t('analysis.indicators') }}</h4>
         <ul>
           <li v-for="row in orderedIndicators" :key="row.key" class="indicator-item">
             <span class="indicator-name">{{ row.name }}</span>

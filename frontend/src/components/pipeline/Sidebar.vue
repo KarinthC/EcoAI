@@ -2,13 +2,24 @@
 import useDragAndDrop from '@/composables/useDnD'
 import useImpactColor from '@/composables/useImpactColor'
 import { usePipelineStore } from '@/stores/usePipelineStore'
+import { SIDEBAR_NODE_ORDER, NODE_TYPES, NODE_BORDER_CLASS } from '@/components/pipeline/nodeTypes.js'
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
 const store = usePipelineStore()
 const { ratioColor } = useImpactColor()
+const { t } = useI18n()
 
 const analyzing = ref(false)
+
+// Palette latérale : liste d'ids STABLES (jamais traduits) + leur classe CSS.
+// Le libellé est résolu à l'affichage via $t(node.i18nKey).
+const paletteNodes = SIDEBAR_NODE_ORDER.map((id) => ({
+  id,
+  i18nKey: NODE_TYPES[id].i18n,
+  cssClass: NODE_BORDER_CLASS[id].replace('node-border-', 'sidebar-node-'),
+}))
 
 // Télécharge l'explication PDF (statique, servie par le backend) des seuils
 // et de la démarche. Récupéré en blob pour déclencher le téléchargement avec
@@ -76,12 +87,12 @@ const asideClass = computed(() => {
   return `sidebar-${level}`
 })
 
-// Libellé textuel correspondant au niveau global.
+// Libellé textuel correspondant au niveau global (résolu via i18n).
 const globalLabel = computed(() => {
   const level = store.analysisResult?.global_level || 'low'
-  if (level === 'high') return 'Impact élevé'
-  if (level === 'medium') return 'Impact plutôt élevé'
-  return 'Impact faible'
+  if (level === 'high') return t('sidebar.globalHigh')
+  if (level === 'medium') return t('sidebar.globalMedium')
+  return t('sidebar.globalLow')
 })
 
 // Critères ACV affichés à égalité.
@@ -119,77 +130,18 @@ const { onDragStart } = useDragAndDrop()
 
 <template>
   <aside :class="asideClass">
-    <div class="description" v-if="!store.isAnalyzing">Glissez-déposez ces nœuds sur le canvas.</div>
+    <div class="description" v-if="!store.isAnalyzing">{{ $t('sidebar.description') }}</div>
 
     <div class="nodes" v-if="!store.isAnalyzing">
       <div
-        class="sidebar-node sidebar-node-datasource"
+        v-for="node in paletteNodes"
+        :key="node.id"
+        class="sidebar-node"
+        :class="node.cssClass"
         :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Données')"
+        @dragstart="onDragStart($event, 'custom', node.id)"
       >
-        Données
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-datasource"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Données persistantes')"
-      >
-        Données persistantes
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-datasource"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Données SSD temporaires')"
-      >
-        Données SSD temporaires
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-ml"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Modèle ML')"
-      >
-        Modèle ML
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-operator"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Opérateur')"
-      >
-        Opérateur
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-operator"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Entrainement')"
-      >
-        Entrainement
-      </div>
-
-      <div
-        class="sidebar-node sidebar-node-operator"
-        :draggable="true"
-        @dragstart="onDragStart($event, 'custom', 'Inférence')"
-      >
-        Inférence
-      </div>
-       <div class="sidebar-node sidebar-node-operator" :draggable="true"
-       @dragstart="onDragStart($event, 'custom', 'LLM Call')">
-       LLM Call
-      </div>
-      
-      <div class="sidebar-node sidebar-node-operator" :draggable="true"
-      @dragstart="onDragStart($event, 'custom', 'LLM Expert')">
-      LLM Expert
-      </div>
-
-       <div class="sidebar-node sidebar-node-operator" :draggable="true"
-       @dragstart="onDragStart($event, 'custom', 'Video Generation')">
-       Video Generation
+        {{ $t(node.i18nKey) }}
       </div>
     </div>
     
@@ -201,7 +153,7 @@ const { onDragStart } = useDragAndDrop()
       <!-- Téléchargement de l'explication PDF des seuils et de la démarche
            (visible uniquement en mode analyse). -->
       <button class="download-btn" @click="downloadSeuilsPdf">
-        📄 Télécharger l'explication des seuils
+        {{ $t('sidebar.downloadThresholds') }}
       </button>
 
       <!-- Liste des critères ACV, tous affichés à égalité -->
@@ -230,7 +182,7 @@ const { onDragStart } = useDragAndDrop()
             <span class="criterion-value" :style="{ color: criterionColor(c) }">
               {{ formatValue(c.value) }}
             </span>
-            <span v-if="c.has_partial" class="partial-mark" title="Contribution partielle">+ ?</span>
+            <span v-if="c.has_partial" class="partial-mark" :title="$t('sidebar.partialMark')">+ ?</span>
             <span class="criterion-unit">{{ c.unit }}</span>
           </div>
 
@@ -251,8 +203,10 @@ const { onDragStart } = useDragAndDrop()
 
     <div class="sidebar-footer">
     <button class="analyze-btn" @click="toggleAnalysis" :disabled="analyzing">
-      <span v-if="analyzing">⏳ Analyse...</span>
-      <span v-else>{{ store.isAnalyzing ? '🔙 Retour à l\'édition' : '🔍 Lancer l\'analyse' }}</span>
+
+
+      <span v-if="analyzing">{{ $t('sidebar.analyzing') }}</span>
+      <span v-else>{{ store.isAnalyzing ? $t('sidebar.backToEdit') : $t('sidebar.analyze') }}</span>
     </button>
   </div>
 
@@ -267,12 +221,11 @@ const { onDragStart } = useDragAndDrop()
         <strong>{{ tooltip.criterion.label }}</strong>
         <span class="tooltip-desc">{{ tooltip.criterion.description }}</span>
         <span class="tooltip-line">
-          Seuil mensuel / habitant :
+          {{ $t('sidebar.tooltipThreshold') }}
           {{ formatValue(tooltip.criterion.threshold_monthly) }} {{ tooltip.criterion.unit }}
         </span>
         <span v-if="tooltip.criterion.has_partial" class="tooltip-partial">
-          ⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère.
-          La valeur réelle est donc plus élevée.
+          {{ $t('sidebar.tooltipPartial') }}
         </span>
       </div>
     </Teleport>

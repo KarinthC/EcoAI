@@ -105,3 +105,25 @@ export function resolveNodeType(nodeOrData) {
 export function nodeTypeLabelKey(nodeTypeId) {
   return NODE_TYPES[nodeTypeId]?.i18n || null
 }
+
+// Libellé CANONIQUE (français) envoyé au backend pour le dispatch
+// (cf. backend/app/services/carbon/orchestrator.py, NODE_COMPUTERS indexé par
+// ces libellés). C'est un identifiant de PROTOCOLE, jamais affiché : il ne doit
+// pas être traduit, sinon le dispatch backend casse.
+const ID_TO_BACKEND_LABEL = {
+  datasource: 'Données',
+  storage_persistent: 'Données persistantes',
+  storage_temporary: 'Données SSD temporaires',
+  ml_model: 'Modèle ML',
+  operator: 'Opérateur',
+  training: 'Entrainement',
+  inference: 'Inférence',
+  llm_call: 'LLM Call',
+  llm_expert: 'LLM Expert',
+  video_generation: 'Video Generation',
+}
+
+// Libellé backend (FR) correspondant à un id stable.
+export function nodeTypeToBackendLabel(nodeTypeId) {
+  return ID_TO_BACKEND_LABEL[nodeTypeId] || null
+}
