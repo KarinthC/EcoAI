@@ -1,0 +1,116 @@
+{
+  "app": {
+    "title": "Estimation Carbone"
+  },
+  "header": {
+    "savePipeline": "Sauvegarder Pipeline",
+    "deletePipeline": "Supprimer Pipeline"
+  },
+  "connection": {
+    "connected": "Connecté",
+    "serverError": "Erreur serveur",
+    "checking": "Vérification...",
+    "api": "API"
+  },
+  "user": {
+    "connectedAs": "Connecté en tant que {username}",
+    "anonymousClick": "Anonyme - Cliquez pour choisir un nom",
+    "serverUnreachable": "Serveur inaccessible",
+    "connecting": "Connexion en cours...",
+    "anonymous": "Anonyme",
+    "online": "Hors ligne",
+    "anonymousShort": "Connexion..."
+  },
+  "username": {
+    "welcome": "Bienvenue !",
+    "chooseName": "Choisissez un nom d'utilisateur pour commencer.",
+    "placeholder": "Votre nom...",
+    "submit": "Valider",
+    "saving": "Enregistrement...",
+    "networkError": "Erreur réseau"
+  },
+  "sidebar": {
+    "description": "Glissez-déposez ces nœuds sur le canvas.",
+    "downloadThresholds": "📄 Télécharger l'explication des seuils",
+    "analyze": "🔍 Lancer l'analyse",
+    "analyzing": "⏳ Analyse...",
+    "backToEdit": "🔙 Retour à l'édition",
+    "globalHigh": "Impact élevé",
+    "globalMedium": "Impact plutôt élevé",
+    "globalLow": "Impact faible",
+    "tooltipAria": "Détail du critère",
+    "partialMark": "Contribution partielle",
+    "tooltipThreshold": "Seuil mensuel / habitant :",
+    "tooltipPartial": "⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère. La valeur réelle est donc plus élevée."
+  },
+  "overlay": {
+    "suggestions": "💡 Suggestions",
+    "criteriaBeyondBudget": "{count} critère(s) au-delà du budget mensuel",
+    "reduceImpact": "Pour réduire l'impact :",
+    "noSuggestion": "Aucune suggestion particulière pour ce pipeline."
+  },
+  "analysis": {
+    "levelHigh": "Impact élevé",
+    "levelMedium": "Impact moyen",
+    "levelLow": "Impact faible",
+    "indicators": "Indicateurs",
+    "waterUsage": "Utilisation de l'eau",
+    "confidenceHigh": "✔️ Confiance élevée (données ADEME)",
+    "confidenceMediumTitle": "Confiance moyenne",
+    "confidenceMediumDetail": "Données d'infrastructure extrapolées, données d'impact ADEME",
+    "confidenceLowTitle": "Confiance faible",
+    "confidenceLowDetail": "⚠️ Manque de transparence des acteurs",
+    "confidenceNone": "Nœud de représentation : aucun impact calculé.",
+    "confidenceGeneric": "Confiance : {level}"
+  },
+  "panel": {
+    "apply": "💾 Appliquer",
+    "delete": "🗑️ Supprimer",
+    "choose": "-- Choisir --"
+  },
+  "node": {
+    "configure": "Cliquer pour configurer"
+  },
+  "nodes": {
+    "datasource": "Données",
+    "storage_persistent": "Données persistantes",
+    "storage_temporary": "Données SSD temporaires",
+    "ml_model": "Modèle ML",
+    "operator": "Opérateur",
+    "training": "Entrainement",
+    "inference": "Inférence",
+    "llm_call": "LLM Call",
+    "llm_expert": "LLM Expert",
+    "video_generation": "Video Generation"
+  },
+  "fields": {
+    "name": "Nom",
+    "version": "version",
+    "type": "type",
+    "parameters": "Paramètres",
+    "dataType": "Type de données",
+    "size": "Taille (Go)",
+    "format": "Format",
+    "storageDurationYears": "Durée de stockage (années)",
+    "storageDurationDays": "Durée de stockage (jours)",
+    "storageServer": "Serveur de stockage",
+    "server": "Serveur",
+    "gpu": "GPU",
+    "gpuCount": "Nombre de cartes GPU",
+    "hours": "Nombre d'heures",
+    "loadRate": "Taux de charge (%)",
+    "callCount": "Nombre d'appels",
+    "provider": "Fournisseur",
+    "model": "Modèle",
+    "outputTokens": "Tokens générés",
+    "latency": "Latence (ms)",
+    "activeParams": "Param. actifs (milliards)",
+    "totalParams": "Param. totaux (milliards)",
+    "datacenterLocation": "Localisation du datacenter",
+    "datacenterPue": "PUE Datacenter",
+    "datacenterWue": "WUE Datacenter",
+    "resolution": "Résolution",
+    "duration": "Durée (secondes)",
+    "withAudio": "Avec audio"
+  }
+}

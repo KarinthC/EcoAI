@@ -1,0 +1,116 @@
+{
+  "app": {
+    "title": "Carbon Estimation"
+  },
+  "header": {
+    "savePipeline": "Save Pipeline",
+    "deletePipeline": "Delete Pipeline"
+  },
+  "connection": {
+    "connected": "Connected",
+    "serverError": "Server error",
+    "checking": "Checking...",
+    "api": "API"
+  },
+  "user": {
+    "connectedAs": "Connected as {username}",
+    "anonymousClick": "Anonymous - Click to choose a name",
+    "serverUnreachable": "Server unreachable",
+    "connecting": "Connecting...",
+    "anonymous": "Anonymous",
+    "online": "Offline",
+    "anonymousShort": "Connecting..."
+  },
+  "username": {
+    "welcome": "Welcome!",
+    "chooseName": "Choose a username to get started.",
+    "placeholder": "Your name...",
+    "submit": "Confirm",
+    "saving": "Saving...",
+    "networkError": "Network error"
+  },
+  "sidebar": {
+    "description": "Drag and drop these nodes onto the canvas.",
+    "downloadThresholds": "📄 Download the thresholds explanation",
+    "analyze": "🔍 Run the analysis",
+    "analyzing": "⏳ Analyzing...",
+    "backToEdit": "🔙 Back to editing",
+    "globalHigh": "High impact",
+    "globalMedium": "Fairly high impact",
+    "globalLow": "Low impact",
+    "tooltipAria": "Criterion details",
+    "partialMark": "Partial contribution",
+    "tooltipThreshold": "Monthly threshold / inhabitant:",
+    "tooltipPartial": "⚠️ Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
+  },
+  "overlay": {
+    "suggestions": "💡 Suggestions",
+    "criteriaBeyondBudget": "{count} criterion/criteria beyond the monthly budget",
+    "reduceImpact": "To reduce the impact:",
+    "noSuggestion": "No particular suggestion for this pipeline."
+  },
+  "analysis": {
+    "levelHigh": "High impact",
+    "levelMedium": "Medium impact",
+    "levelLow": "Low impact",
+    "indicators": "Indicators",
+    "waterUsage": "Water use",
+    "confidenceHigh": "✔️ High confidence (ADEME data)",
+    "confidenceMediumTitle": "Medium confidence",
+    "confidenceMediumDetail": "Extrapolated infrastructure data, ADEME impact data",
+    "confidenceLowTitle": "Low confidence",
+    "confidenceLowDetail": "⚠️ Lack of transparency from providers",
+    "confidenceNone": "Representation node: no impact calculated.",
+    "confidenceGeneric": "Confidence: {level}"
+  },
+  "panel": {
+    "apply": "💾 Apply",
+    "delete": "🗑️ Delete",
+    "choose": "-- Choose --"
+  },
+  "node": {
+    "configure": "Click to configure"
+  },
+  "nodes": {
+    "datasource": "Data",
+    "storage_persistent": "Persistent data",
+    "storage_temporary": "Temporary SSD data",
+    "ml_model": "ML Model",
+    "operator": "Operator",
+    "training": "Training",
+    "inference": "Inference",
+    "llm_call": "LLM Call",
+    "llm_expert": "LLM Expert",
+    "video_generation": "Video Generation"
+  },
+  "fields": {
+    "name": "Name",
+    "version": "version",
+    "type": "type",
+    "parameters": "Parameters",
+    "dataType": "Data type",
+    "size": "Size (GB)",
+    "format": "Format",
+    "storageDurationYears": "Storage duration (years)",
+    "storageDurationDays": "Storage duration (days)",
+    "storageServer": "Storage server",
+    "server": "Server",
+    "gpu": "GPU",
+    "gpuCount": "Number of GPUs",
+    "hours": "Number of hours",
+    "loadRate": "Load rate (%)",
+    "callCount": "Number of calls",
+    "provider": "Provider",
+    "model": "Model",
+    "outputTokens": "Generated tokens",
+    "latency": "Latency (ms)",
+    "activeParams": "Active params (billion)",
+    "totalParams": "Total params (billion)",
+    "datacenterLocation": "Datacenter location",
+    "datacenterPue": "Datacenter PUE",
+    "datacenterWue": "Datacenter WUE",
+    "resolution": "Resolution",
+    "duration": "Duration (seconds)",
+    "withAudio": "With audio"
+  }
+}

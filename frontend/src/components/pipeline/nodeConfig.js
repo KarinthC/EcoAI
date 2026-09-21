@@ -18,18 +18,18 @@ const SERVERS = {
 // Champs communs aux nœuds Entrainement et Inférence (calcul ACV).
 // La liste des GPUs dépend du serveur sélectionné (dependsOn/optionsMapping).
 const GPU_SERVER_FIELDS = [
-  { key: 'server_id', label: 'Serveur', type: 'select', options: Object.keys(SERVERS) },
-  { key: 'gpu_type', label: 'GPU', type: 'select', dependsOn: 'server_id', optionsMapping: SERVERS },
-  { key: 'nb_gpu', label: 'Nombre de cartes GPU', type: 'number', placeholder: '1' },
-  { key: 'heures', label: "Nombre d'heures", type: 'number', placeholder: '1' },
+  { key: 'server_id', labelKey: 'fields.server', type: 'select', options: Object.keys(SERVERS) },
+  { key: 'gpu_type', labelKey: 'fields.gpu', type: 'select', dependsOn: 'server_id', optionsMapping: SERVERS },
+  { key: 'nb_gpu', labelKey: 'fields.gpuCount', type: 'number', placeholder: '1' },
+  { key: 'heures', labelKey: 'fields.hours', type: 'number', placeholder: '1' },
 ]
 
 // Champs du nœud Opérateur : nom libre + paramètres matériels (calcul ACV),
 // avec un taux de charge paramétrable (défaut 100% si vide).
 const OPERATOR_FIELDS = [
-  { key: 'nom', label: 'Nom', type: 'text' },
+  { key: 'nom', labelKey: 'fields.name', type: 'text' },
   ...GPU_SERVER_FIELDS,
-  { key: 'charge', label: 'Taux de charge (%)', type: 'number', placeholder: '100' },
+  { key: 'charge', labelKey: 'fields.loadRate', type: 'number', placeholder: '100' },
 ]
 
 // Champs COMMUNS aux nœuds de stockage (hors durée) :
@@ -37,29 +37,29 @@ const OPERATOR_FIELDS = [
 // `serveur_stockage` sont conservés pour la traçabilité et les recommandations
 // (suggérer un autre type de stockage si l'empreinte est élevée).
 const STORAGE_COMMON_FIELDS = [
-  { key: 'nom', label: 'Nom', type: 'text' },
+  { key: 'nom', labelKey: 'fields.name', type: 'text' },
   {
     key: 'format',
-    label: 'Format',
+    labelKey: 'fields.format',
     type: 'select',
     options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
   },
-  { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
+  { key: 'taille', labelKey: 'fields.size', type: 'number', placeholder: '2' },
 ]
 
 // Données persistantes (HDD) : le stockage persistant se compte en ANNÉES.
 const STORAGE_PERSISTENT_FIELDS = [
   ...STORAGE_COMMON_FIELDS,
-  { key: 'duree_ans', label: 'Durée de stockage (années)', type: 'number', placeholder: '1' },
-  { key: 'serveur_stockage', label: 'Serveur de stockage', type: 'select', options: ['LIG SUMMER'] },
+  { key: 'duree_ans', labelKey: 'fields.storageDurationYears', type: 'number', placeholder: '1' },
+  { key: 'serveur_stockage', labelKey: 'fields.storageServer', type: 'select', options: ['LIG SUMMER'] },
 ]
 
 // Données SSD temporaires (scratch) : durée en JOURS, purgée après ~30 jours
 // par convention HPC/cloud (défaut = 30 jours).
 const STORAGE_TEMPORARY_FIELDS = [
   ...STORAGE_COMMON_FIELDS,
-  { key: 'duree_jours', label: 'Durée de stockage (jours)', type: 'number', placeholder: '30' },
-  { key: 'serveur_stockage', label: 'Serveur de stockage', type: 'select', options: ['LIG SUMMER'] },
+  { key: 'duree_jours', labelKey: 'fields.storageDurationDays', type: 'number', placeholder: '30' },
+  { key: 'serveur_stockage', labelKey: 'fields.storageServer', type: 'select', options: ['LIG SUMMER'] },
 ]
 
 // Zones de mix électrique supportées par ecologits (codes ISO 3166-1 alpha-3).
@@ -286,44 +286,44 @@ export const nodeFields = {
   // Nœud « Données » : représentation seule, SANS calcul d'impact (cf. backend
   // acv/datasource.py). Champs : nom, type de données (clé `format` comme les
   // autres nœuds), taille. Ni infrastructure ni type de stockage pour l'instant.
-  'Données': [
-    { key: 'nom', label: 'Nom', type: 'text' },
+  datasource: [
+    { key: 'nom', labelKey: 'fields.name', type: 'text' },
     {
       key: 'format',
-      label: 'Type de données',
+      labelKey: 'fields.dataType',
       type: 'select',
       options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
     },
-    { key: 'taille', label: 'Taille (Go)', type: 'number', placeholder: '2' },
+    { key: 'taille', labelKey: 'fields.size', type: 'number', placeholder: '2' },
   ],
 
-  'Modèle ML':[
-      { key: 'nom', label: 'nom', type: 'text'  },
-      { key: 'version', label: 'version', type: 'number'  },
-      { key: 'type', label: 'type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
-      { key: 'parametres', label: 'Paramètres', type: 'number', placeholder: '28000' }
+  ml_model: [
+      { key: 'nom', labelKey: 'fields.name', type: 'text'  },
+      { key: 'version', labelKey: 'fields.version', type: 'number'  },
+      { key: 'type', labelKey: 'fields.type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
+      { key: 'parametres', labelKey: 'fields.parameters', type: 'number', placeholder: '28000' }
   ],
-  'Données persistantes': STORAGE_PERSISTENT_FIELDS,
+  storage_persistent: STORAGE_PERSISTENT_FIELDS,
 
-  'Données SSD temporaires': STORAGE_TEMPORARY_FIELDS,
+  storage_temporary: STORAGE_TEMPORARY_FIELDS,
 
-  'Entrainement': GPU_SERVER_FIELDS,
+  training: GPU_SERVER_FIELDS,
 
-  'Inférence': GPU_SERVER_FIELDS,
+  inference: GPU_SERVER_FIELDS,
 
-  'Opérateur': OPERATOR_FIELDS,
+  operator: OPERATOR_FIELDS,
 
 
-  'LLM Call': [
+  llm_call: [
     {
       key: 'nb_call',
-      label: 'Nombre d\'appels',
+      labelKey: 'fields.callCount',
       type: 'number',
       placeholder: '1'
     },
     {
       key: 'provider',
-      label: 'Fournisseur',
+      labelKey: 'fields.provider',
       type: 'select',
       options: [
         'openai',
@@ -336,7 +336,7 @@ export const nodeFields = {
     },
     {
       key: 'model',
-      label: 'Modèle',
+      labelKey: 'fields.model',
       type: 'select',
       dependsOn: 'provider',
       optionsMapping: {
@@ -604,32 +604,32 @@ export const nodeFields = {
       ]
       }
     },
-    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '100' },
-    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' }
+    { key: 'output_tokens', labelKey: 'fields.outputTokens', type: 'number', placeholder: '100' },
+    { key: 'request_latency', labelKey: 'fields.latency', type: 'number', placeholder: '100' }
   ],
 
-  'LLM Expert': [
-    {key: 'nb_call',label: 'Nombre d\'appels',type: 'number',placeholder: '1'},
-    { key: 'active_params', label: 'Param. actifs (milliards)', type: 'number', placeholder: '7' },
-    { key: 'total_params', label: 'Param. totaux (milliards)', type: 'number', placeholder: '10' },
-    { key: 'output_tokens', label: 'Tokens générés', type: 'number', placeholder: '250' },
-    { key: 'request_latency', label: 'Latence (ms)', type: 'number', placeholder: '100' },
+  llm_expert: [
+    {key: 'nb_call',labelKey: 'fields.callCount',type: 'number',placeholder: '1'},
+    { key: 'active_params', labelKey: 'fields.activeParams', type: 'number', placeholder: '7' },
+    { key: 'total_params', labelKey: 'fields.totalParams', type: 'number', placeholder: '10' },
+    { key: 'output_tokens', labelKey: 'fields.outputTokens', type: 'number', placeholder: '250' },
+    { key: 'request_latency', labelKey: 'fields.latency', type: 'number', placeholder: '100' },
     {
       key: 'datacenter_location',
-      label: 'Localisation du datacenter',
+      labelKey: 'fields.datacenterLocation',
       type: 'select',
       options: DATACENTER_LOCATIONS
     },
-    { key: 'datacenter_pue', label: 'PUE Datacenter', type: 'number', placeholder: '1.58' },
-    { key: 'datacenter_wue', label: 'WUE Datacenter', type: 'number', placeholder: '1.8' }
+    { key: 'datacenter_pue', labelKey: 'fields.datacenterPue', type: 'number', placeholder: '1.58' },
+    { key: 'datacenter_wue', labelKey: 'fields.datacenterWue', type: 'number', placeholder: '1.8' }
 
   ],
 
-  'Video Generation': [
-    {key: 'nb_call',label: 'Nombre d\'appels',type: 'number',placeholder: '1'},
+  video_generation: [
+    {key: 'nb_call',labelKey: 'fields.callCount',type: 'number',placeholder: '1'},
     {
         key: 'model_name',
-        label: 'Modèle',
+        labelKey: 'fields.model',
         type: 'select',
         options: [
             'alibaba/wan2.1',
@@ -653,25 +653,25 @@ export const nodeFields = {
     },
     {
         key: 'resolution',
-        label: 'Résolution',
+        labelKey: 'fields.resolution',
         type: 'select',
         options: ['720p', '1080p', '4k', '1024x576']  // d'autres formats peuvent être ajoutés manuellement via un input text si besoin, mais le select couvre l'essentiel
     },
-    { key: 'duration', label: 'Durée (secondes)', type: 'number', placeholder: '10' },
+    { key: 'duration', labelKey: 'fields.duration', type: 'number', placeholder: '10' },
     {
         key: 'with_audio',
-        label: 'Avec audio',
+        labelKey: 'fields.withAudio',
         type: 'select',
         options: ['true', 'false']
     },
     {
         key: 'datacenter_location',
-        label: 'Localisation du datacenter',
+        labelKey: 'fields.datacenterLocation',
         type: 'select',
         options: DATACENTER_LOCATIONS
     },
-    { key: 'datacenter_pue', label: 'PUE Datacenter', type: 'number', placeholder: '1.58' },
-    { key: 'datacenter_wue', label: 'WUE Datacenter', type: 'number', placeholder: '1.8' },
+    { key: 'datacenter_pue', labelKey: 'fields.datacenterPue', type: 'number', placeholder: '1.58' },
+    { key: 'datacenter_wue', labelKey: 'fields.datacenterWue', type: 'number', placeholder: '1.8' },
     
 ]
 }
