@@ -6,6 +6,9 @@
     "savePipeline": "Sauvegarder Pipeline",
     "deletePipeline": "Supprimer Pipeline"
   },
+  "language": {
+    "label": "Langue"
+  },
   "connection": {
     "connected": "Connecté",
     "serverError": "Erreur serveur",

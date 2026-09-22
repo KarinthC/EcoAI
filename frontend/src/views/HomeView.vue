@@ -9,6 +9,7 @@ import CustomNode from '@/components/pipeline/CustomNode.vue'
 import ParameterPanel from '@/components/pipeline/ParameterPanel.vue'
 import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
 import UserIdentification from '@/components/UserIdentification.vue'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import PipelineTabs from '@/components/pipeline/PipelineTabs.vue'
 import AnalysisOverlay from '@/components/pipeline/AnalysisOverlay.vue'
 import AnalysisNodePanel from '@/components/pipeline/AnalysisNodePanel.vue'
@@ -60,6 +61,8 @@ onConnect(addEdges)
         <UserIdentification />
       </div>
       <div class="header-right">
+
+      <LanguageSwitcher />
 
       <button class="btn-export" @click="store.saveCurrent('Test depuis UI')">
         📤 {{ $t('header.savePipeline') }}
@@ -137,6 +140,26 @@ onConnect(addEdges)
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Largeur fixe commune aux boutons d'action : le libellé change avec la langue
+   (FR plus long que EN), on fige donc la largeur pour éviter que le bloc ne se
+   décale horizontalement lors du changement de langue. */
+.btn-export,
+.btn-delete {
+  /* Largeur FIGÉE (et non min-) : les deux boutons ont la même taille quelle que
+     soit la langue, donc le bloc de droite ne se décale plus quand on passe de
+     FR (« Sauvegarder Pipeline ») à EN (« Save Pipeline »). La valeur couvre le
+     libellé le plus long (FR) avec une marge de sécurité. */
+  flex: 0 0 13rem;
+  width: 13rem;
+  justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  box-sizing: border-box;
 }
 
 .app-header {
