@@ -28,5 +28,4 @@ def compute(params: dict) -> dict:
         'method': 'placeholder',
         'confidence': 'none',
         'level': 'low',
-        'message': "Nœud de représentation du pipeline : aucun impact calculé.",
     }

@@ -3,7 +3,8 @@ import logging
 from ecologits.tracers.utils import llm_impacts
 
 from ..common import (
-    get_level_from_indicators, extract_gwp, extract_energy, normalize_location,
+
+    get_level_from_indicators, extract_gwp, normalize_location,
     extract_ecologits_indicators,
 )
 
@@ -35,15 +36,12 @@ def compute(params: dict) -> dict:
     )
 
     gwp_kg = nb_call * extract_gwp(impacts)
-    energy_kwh = nb_call * extract_energy(impacts)
     indicators = extract_ecologits_indicators(impacts, nb_call)
 
     return {
         'impact_kg': round(gwp_kg, 6),
-        'energy_kwh': round(energy_kwh, 6),
         'indicators': indicators,
         'method': 'ecologits',
         'confidence': 'low',
         'level': get_level_from_indicators(indicators),
-        'message': "Impact estimé via ecologits (LLM Call)"
     }

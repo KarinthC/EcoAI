@@ -35,7 +35,6 @@ def test_datasource_metadata():
     assert r['method'] == 'placeholder'
     assert r['confidence'] == 'none'
     assert r['level'] == 'low'
-    assert isinstance(r['message'], str) and r['message']
 
 
 def test_modele_ml_is_neutral():

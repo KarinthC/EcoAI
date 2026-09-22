@@ -143,8 +143,8 @@ def compute_storage(media: str, params: dict) -> dict:
     Si `duree_ans` est fourni, il est prioritaire (rétro-compatibilité).
 
     Returns:
-        dict au format attendu par l'orchestrateur (impact_kg, energy_kwh,
-        indicators, method, confidence, level, message).
+        dict au format attendu par l'orchestrateur
+        (impact_kg, indicators, method, confidence, level).
     """
     if media not in MEDIA:
         raise ValueError(f"Média inconnu : {media}. Disponibles : {list(MEDIA)}")
@@ -186,32 +186,14 @@ def compute_storage(media: str, params: dict) -> dict:
 
     gwp = indicators['PEF-GWP']
 
-    if media == 'HDD':
-        media_label = 'HDD (persistant)'
-        duree_txt = f"{duree_ans:.2f} an(s)"
-    else:
-        media_label = 'SSD NVMe (temporaire)'
-        duree_txt = f"{duree_jours:.1f} jour(s)"
-    message = (
-        f"Impact ACV pour {volume_to:.4f} To stockés {duree_txt} "
-        f"sur {media_label} (PUE {PUE} intégré au kWh/To/an, mix FR)."
-    )
-    if gwp >= 20:
-        message += (
-            " Impact GWP élevé : envisager un stockage HDD plutôt que SSD, "
-            "ou réduire la durée/le volume."
-        )
-
     return {
         'impact_kg': round(gwp, 6),
-        'energy_kwh': round(energy_kwh, 6),
         'indicators': indicators,
         'method': 'acv',
         # Valeurs partiellement extrapolées (13 catégories non-GWP par ratios
         # issus de la littérature ACV électronique) -> confiance moyenne.
         'confidence': 'medium',
         'level': get_level_from_indicators(indicators),
-        'message': message,
     }
 
 

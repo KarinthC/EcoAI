@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 
 const store = usePipelineStore()
+const { t } = useI18n()
 const expanded = ref(false)
 
 const criteria = computed(() => store.analysisResult?.criteria || [])
@@ -12,6 +14,21 @@ const globalLevel = computed(() => store.analysisResult?.global_level || 'low')
 const redCount = computed(() =>
   criteria.value.filter(c => (c.ratio || 0) >= 1).length
 )
+
+// Suggestions : le backend renvoie des objets { code, params }. On les traduit
+// via « overlay.items.<code> ». Repli sur la chaîne si le backend envoie encore
+// du texte brut (rétro-compatibilité), ou sur le code si la clé est inconnue.
+const suggestions = computed(() => {
+  const raw = store.analysisResult?.suggestions || []
+  return raw.map((s) => {
+    if (typeof s === 'string') return s
+    const code = s?.code
+    if (!code) return String(s)
+    const key = `overlay.items.${code}`
+    const translated = t(key, s.params || {})
+    return translated === key ? code : translated
+  })
+})
 </script>
 
 <template>
@@ -32,10 +49,10 @@ const redCount = computed(() =>
       </div>
 
       <div v-if="expanded" class="overlay-body">
-        <div v-if="store.analysisResult.suggestions?.length" class="suggestions">
+        <div v-if="suggestions.length" class="suggestions">
           <h4>{{ $t('overlay.reduceImpact') }}</h4>
           <ul>
-            <li v-for="(s, idx) in store.analysisResult.suggestions" :key="idx">{{ s }}</li>
+            <li v-for="(s, idx) in suggestions" :key="idx">{{ s }}</li>
           </ul>
         </div>
         <div v-else class="suggestions-empty">

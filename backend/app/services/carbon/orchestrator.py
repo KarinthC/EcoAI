@@ -170,7 +170,6 @@ def compute_impact(pipeline: dict) -> dict:
                 'level': 'low',
                 'method': 'placeholder',
                 'confidence': 'none',
-                'message': f"Aucun modèle de calcul pour « {label} » (nœud non pris en compte)."
             })
             continue
 
@@ -186,7 +185,6 @@ def compute_impact(pipeline: dict) -> dict:
                 'level': 'low',
                 'method': 'unknown',
                 'confidence': 'none',
-                'message': f"Erreur de calcul : {e}"
             })
             continue
 
@@ -199,16 +197,10 @@ def compute_impact(pipeline: dict) -> dict:
             'impact_kg': node_impact,
             'computed': node_computed,
             'level': result['level'],
-            'message': result.get('message', ''),
             # Métadonnées de méthode (prépare l'UI : ecologits = peu précis).
             'method': result.get('method', 'unknown'),
             'confidence': result.get('confidence', 'unknown'),
         }
-
-        # Enrichissement piloté par le CONTENU du résultat (pas par le label) :
-        # ajouter un nœud ne casse donc rien ici.
-        if 'energy_kwh' in result:
-            node_entry['energy_kwh'] = result['energy_kwh']
 
         # Bloc d'indicateurs : tous les critères portés par le nœud.
         if 'indicators' in result:
@@ -217,12 +209,22 @@ def compute_impact(pipeline: dict) -> dict:
         nodes_analysis.append(node_entry)
         total_impact += node_impact
 
-    # Suggestions globales
+    # Suggestions globales.
+    # On renvoie des CODES de suggestion (et non du texte français) afin que le
+    # frontend les traduise dans la langue active. `params` porte les éventuelles
+    # valeurs à interpoler. Le format est volontairement proche de
+    # {'code': ..., 'params': {...}} : le front résout « suggestions.<code> ».
     global_suggestions = []
     if total_impact > 30:
-        global_suggestions.append("L'empreinte totale est très élevée. Pensez à utiliser des modèles pré-entraînés.")
+        global_suggestions.append({
+            'code': 'veryHighFootprint',
+            'params': {'impact': round(total_impact, 2)},
+        })
     if total_impact > 10:
-        global_suggestions.append("Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact.")
+        global_suggestions.append({
+            'code': 'reduceEpochsOrBatch',
+            'params': {},
+        })
 
     # Agrégat de tous les critères + construction de l'affichage "à égalité".
     total_indicators = _aggregate_indicators(nodes_analysis)

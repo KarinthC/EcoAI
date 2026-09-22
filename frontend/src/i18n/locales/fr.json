@@ -50,7 +50,11 @@
     "suggestions": "💡 Suggestions",
     "criteriaBeyondBudget": "{count} critère(s) au-delà du budget mensuel",
     "reduceImpact": "Pour réduire l'impact :",
-    "noSuggestion": "Aucune suggestion particulière pour ce pipeline."
+    "noSuggestion": "Aucune suggestion particulière pour ce pipeline.",
+    "items": {
+      "veryHighFootprint": "L'empreinte totale est très élevée ({impact} kg CO₂ eq). Pensez à utiliser des modèles pré-entraînés.",
+      "reduceEpochsOrBatch": "Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact."
+    }
   },
   "analysis": {
     "levelHigh": "Impact élevé",
@@ -88,6 +92,68 @@
     "llm_call": "LLM Call",
     "llm_expert": "LLM Expert",
     "video_generation": "Video Generation"
+  },
+  "criteria": {
+    "PEF-GWP": {
+      "label": "Changement climatique",
+      "description": "Potentiel de réchauffement global (GWP), indicateur le plus courant de l'empreinte carbone."
+    },
+    "PEF-ODP": {
+      "label": "Appauvrissement de l'ozone",
+      "description": "Destruction de la couche d'ozone stratosphérique."
+    },
+    "PEF-PM": {
+      "label": "Particules fines",
+      "description": "Émissions de particules fines et leur impact sur la santé humaine."
+    },
+    "PEF-AP": {
+      "label": "Acidification",
+      "description": "Acidification des sols et des eaux (pluies acides)."
+    },
+    "PEF-Epf": {
+      "label": "Eutrophisation eau douce",
+      "description": "Enrichissement en phosphore des eaux douces."
+    },
+    "PEF-Epm": {
+      "label": "Eutrophisation marine",
+      "description": "Enrichissement en azote des eaux marines."
+    },
+    "PEF-Ept": {
+      "label": "Eutrophisation terrestre",
+      "description": "Enrichissement en azote des milieux terrestres."
+    },
+    "PEF-IR": {
+      "label": "Rayonnements ionisants",
+      "description": "Impact sur la santé humaine des rayonnements ionisants."
+    },
+    "PEF-POCP": {
+      "label": "Ozone photochimique",
+      "description": "Formation d'ozone troposphérique (smog) affectant la santé humaine."
+    },
+    "PEF-CTUh-nc": {
+      "label": "Toxicité humaine (non cancer.)",
+      "description": "Effets toxiques non cancérigènes sur la santé humaine."
+    },
+    "PEF-ADPf": {
+      "label": "Épuisement fossile",
+      "description": "Épuisement des ressources abiotiques fossiles (énergie primaire)."
+    },
+    "PEF-ADPe": {
+      "label": "Épuisement minéraux/métaux",
+      "description": "Épuisement des ressources minérales et métalliques."
+    },
+    "PEF-WU": {
+      "label": "Utilisation de l'eau",
+      "description": "Consommation d'eau douce. L'ACV (PEF-WU, en m³ eq) et la contribution ecologits (WCF, en litres) ne sont pas fusionnées car issues de méthodologies différentes : elles sont affichées côte à côte comme deux contributions distinctes."
+    },
+    "PEF-CTUe": {
+      "label": "Écotoxicité eau douce",
+      "description": "Effets écotoxicologiques sur les écosystèmes d'eau douce."
+    },
+    "PEF-CTUh-c": {
+      "label": "Toxicité humaine (cancer.)",
+      "description": "Effets toxiques cancérigènes sur la santé humaine."
+    }
   },
   "fields": {
     "name": "Nom",

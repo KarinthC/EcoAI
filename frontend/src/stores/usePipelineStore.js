@@ -278,7 +278,6 @@ export const usePipelineStore = defineStore('pipeline', () => {
             node.data = {
                 ...node.data,
                 impactLevel: item.level,
-                ...(item.energy_kwh !== undefined && { energy_kwh: item.energy_kwh }),
                 ...(item.indicators && { indicators: item.indicators }),
                 ...(item.method && { method: item.method }),
                 ...(item.confidence && { confidence: item.confidence })

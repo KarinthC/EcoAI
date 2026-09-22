@@ -40,19 +40,10 @@ def compute(params: dict) -> dict:
     # GWP comme clé technique pour l'agrégat du front (transition en cours).
     gwp = indicators['PEF-GWP']
 
-    message = (
-        f"Impact ACV pour {heures:.2f} h d'entraînement sur "
-        f"{nb_gpu} x {gpu_type} (serveur {server_id}, charge 100%, mix FR)."
-    )
-    if gwp >= 20:
-        message += " Impact GWP élevé : réduire la durée ou optimiser le GPU."
-
     return {
         'impact_kg': round(gwp, 6),
-        'energy_kwh': round(acv['energy_kwh'], 6),
         'indicators': indicators,
         'method': 'acv',
         'confidence': 'high',
         'level': get_level_from_indicators(indicators),
-        'message': message,
     }

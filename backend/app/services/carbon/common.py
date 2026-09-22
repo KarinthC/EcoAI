@@ -19,16 +19,6 @@ def normalize_location(location) -> str:
     return location or DEFAULT_LOCATION
 
 
-def get_level(impact_kg: float) -> str:
-    """Détermine le niveau de criticité en fonction de l'impact."""
-    if impact_kg < 0.1:
-        return 'low'
-    elif impact_kg < 1.0:
-        return 'medium'
-    else:
-        return 'high'
-
-
 # ---------------------------------------------------------------------------
 # Critères ACV (PEF) + limites planétaires par habitant (approche ADEME/SRC).
 #
@@ -259,12 +249,6 @@ def extract_gwp(impacts) -> float:
     """Extrait la valeur GWP (kgCO₂eq) d'un objet Impacts ecologits."""
     logger.debug(f"extract_gwp: impacts.gwp = {impacts.gwp}")
     return _extract_value(impacts.gwp)
-
-def extract_energy(impacts) -> float:
-    """Extrait l'énergie (kWh) d'un objet Impacts ecologits."""
-    logger.debug(f"extract_energy: impacts.energy = {impacts.energy}")
-    return _extract_value(impacts.energy)
-
 
 def _extract_optional(impacts, attr: str) -> float:
     """Extrait une valeur optionnelle d'un ImpactOutput (0.0 si absente/None)."""

@@ -29,16 +29,14 @@ logger = logging.getLogger(__name__)
 DEFAULT_CHARGE_PERCENT = 100.0
 
 
-def _impact_nul(message: str = '') -> dict:
+def _impact_nul() -> dict:
     """Résultat neutre : aucun impact (opérateur non déployé)."""
     return {
         'impact_kg': 0.0,
-        'energy_kwh': 0.0,
         'indicators': {},
         'method': 'acv',
         'confidence': 'high',
         'level': 'low',
-        'message': message,
     }
 
 
@@ -49,7 +47,7 @@ def compute(params: dict) -> dict:
     heures = params.get('heures')
 
     if not server_id or not gpu_type or heures in (None, '', 0, '0'):
-        return _impact_nul("Opérateur sans matériel : impact nul.")
+        return _impact_nul()
 
     heures = float(heures)
     nb_gpu = int(params.get('nb_gpu') or 1)
@@ -70,19 +68,10 @@ def compute(params: dict) -> dict:
     indicators = acv['indicators']
     gwp = indicators['PEF-GWP']
 
-    message = (
-        f"Impact ACV pour {heures:.2f} h d'opération sur "
-        f"{nb_gpu} x {gpu_type} (serveur {server_id}, charge {charge * 100:.0f}%, mix FR)."
-    )
-    if gwp >= 20:
-        message += " Impact GWP élevé : réduire la durée ou optimiser le GPU."
-
     return {
         'impact_kg': round(gwp, 6),
-        'energy_kwh': round(acv['energy_kwh'], 6),
         'indicators': indicators,
         'method': 'acv',
         'confidence': 'high',
         'level': get_level_from_indicators(indicators),
-        'message': message,
     }

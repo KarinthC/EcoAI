@@ -34,23 +34,27 @@
   },
   "sidebar": {
     "description": "Drag and drop these nodes onto the canvas.",
-    "downloadThresholds": "📄 Download the thresholds explanation",
-    "analyze": "🔍 Run the analysis",
-    "analyzing": "⏳ Analyzing...",
-    "backToEdit": "🔙 Back to editing",
+    "downloadThresholds": "\ud83d\udcc4 Download the thresholds explanation",
+    "analyze": "\ud83d\udd0d Run the analysis",
+    "analyzing": "\u23f3 Analyzing...",
+    "backToEdit": "\ud83d\udd19 Back to editing",
     "globalHigh": "High impact",
     "globalMedium": "Fairly high impact",
     "globalLow": "Low impact",
     "tooltipAria": "Criterion details",
     "partialMark": "Partial contribution",
     "tooltipThreshold": "Monthly threshold / inhabitant:",
-    "tooltipPartial": "⚠️ Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
+    "tooltipPartial": "\u26a0\ufe0f Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
   },
   "overlay": {
-    "suggestions": "💡 Suggestions",
+    "suggestions": "\ud83d\udca1 Suggestions",
     "criteriaBeyondBudget": "{count} criterion/criteria beyond the monthly budget",
     "reduceImpact": "To reduce the impact:",
-    "noSuggestion": "No particular suggestion for this pipeline."
+    "noSuggestion": "No particular suggestion for this pipeline.",
+    "items": {
+      "veryHighFootprint": "The total footprint is very high ({impact} kg CO\u2082 eq). Consider using pre-trained models.",
+      "reduceEpochsOrBatch": "Reducing the number of epochs or the batch size can significantly lower the impact."
+    }
   },
   "analysis": {
     "levelHigh": "High impact",
@@ -58,17 +62,17 @@
     "levelLow": "Low impact",
     "indicators": "Indicators",
     "waterUsage": "Water use",
-    "confidenceHigh": "✔️ High confidence (ADEME data)",
+    "confidenceHigh": "\u2714\ufe0f High confidence (ADEME data)",
     "confidenceMediumTitle": "Medium confidence",
     "confidenceMediumDetail": "Extrapolated infrastructure data, ADEME impact data",
     "confidenceLowTitle": "Low confidence",
-    "confidenceLowDetail": "⚠️ Lack of transparency from providers",
+    "confidenceLowDetail": "\u26a0\ufe0f Lack of transparency from providers",
     "confidenceNone": "Representation node: no impact calculated.",
     "confidenceGeneric": "Confidence: {level}"
   },
   "panel": {
-    "apply": "💾 Apply",
-    "delete": "🗑️ Delete",
+    "apply": "\ud83d\udcbe Apply",
+    "delete": "\ud83d\uddd1\ufe0f Delete",
     "choose": "-- Choose --"
   },
   "node": {
@@ -88,6 +92,68 @@
     "llm_call": "LLM Call",
     "llm_expert": "LLM Expert",
     "video_generation": "Video Generation"
+  },
+  "criteria": {
+    "PEF-GWP": {
+      "label": "Climate change",
+      "description": "Global warming potential (GWP), the most common indicator of carbon footprint."
+    },
+    "PEF-ODP": {
+      "label": "Ozone depletion",
+      "description": "Destruction of the stratospheric ozone layer."
+    },
+    "PEF-PM": {
+      "label": "Fine particulates",
+      "description": "Fine particulate emissions and their impact on human health."
+    },
+    "PEF-AP": {
+      "label": "Acidification",
+      "description": "Acidification of soils and water (acid rain)."
+    },
+    "PEF-Epf": {
+      "label": "Freshwater eutrophication",
+      "description": "Phosphorus enrichment of freshwater."
+    },
+    "PEF-Epm": {
+      "label": "Marine eutrophication",
+      "description": "Nitrogen enrichment of marine waters."
+    },
+    "PEF-Ept": {
+      "label": "Terrestrial eutrophication",
+      "description": "Nitrogen enrichment of terrestrial environments."
+    },
+    "PEF-IR": {
+      "label": "Ionizing radiation",
+      "description": "Impact on human health from ionizing radiation."
+    },
+    "PEF-POCP": {
+      "label": "Photochemical ozone",
+      "description": "Tropospheric ozone formation (smog) affecting human health."
+    },
+    "PEF-CTUh-nc": {
+      "label": "Human toxicity (non-carc.)",
+      "description": "Non-carcinogenic toxic effects on human health."
+    },
+    "PEF-ADPf": {
+      "label": "Fossil depletion",
+      "description": "Depletion of fossil abiotic resources (primary energy)."
+    },
+    "PEF-ADPe": {
+      "label": "Mineral/metal depletion",
+      "description": "Depletion of mineral and metal resources."
+    },
+    "PEF-WU": {
+      "label": "Water use",
+      "description": "Freshwater consumption. The LCA (PEF-WU, in m\u00b3 eq) and the ecologits contribution (WCF, in litres) are not merged because they come from different methodologies: they are shown side by side as two distinct contributions."
+    },
+    "PEF-CTUe": {
+      "label": "Freshwater ecotoxicity",
+      "description": "Ecotoxicological effects on freshwater ecosystems."
+    },
+    "PEF-CTUh-c": {
+      "label": "Human toxicity (carc.)",
+      "description": "Carcinogenic toxic effects on human health."
+    }
   },
   "fields": {
     "name": "Name",

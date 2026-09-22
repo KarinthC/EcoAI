@@ -3,7 +3,8 @@ import logging
 from ecologits.estimations import video_impacts
 
 from ..common import (
-    get_level_from_indicators, extract_gwp, extract_energy, normalize_location,
+
+    get_level_from_indicators, extract_gwp, normalize_location,
     extract_ecologits_indicators,
 )
 
@@ -55,38 +56,12 @@ def compute(params: dict) -> dict:
         raise
 
     gwp_kg = nb_call * extract_gwp(impacts)
-    energy_kwh = nb_call * extract_energy(impacts)
     indicators = extract_ecologits_indicators(impacts, nb_call)
-    level = get_level_from_indicators(indicators)
-
-    # Construction du message avec conseils personnalisés
-    suggestions = []
-
-    # Conseil basé sur le niveau d'impact
-    if level == 'high':
-        suggestions.append(f"L'impact de la génération vidéo est élevé ({gwp_kg:.4f} kgCO₂).")
-    elif level == 'medium':
-        suggestions.append(f"L'impact de la génération vidéo est modéré ({gwp_kg:.4f} kgCO₂).")
-
-    # Conseils spécifiques selon les paramètres
-    if resolution in ('1080p', '4k'):
-        suggestions.append("Essayez de réduire la résolution (ex: 720p au lieu de 1080p).")
-
-    if duration > 30:
-        suggestions.append("Une durée plus courte réduirait significativement l'impact.")
-
-    if with_audio:
-        suggestions.append("Générer sans audio peut réduire l'empreinte carbone.")
-
-    # Assemblage du message final
-    message = " ".join(suggestions) if suggestions else "Impact estimé via ecologits (Video Generation)."
 
     return {
         'impact_kg': round(gwp_kg, 6),
-        'energy_kwh': round(energy_kwh, 6),
         'indicators': indicators,
         'method': 'ecologits',
         'confidence': 'low',
-        'level': level,
-        'message': message
+        'level': get_level_from_indicators(indicators),
     }

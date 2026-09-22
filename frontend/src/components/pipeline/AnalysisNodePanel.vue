@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import useImpactColor from '@/composables/useImpactColor'
 import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
+import { criterionLabel } from '@/components/pipeline/criterionI18n.js'
 
 const props = defineProps({
   node: Object
@@ -11,7 +12,8 @@ const props = defineProps({
 
 const store = usePipelineStore()
 const { ratioColor } = useImpactColor()
-const { t } = useI18n()
+
+const { t, locale } = useI18n()
 
 // Libellé traduit du nœud (en-tête du panneau).
 const nodeLabel = computed(() => {
@@ -79,8 +81,8 @@ const orderedIndicators = computed(() => {
     if (!(key in indicators)) continue
     handled.add(key)
     rows.push({
-      key,
-      name: c.label,
+      // Libellé du critère traduit (clé technique stable + repli backend FR).
+      name: criterionLabel(t, key, c.label),
       value: indicators[key],
       unit: c.unit,
       color: indicatorColor(key, indicators[key]),
@@ -120,7 +122,8 @@ function formatValue(v) {
   if (v === 0) return '0'
   const abs = Math.abs(v)
   if (abs >= 1e-3 && abs < 1e5) {
-    return v.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+    // Séparateur décimal/triade conforme à la langue active (fr-FR / en…).
+    return v.toLocaleString(locale.value, { maximumFractionDigits: 4 })
   }
   return v.toExponential(2)
 }

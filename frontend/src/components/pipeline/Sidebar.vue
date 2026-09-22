@@ -3,13 +3,15 @@ import useDragAndDrop from '@/composables/useDnD'
 import useImpactColor from '@/composables/useImpactColor'
 import { usePipelineStore } from '@/stores/usePipelineStore'
 import { SIDEBAR_NODE_ORDER, NODE_TYPES, NODE_BORDER_CLASS } from '@/components/pipeline/nodeTypes.js'
+import { criterionLabel, criterionDescription } from '@/components/pipeline/criterionI18n.js'
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import axios from 'axios'
 
 const store = usePipelineStore()
 const { ratioColor } = useImpactColor()
-const { t } = useI18n()
+
+const { t, locale } = useI18n()
 
 const analyzing = ref(false)
 
@@ -96,7 +98,16 @@ const globalLabel = computed(() => {
 })
 
 // Critères ACV affichés à égalité.
-const criteria = computed(() => store.analysisResult?.criteria || [])
+// Le backend fournit un `label`/`description` en français : on les remplace par
+// la traduction associée à la clé technique du critère (repli sur le backend
+// si la clé est inconnue). Réactif à la langue active.
+const criteria = computed(() =>
+  (store.analysisResult?.criteria || []).map((c) => ({
+    ...c,
+    label: criterionLabel(t, c.key, c.label),
+    description: criterionDescription(t, c.key, c.description),
+  }))
+)
 
 // Couleur affichée pour un critère.
 // Un critère partiel (données ecologits manquantes) ne doit PAS apparaître vert
@@ -120,7 +131,8 @@ function formatValue(v) {
   if (v === 0) return '0'
   const abs = Math.abs(v)
   if (abs >= 1e-3 && abs < 1e5) {
-    return v.toLocaleString('fr-FR', { maximumFractionDigits: 4 })
+    // Séparateur décimal/triade conforme à la langue active (fr-FR / en…).
+    return v.toLocaleString(locale.value, { maximumFractionDigits: 4 })
   }
   return v.toExponential(2)
 }
