@@ -1,4 +1,9 @@
 // src/config/nodeConfigs.js
+//
+// Champs par type de nœud MoMa. Les paramètres propres à l'évaluation
+// écologique sont préfixés `eco:` (extensions ignorées par le schéma MoMa).
+// Les sous-types d'Operator (propriété `subtype`) pilotent la formule d'impact
+// et l'affichage conditionnel des champs.
 
 // Parc serveurs : chaque serveur expose 1 à N types de GPUs.
 // Doit rester cohérent avec SERVERS côté backend (acv/gpu_models.py).
@@ -15,51 +20,165 @@ const SERVERS = {
   lig10: ['H100 NVL 96Go'],
 }
 
-// Champs communs aux nœuds Entrainement et Inférence (calcul ACV).
+// Sous-types d'Operator (liste fermée, cf. momaTypes.js / moma_types.py).
+export const OPERATOR_SUBTYPE_OPTIONS = [
+  { value: 'preprocessing', labelKey: 'subtypes.preprocessing' },
+  { value: 'data_transformation', labelKey: 'subtypes.data_transformation' },
+  { value: 'training', labelKey: 'subtypes.training' },
+  { value: 'inference_local', labelKey: 'subtypes.inference_local' },
+  { value: 'inference_api', labelKey: 'subtypes.inference_api' },
+  { value: 'llm_call', labelKey: 'subtypes.llm_call' },
+  { value: 'video_generation', labelKey: 'subtypes.video_generation' },
+]
+
+// Fournisseurs LLM supportés par ecologits.
+const LLM_PROVIDERS = ['openai', 'anthropic', 'google_genai', 'mistralai', 'cohere', 'huggingface_hub']
+
+// Modèles LLM par fournisseur (doit rester cohérent avec models.json d'ecologits).
+const LLM_MODELS = {
+  openai: [
+    'chat-latest', 'gpt-3.5-turbo', 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo-1106',
+    'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-instruct', 'gpt-3.5-turbo-instruct-0914',
+    'gpt-4', 'gpt-4-0613', 'gpt-4-turbo', 'gpt-4-turbo-2024-04-09', 'gpt-4.1',
+    'gpt-4.1-2025-04-14', 'gpt-4.1-mini', 'gpt-4.1-mini-2025-04-14', 'gpt-4.1-nano',
+    'gpt-4.1-nano-2025-04-14', 'gpt-4o', 'gpt-4o-2024-05-13', 'gpt-4o-2024-08-06',
+    'gpt-4o-2024-11-20', 'gpt-4o-mini', 'gpt-4o-mini-2024-07-18',
+    'gpt-4o-mini-search-preview', 'gpt-4o-mini-search-preview-2025-03-11',
+    'gpt-4o-mini-transcribe', 'gpt-4o-mini-transcribe-2025-03-20',
+    'gpt-4o-mini-transcribe-2025-12-15', 'gpt-4o-mini-tts', 'gpt-4o-mini-tts-2025-03-20',
+    'gpt-4o-mini-tts-2025-12-15', 'gpt-4o-search-preview', 'gpt-4o-search-preview-2025-03-11',
+    'gpt-5', 'gpt-5-2025-08-07', 'gpt-5-chat-latest', 'gpt-5-codex', 'gpt-5-mini',
+    'gpt-5-mini-2025-08-07', 'gpt-5-nano', 'gpt-5-nano-2025-08-07', 'gpt-5-pro',
+    'gpt-5-pro-2025-10-06', 'gpt-5-search-api', 'gpt-5-search-api-2025-10-14', 'gpt-5.1',
+    'gpt-5.1-2025-11-13', 'gpt-5.1-chat-latest', 'gpt-5.1-codex', 'gpt-5.1-codex-max',
+    'gpt-5.1-codex-mini', 'gpt-5.2', 'gpt-5.2-2025-12-11', 'gpt-5.2-chat-latest',
+    'gpt-5.2-codex', 'gpt-5.2-pro', 'gpt-5.2-pro-2025-12-11', 'gpt-5.3-chat-latest',
+    'gpt-5.3-codex', 'gpt-5.4', 'gpt-5.4-2026-03-05', 'gpt-5.4-mini',
+    'gpt-5.4-mini-2026-03-17', 'gpt-5.4-nano', 'gpt-5.4-nano-2026-03-17', 'gpt-5.4-pro',
+    'gpt-5.4-pro-2026-03-05', 'gpt-5.5', 'gpt-5.5-2026-04-23', 'gpt-5.5-pro',
+    'gpt-5.5-pro-2026-04-23', 'o1', 'o1-2024-12-17', 'o3-mini', 'o3-mini-2025-01-31',
+    'o4-mini', 'o4-mini-2025-04-16', 'o4-mini-deep-research',
+    'o4-mini-deep-research-2025-06-26',
+  ],
+  anthropic: [
+    'claude-haiku-4-5-20251001', 'claude-opus-4-1-20250805', 'claude-opus-4-20250514',
+    'claude-opus-4-5-20251101', 'claude-opus-4-6', 'claude-opus-4-7', 'claude-opus-4-8',
+    'claude-sonnet-4-20250514', 'claude-sonnet-4-5-20250929', 'claude-sonnet-4-6',
+  ],
+  google_genai: [
+    'gemini-2.0-flash', 'gemini-2.0-flash-001', 'gemini-2.0-flash-lite',
+    'gemini-2.0-flash-lite-001', 'gemini-2.5-flash', 'gemini-2.5-flash-image',
+    'gemini-2.5-flash-lite', 'gemini-2.5-pro', 'gemini-3-flash-preview',
+    'gemini-3-pro-image-preview', 'gemini-3-pro-preview', 'gemini-3.1-flash-image-preview',
+    'gemini-3.1-flash-lite', 'gemini-3.1-flash-lite-preview', 'gemini-3.1-pro-preview',
+    'gemini-3.1-pro-preview-customtools', 'gemini-3.5-flash', 'gemini-flash-latest',
+    'gemini-flash-lite-latest', 'gemini-pro-latest', 'gemma-4-26b-a4b-it', 'gemma-4-31b-it',
+  ],
+  mistralai: [
+    'codestral-2405', 'codestral-2411-rc5', 'codestral-2412', 'codestral-2501',
+    'codestral-2508', 'codestral-latest', 'devstral-2512', 'devstral-latest',
+    'devstral-medium-latest', 'magistral-medium-2509', 'magistral-medium-latest',
+    'magistral-small-2509', 'magistral-small-latest', 'ministral-14b-2512',
+    'ministral-14b-latest', 'ministral-3b-2512', 'ministral-3b-latest', 'ministral-8b-2512',
+    'ministral-8b-latest', 'mistral-large-2512', 'mistral-large-latest', 'mistral-medium',
+    'mistral-medium-2505', 'mistral-medium-2508', 'mistral-medium-2604', 'mistral-medium-3',
+    'mistral-medium-3-5', 'mistral-medium-3.5', 'mistral-medium-latest', 'mistral-small-2506',
+    'mistral-small-2603', 'mistral-small-latest', 'mistral-tiny-2407', 'mistral-tiny-latest',
+    'open-mistral-7b', 'open-mistral-nemo', 'open-mistral-nemo-2407', 'pixtral-12b',
+    'pixtral-12b-2409', 'pixtral-12b-latest', 'voxtral-mini-2507', 'voxtral-mini-2509',
+    'voxtral-mini-2602', 'voxtral-mini-latest', 'voxtral-small-2507', 'voxtral-small-latest',
+  ],
+  cohere: [
+    'c4ai-aya-expanse-32b', 'c4ai-aya-vision-32b', 'command-a-03-2025',
+    'command-a-plus-05-2026', 'command-a-reasoning-08-2025', 'command-a-translate-08-2025',
+    'command-a-vision-07-2025', 'command-r-08-2024', 'command-r-plus-08-2024',
+    'command-r7b-12-2024', 'command-r7b-arabic-02-2025',
+  ],
+  huggingface_hub: [
+    'databricks/dbrx-base', 'databricks/dbrx-instruct', 'databricks/dolly-v1-6b',
+    'databricks/dolly-v2-12b', 'databricks/dolly-v2-3b', 'databricks/dolly-v2-7b',
+    'meta-llama/CodeLlama-13b-hf', 'meta-llama/CodeLlama-13b-Instruct-hf',
+    'meta-llama/CodeLlama-13b-Python-hf', 'meta-llama/CodeLlama-34b-hf',
+    'meta-llama/CodeLlama-34b-Instruct-hf', 'meta-llama/CodeLlama-34b-Python-hf',
+    'meta-llama/CodeLlama-70b-hf', 'meta-llama/CodeLlama-70b-Instruct-hf',
+    'meta-llama/CodeLlama-70b-Python-hf', 'meta-llama/CodeLlama-7b-hf',
+    'meta-llama/CodeLlama-7b-Instruct-hf', 'meta-llama/CodeLlama-7b-Python-hf',
+    'meta-llama/Llama-2-13b', 'meta-llama/Llama-2-13b-chat', 'meta-llama/Llama-2-13b-chat-hf',
+    'meta-llama/Llama-2-13b-hf', 'meta-llama/Llama-2-70b', 'meta-llama/Llama-2-70b-chat',
+    'meta-llama/Llama-2-70b-chat-hf', 'meta-llama/Llama-2-70b-hf', 'meta-llama/Llama-2-7b',
+    'meta-llama/Llama-2-7b-chat', 'meta-llama/Llama-2-7b-chat-hf', 'meta-llama/Llama-2-7b-hf',
+    'meta-llama/Llama-Guard-3-8B', 'meta-llama/Llama-Guard-3-8B-INT8',
+    'meta-llama/LlamaGuard-7b', 'meta-llama/Meta-Llama-3-70B',
+    'meta-llama/Meta-Llama-3-70B-Instruct', 'meta-llama/Meta-Llama-3-8B',
+    'meta-llama/Meta-Llama-3-8B-Instruct', 'meta-llama/Meta-Llama-3.1-405B',
+    'meta-llama/Meta-Llama-3.1-405B-FP8', 'meta-llama/Meta-Llama-3.1-405B-Instruct',
+    'meta-llama/Meta-Llama-3.1-405B-Instruct-FP8', 'meta-llama/Meta-Llama-3.1-70B',
+    'meta-llama/Meta-Llama-3.1-70B-Instruct', 'meta-llama/Meta-Llama-3.1-8B',
+    'meta-llama/Meta-Llama-3.1-8B-Instruct', 'meta-llama/Meta-Llama-Guard-2-8B',
+    'meta-llama/Prompt-Guard-86M', 'microsoft/phi-1', 'microsoft/phi-1_5',
+    'microsoft/Phi-3-medium-128k-instruct', 'microsoft/Phi-3-medium-128k-instruct-onnx-cpu',
+    'microsoft/Phi-3-medium-128k-instruct-onnx-cuda',
+    'microsoft/Phi-3-medium-128k-instruct-onnx-directml',
+    'microsoft/Phi-3-medium-4k-instruct', 'microsoft/Phi-3-medium-4k-instruct-onnx-cpu',
+    'microsoft/Phi-3-medium-4k-instruct-onnx-cuda',
+    'microsoft/Phi-3-medium-4k-instruct-onnx-directml', 'microsoft/Phi-3-mini-128k-instruct',
+    'microsoft/Phi-3-mini-128k-instruct-onnx', 'microsoft/Phi-3-mini-4k-instruct',
+    'microsoft/Phi-3-mini-4k-instruct-gguf', 'microsoft/Phi-3-mini-4k-instruct-onnx',
+    'microsoft/Phi-3-mini-4k-instruct-onnx-web', 'microsoft/Phi-3-small-128k-instruct',
+    'microsoft/Phi-3-small-128k-instruct-onnx-cuda', 'microsoft/Phi-3-small-8k-instruct',
+    'microsoft/Phi-3-small-8k-instruct-onnx-cuda', 'microsoft/Phi-3-vision-128k-instruct',
+    'microsoft/Phi-3-vision-128k-instruct-onnx-cpu',
+    'microsoft/Phi-3-vision-128k-instruct-onnx-cuda',
+    'microsoft/Phi-3-vision-128k-instruct-onnx-directml',
+    'mistral-community/Codestral-22B-v0.1', 'mistral-community/Mistral-7B-Instruct-v0.3',
+    'mistral-community/Mistral-7B-v0.2', 'mistral-community/Mixtral-8x22B-Instruct-v0.1-4bit',
+    'mistral-community/Mixtral-8x22B-v0.1', 'mistral-community/Mixtral-8x22B-v0.1-4bit',
+    'mistral-community/Mixtral-8x22B-v0.1-AWQ', 'mistral-community/Mixtral-8x22B-v0.1-original',
+    'mistral-community/mixtral-8x22B-Instruct-v0.3-original',
+    'mistral-community/mixtral-8x22B-v0.3', 'mistral-community/mixtral-8x22B-v0.3-original',
+  ],
+}
+
+// Modèles de génération vidéo supportés par ecologits.
+export const VIDEO_MODELS = [
+  'alibaba/wan2.1', 'alibaba/wan2.2', 'bytedance/seedance-1.0', 'bytedance/seedance-1.5-pro',
+  'google/veo-3.0', 'google/veo-3.0-fast', 'google/veo-3.1', 'google/veo-3.1-fast',
+  'klingai/kling-v1.6', 'klingai/kling-v2.6', 'klingai/kling-v3', 'lightricks/ltx-2-t2v',
+  'lightricks/ltx-2-t2va', 'openai/sora-2-pro', 'runway/gen-4.5', 'tencent/hunyuanvideo',
+  'tencent/hunyuanvideo-1.5',
+]
+
+// Champs matériels communs aux Operator de calcul local (ACV).
 // La liste des GPUs dépend du serveur sélectionné (dependsOn/optionsMapping).
 const GPU_SERVER_FIELDS = [
-  { key: 'server_id', labelKey: 'fields.server', type: 'select', options: Object.keys(SERVERS) },
-  { key: 'gpu_type', labelKey: 'fields.gpu', type: 'select', dependsOn: 'server_id', optionsMapping: SERVERS },
-  { key: 'nb_gpu', labelKey: 'fields.gpuCount', type: 'number', placeholder: '1' },
-  { key: 'heures', labelKey: 'fields.hours', type: 'number', placeholder: '1' },
+  { key: 'eco:serverId', labelKey: 'fields.server', type: 'select', options: Object.keys(SERVERS) },
+  { key: 'eco:gpuModel', labelKey: 'fields.gpu', type: 'select', dependsOn: 'eco:serverId', optionsMapping: SERVERS },
+  { key: 'eco:gpuCount', labelKey: 'fields.gpuCount', type: 'number', placeholder: '1' },
+  { key: 'eco:executionTimeSec', labelKey: 'fields.executionTimeSec', type: 'number', placeholder: '3600' },
 ]
 
-// Champs du nœud Opérateur : nom libre + paramètres matériels (calcul ACV),
-// avec un taux de charge paramétrable (défaut 100% si vide).
-const OPERATOR_FIELDS = [
-  { key: 'nom', labelKey: 'fields.name', type: 'text' },
-  ...GPU_SERVER_FIELDS,
-  { key: 'charge', labelKey: 'fields.loadRate', type: 'number', placeholder: '100' },
-]
+// Serveurs de stockage connus (parc LIG SUMMER). La sélection du serveur
+// conditionne la confiance du calcul : sans serveur, la confiance est faible.
+export const STORAGE_SERVERS = ['LIG SUMMER']
 
-// Champs COMMUNS aux nœuds de stockage (hors durée) :
-// le média (HDD/SSD) est forcé côté backend par le label ; les champs `format` et
-// `serveur_stockage` sont conservés pour la traçabilité et les recommandations
-// (suggérer un autre type de stockage si l'empreinte est élevée).
-const STORAGE_COMMON_FIELDS = [
-  { key: 'nom', labelKey: 'fields.name', type: 'text' },
+// Champs du nœud Data : stockage des données persistées.
+// L'impact n'est porté que si le média est calculé (SSD/HDD).
+const DATA_FIELDS = [
+  { key: 'eco:contentSize', labelKey: 'fields.size', type: 'number', placeholder: '2' },
   {
-    key: 'format',
+    key: 'eco:encodingFormat',
     labelKey: 'fields.format',
     type: 'select',
-    options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
+    options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF'],
   },
-  { key: 'taille', labelKey: 'fields.size', type: 'number', placeholder: '2' },
-]
-
-// Données persistantes (HDD) : le stockage persistant se compte en ANNÉES.
-const STORAGE_PERSISTENT_FIELDS = [
-  ...STORAGE_COMMON_FIELDS,
-  { key: 'duree_ans', labelKey: 'fields.storageDurationYears', type: 'number', placeholder: '1' },
-  { key: 'serveur_stockage', labelKey: 'fields.storageServer', type: 'select', options: ['LIG SUMMER'] },
-]
-
-// Données SSD temporaires (scratch) : durée en JOURS, purgée après ~30 jours
-// par convention HPC/cloud (défaut = 30 jours).
-const STORAGE_TEMPORARY_FIELDS = [
-  ...STORAGE_COMMON_FIELDS,
-  { key: 'duree_jours', labelKey: 'fields.storageDurationDays', type: 'number', placeholder: '30' },
-  { key: 'serveur_stockage', labelKey: 'fields.storageServer', type: 'select', options: ['LIG SUMMER'] },
+  {
+    key: 'eco:storageMedium',
+    labelKey: 'fields.storageMedium',
+    type: 'select',
+    options: ['ssd', 'hdd', 'cloud', 'tape'],
+  },
+  { key: 'eco:retentionDays', labelKey: 'fields.retentionDays', type: 'number', placeholder: '30' },
+  { key: 'eco:storageServer', labelKey: 'fields.storageServer', type: 'select', options: STORAGE_SERVERS },
 ]
 
 // Zones de mix électrique supportées par ecologits (codes ISO 3166-1 alpha-3).
@@ -283,395 +402,63 @@ export const DATACENTER_LOCATIONS = [
 ]
 
 export const nodeFields = {
-  // Nœud « Données » : représentation seule, SANS calcul d'impact (cf. backend
-  // acv/datasource.py). Champs : nom, type de données (clé `format` comme les
-  // autres nœuds), taille. Ni infrastructure ni type de stockage pour l'instant.
-  datasource: [
-    { key: 'nom', labelKey: 'fields.name', type: 'text' },
-    {
-      key: 'format',
-      labelKey: 'fields.dataType',
-      type: 'select',
-      options: ['CSV', 'JSON', 'Parquet', 'Base de données', 'XML', 'Texte', 'Image', 'Vidéo', 'PDF']
-    },
-    { key: 'taille', labelKey: 'fields.size', type: 'number', placeholder: '2' },
+  // Nœud « Dataset » : conteneur MoMa (sc:Dataset), impact 0.
+  dataset: [
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+    { key: 'eco:description', labelKey: 'fields.description', type: 'text' },
   ],
 
+  // Nœud « Data » : stockage des données persistées (impact si média SSD/HDD).
+  data: DATA_FIELDS,
+
+  // Nœud « ML Model » : paramètre les formules, impact 0.
   ml_model: [
-      { key: 'nom', labelKey: 'fields.name', type: 'text'  },
-      { key: 'version', labelKey: 'fields.version', type: 'number'  },
-      { key: 'type', labelKey: 'fields.type', type: 'select',   options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM','Transformer'] },
-      { key: 'parametres', labelKey: 'fields.parameters', type: 'number', placeholder: '28000' }
-  ],
-  storage_persistent: STORAGE_PERSISTENT_FIELDS,
-
-  storage_temporary: STORAGE_TEMPORARY_FIELDS,
-
-  training: GPU_SERVER_FIELDS,
-
-  inference: GPU_SERVER_FIELDS,
-
-  operator: OPERATOR_FIELDS,
-
-
-  llm_call: [
-    {
-      key: 'nb_call',
-      labelKey: 'fields.callCount',
-      type: 'number',
-      placeholder: '1'
-    },
-    {
-      key: 'provider',
-      labelKey: 'fields.provider',
-      type: 'select',
-      options: [
-        'openai',
-        'anthropic',
-        'google_genai',
-        'mistralai',
-        'cohere',
-        "huggingface_hub"
-      ]
-    },
-    {
-      key: 'model',
-      labelKey: 'fields.model',
-      type: 'select',
-      dependsOn: 'provider',
-      optionsMapping: {
-        openai: [
-          "chat-latest",
-          "gpt-3.5-turbo",
-          "gpt-3.5-turbo-0125",
-          "gpt-3.5-turbo-1106",
-          "gpt-3.5-turbo-16k",
-          "gpt-3.5-turbo-instruct",
-          "gpt-3.5-turbo-instruct-0914",
-          "gpt-4",
-          "gpt-4-0613",
-          "gpt-4-turbo",
-          "gpt-4-turbo-2024-04-09",
-          "gpt-4.1",
-          "gpt-4.1-2025-04-14",
-          "gpt-4.1-mini",
-          "gpt-4.1-mini-2025-04-14",
-          "gpt-4.1-nano",
-          "gpt-4.1-nano-2025-04-14",
-          "gpt-4o",
-          "gpt-4o-2024-05-13",
-          "gpt-4o-2024-08-06",
-          "gpt-4o-2024-11-20",
-          "gpt-4o-mini",
-          "gpt-4o-mini-2024-07-18",
-          "gpt-4o-mini-search-preview",
-          "gpt-4o-mini-search-preview-2025-03-11",
-          "gpt-4o-mini-transcribe",
-          "gpt-4o-mini-transcribe-2025-03-20",
-          "gpt-4o-mini-transcribe-2025-12-15",
-          "gpt-4o-mini-tts",
-          "gpt-4o-mini-tts-2025-03-20",
-          "gpt-4o-mini-tts-2025-12-15",
-          "gpt-4o-search-preview",
-          "gpt-4o-search-preview-2025-03-11",
-          "gpt-5",
-          "gpt-5-2025-08-07",
-          "gpt-5-chat-latest",
-          "gpt-5-codex",
-          "gpt-5-mini",
-          "gpt-5-mini-2025-08-07",
-          "gpt-5-nano",
-          "gpt-5-nano-2025-08-07",
-          "gpt-5-pro",
-          "gpt-5-pro-2025-10-06",
-          "gpt-5-search-api",
-          "gpt-5-search-api-2025-10-14",
-          "gpt-5.1",
-          "gpt-5.1-2025-11-13",
-          "gpt-5.1-chat-latest",
-          "gpt-5.1-codex",
-          "gpt-5.1-codex-max",
-          "gpt-5.1-codex-mini",
-          "gpt-5.2",
-          "gpt-5.2-2025-12-11",
-          "gpt-5.2-chat-latest",
-          "gpt-5.2-codex",
-          "gpt-5.2-pro",
-          "gpt-5.2-pro-2025-12-11",
-          "gpt-5.3-chat-latest",
-          "gpt-5.3-codex",
-          "gpt-5.4",
-          "gpt-5.4-2026-03-05",
-          "gpt-5.4-mini",
-          "gpt-5.4-mini-2026-03-17",
-          "gpt-5.4-nano",
-          "gpt-5.4-nano-2026-03-17",
-          "gpt-5.4-pro",
-          "gpt-5.4-pro-2026-03-05",
-          "gpt-5.5",
-          "gpt-5.5-2026-04-23",
-          "gpt-5.5-pro",
-          "gpt-5.5-pro-2026-04-23",
-          "o1",
-          "o1-2024-12-17",
-          "o3-mini",
-          "o3-mini-2025-01-31",
-          "o4-mini",
-          "o4-mini-2025-04-16",
-          "o4-mini-deep-research",
-          "o4-mini-deep-research-2025-06-26"
-        ],
-        anthropic: [
-          "claude-haiku-4-5-20251001",
-          "claude-opus-4-1-20250805",
-          "claude-opus-4-20250514",
-          "claude-opus-4-5-20251101",
-          "claude-opus-4-6",
-          "claude-opus-4-7",
-          "claude-opus-4-8",
-          "claude-sonnet-4-20250514",
-          "claude-sonnet-4-5-20250929",
-          "claude-sonnet-4-6"
-        ],
-        google_genai: [
-          "gemini-2.0-flash",
-          "gemini-2.0-flash-001",
-          "gemini-2.0-flash-lite",
-          "gemini-2.0-flash-lite-001",
-          "gemini-2.5-flash",
-          "gemini-2.5-flash-image",
-          "gemini-2.5-flash-lite",
-          "gemini-2.5-pro",
-          "gemini-3-flash-preview",
-          "gemini-3-pro-image-preview",
-          "gemini-3-pro-preview",
-          "gemini-3.1-flash-image-preview",
-          "gemini-3.1-flash-lite",
-          "gemini-3.1-flash-lite-preview",
-          "gemini-3.1-pro-preview",
-          "gemini-3.1-pro-preview-customtools",
-          "gemini-3.5-flash",
-          "gemini-flash-latest",
-          "gemini-flash-lite-latest",
-          "gemini-pro-latest",
-          "gemma-4-26b-a4b-it",
-          "gemma-4-31b-it"
-        ],
-        mistralai: [
-          "codestral-2405",
-          "codestral-2411-rc5",
-          "codestral-2412",
-          "codestral-2501",
-          "codestral-2508",
-          "codestral-latest",
-          "devstral-2512",
-          "devstral-latest",
-          "devstral-medium-latest",
-          "magistral-medium-2509",
-          "magistral-medium-latest",
-          "magistral-small-2509",
-          "magistral-small-latest",
-          "ministral-14b-2512",
-          "ministral-14b-latest",
-          "ministral-3b-2512",
-          "ministral-3b-latest",
-          "ministral-8b-2512",
-          "ministral-8b-latest",
-          "mistral-large-2512",
-          "mistral-large-latest",
-          "mistral-medium",
-          "mistral-medium-2505",
-          "mistral-medium-2508",
-          "mistral-medium-2604",
-          "mistral-medium-3",
-          "mistral-medium-3-5",
-          "mistral-medium-3.5",
-          "mistral-medium-latest",
-          "mistral-small-2506",
-          "mistral-small-2603",
-          "mistral-small-latest",
-          "mistral-tiny-2407",
-          "mistral-tiny-latest",
-          "open-mistral-7b",
-          "open-mistral-nemo",
-          "open-mistral-nemo-2407",
-          "pixtral-12b",
-          "pixtral-12b-2409",
-          "pixtral-12b-latest",
-          "voxtral-mini-2507",
-          "voxtral-mini-2509",
-          "voxtral-mini-2602",
-          "voxtral-mini-latest",
-          "voxtral-small-2507",
-          "voxtral-small-latest"
-        ],
-        cohere: [
-          "c4ai-aya-expanse-32b",
-            "c4ai-aya-vision-32b",
-            "command-a-03-2025",
-            "command-a-plus-05-2026",
-            "command-a-reasoning-08-2025",
-            "command-a-translate-08-2025",
-            "command-a-vision-07-2025",
-            "command-r-08-2024",
-            "command-r-plus-08-2024",
-            "command-r7b-12-2024",
-            "command-r7b-arabic-02-2025"
-        ],
-        huggingface_hub: [
-          "databricks/dbrx-base",
-          "databricks/dbrx-instruct",
-          "databricks/dolly-v1-6b",
-          "databricks/dolly-v2-12b",
-          "databricks/dolly-v2-3b",
-          "databricks/dolly-v2-7b",
-          "meta-llama/CodeLlama-13b-hf",
-          "meta-llama/CodeLlama-13b-Instruct-hf",
-          "meta-llama/CodeLlama-13b-Python-hf",
-          "meta-llama/CodeLlama-34b-hf",
-          "meta-llama/CodeLlama-34b-Instruct-hf",
-          "meta-llama/CodeLlama-34b-Python-hf",
-          "meta-llama/CodeLlama-70b-hf",
-          "meta-llama/CodeLlama-70b-Instruct-hf",
-          "meta-llama/CodeLlama-70b-Python-hf",
-          "meta-llama/CodeLlama-7b-hf",
-          "meta-llama/CodeLlama-7b-Instruct-hf",
-          "meta-llama/CodeLlama-7b-Python-hf",
-          "meta-llama/Llama-2-13b",
-          "meta-llama/Llama-2-13b-chat",
-          "meta-llama/Llama-2-13b-chat-hf",
-          "meta-llama/Llama-2-13b-hf",
-          "meta-llama/Llama-2-70b",
-          "meta-llama/Llama-2-70b-chat",
-          "meta-llama/Llama-2-70b-chat-hf",
-          "meta-llama/Llama-2-70b-hf",
-          "meta-llama/Llama-2-7b",
-          "meta-llama/Llama-2-7b-chat",
-          "meta-llama/Llama-2-7b-chat-hf",
-          "meta-llama/Llama-2-7b-hf",
-          "meta-llama/Llama-Guard-3-8B",
-          "meta-llama/Llama-Guard-3-8B-INT8",
-          "meta-llama/LlamaGuard-7b",
-          "meta-llama/Meta-Llama-3-70B",
-          "meta-llama/Meta-Llama-3-70B-Instruct",
-          "meta-llama/Meta-Llama-3-8B",
-          "meta-llama/Meta-Llama-3-8B-Instruct",
-          "meta-llama/Meta-Llama-3.1-405B",
-          "meta-llama/Meta-Llama-3.1-405B-FP8",
-          "meta-llama/Meta-Llama-3.1-405B-Instruct",
-          "meta-llama/Meta-Llama-3.1-405B-Instruct-FP8",
-          "meta-llama/Meta-Llama-3.1-70B",
-          "meta-llama/Meta-Llama-3.1-70B-Instruct",
-          "meta-llama/Meta-Llama-3.1-8B",
-          "meta-llama/Meta-Llama-3.1-8B-Instruct",
-          "meta-llama/Meta-Llama-Guard-2-8B",
-          "meta-llama/Prompt-Guard-86M",
-          "microsoft/phi-1",
-          "microsoft/phi-1_5",
-          "microsoft/Phi-3-medium-128k-instruct",
-          "microsoft/Phi-3-medium-128k-instruct-onnx-cpu",
-          "microsoft/Phi-3-medium-128k-instruct-onnx-cuda",
-          "microsoft/Phi-3-medium-128k-instruct-onnx-directml",
-          "microsoft/Phi-3-medium-4k-instruct",
-          "microsoft/Phi-3-medium-4k-instruct-onnx-cpu",
-          "microsoft/Phi-3-medium-4k-instruct-onnx-cuda",
-          "microsoft/Phi-3-medium-4k-instruct-onnx-directml",
-          "microsoft/Phi-3-mini-128k-instruct",
-          "microsoft/Phi-3-mini-128k-instruct-onnx",
-          "microsoft/Phi-3-mini-4k-instruct",
-          "microsoft/Phi-3-mini-4k-instruct-gguf",
-          "microsoft/Phi-3-mini-4k-instruct-onnx",
-          "microsoft/Phi-3-mini-4k-instruct-onnx-web",
-          "microsoft/Phi-3-small-128k-instruct",
-          "microsoft/Phi-3-small-128k-instruct-onnx-cuda",
-          "microsoft/Phi-3-small-8k-instruct",
-          "microsoft/Phi-3-small-8k-instruct-onnx-cuda",
-          "microsoft/Phi-3-vision-128k-instruct",
-          "microsoft/Phi-3-vision-128k-instruct-onnx-cpu",
-          "microsoft/Phi-3-vision-128k-instruct-onnx-cuda",
-          "microsoft/Phi-3-vision-128k-instruct-onnx-directml",
-          "mistral-community/Codestral-22B-v0.1",
-          "mistral-community/Mistral-7B-Instruct-v0.3",
-          "mistral-community/Mistral-7B-v0.2",
-          "mistral-community/Mixtral-8x22B-Instruct-v0.1-4bit",
-          "mistral-community/Mixtral-8x22B-v0.1",
-          "mistral-community/Mixtral-8x22B-v0.1-4bit",
-          "mistral-community/Mixtral-8x22B-v0.1-AWQ",
-          "mistral-community/Mixtral-8x22B-v0.1-original",
-          "mistral-community/mixtral-8x22B-Instruct-v0.3-original",
-          "mistral-community/mixtral-8x22B-v0.3",
-          "mistral-community/mixtral-8x22B-v0.3-original"
-      ]
-      }
-    },
-    { key: 'output_tokens', labelKey: 'fields.outputTokens', type: 'number', placeholder: '100' },
-    { key: 'request_latency', labelKey: 'fields.latency', type: 'number', placeholder: '100' }
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+    { key: 'eco:version', labelKey: 'fields.version', type: 'text' },
+    { key: 'eco:architecture', labelKey: 'fields.architecture', type: 'select', options: ['Dense', 'Multimodal', 'CNN', 'RNN', 'LSTM', 'Transformer'] },
+    { key: 'eco:parameterCount', labelKey: 'fields.parameterCount', type: 'number', placeholder: '28000' },
+    { key: 'eco:deployment', labelKey: 'fields.deployment', type: 'select', options: ['local', 'cloud_api'] },
+    { key: 'eco:provider', labelKey: 'fields.provider', type: 'select', options: ['openai', 'anthropic', 'google_genai', 'mistralai', 'cohere', 'huggingface_hub'] },
+    { key: 'eco:modelName', labelKey: 'fields.model', type: 'text' },
   ],
 
-  llm_expert: [
-    {key: 'nb_call',labelKey: 'fields.callCount',type: 'number',placeholder: '1'},
-    { key: 'active_params', labelKey: 'fields.activeParams', type: 'number', placeholder: '7' },
-    { key: 'total_params', labelKey: 'fields.totalParams', type: 'number', placeholder: '10' },
-    { key: 'output_tokens', labelKey: 'fields.outputTokens', type: 'number', placeholder: '250' },
-    { key: 'request_latency', labelKey: 'fields.latency', type: 'number', placeholder: '100' },
-    {
-      key: 'datacenter_location',
-      labelKey: 'fields.datacenterLocation',
-      type: 'select',
-      options: DATACENTER_LOCATIONS
-    },
-    { key: 'datacenter_pue', labelKey: 'fields.datacenterPue', type: 'number', placeholder: '1.58' },
-    { key: 'datacenter_wue', labelKey: 'fields.datacenterWue', type: 'number', placeholder: '1.8' }
-
+  // Nœud « Operator » : le sous-type pilote la formule d'impact.
+  // Les champs affichés dépendent du sous-type (cf. ParameterPanel.vue).
+  operator: [
+    { key: 'subtype', labelKey: 'fields.subtype', type: 'select', options: OPERATOR_SUBTYPE_OPTIONS },
+    // Champs de calcul local (ACV) : preprocessing, data_transformation,
+    // training, inference_local.
+    ...GPU_SERVER_FIELDS,
+    { key: 'eco:gpuUtilization', labelKey: 'fields.loadRate', type: 'number', placeholder: '100' },
+    // Champs d'appel API (ecologits) : inference_api, llm_call.
+    { key: 'eco:provider', labelKey: 'fields.provider', type: 'select', options: LLM_PROVIDERS },
+    // La liste des modèles dépend du sous-type (LLM : dépend du fournisseur ;
+    // vidéo : liste dédiée). Résolue dans ParameterPanel.vue.
+    { key: 'eco:modelName', labelKey: 'fields.model', type: 'select', dependsOn: 'eco:provider', optionsMapping: LLM_MODELS },
+    { key: 'eco:callCount', labelKey: 'fields.callCount', type: 'number', placeholder: '1' },
+    { key: 'eco:outputTokens', labelKey: 'fields.outputTokens', type: 'number', placeholder: '100' },
+    { key: 'eco:requestLatency', labelKey: 'fields.latency', type: 'number', placeholder: '100' },
+    // Champs vidéo (ecologits) : video_generation.
+    { key: 'eco:resolution', labelKey: 'fields.resolution', type: 'select', options: ['720p', '1080p', '4k', '1024x576'] },
+    { key: 'eco:duration', labelKey: 'fields.duration', type: 'number', placeholder: '10' },
+    { key: 'eco:withAudio', labelKey: 'fields.withAudio', type: 'select', options: ['true', 'false'] },
   ],
 
-  video_generation: [
-    {key: 'nb_call',labelKey: 'fields.callCount',type: 'number',placeholder: '1'},
-    {
-        key: 'model_name',
-        labelKey: 'fields.model',
-        type: 'select',
-        options: [
-            'alibaba/wan2.1',
-            'alibaba/wan2.2',
-            'bytedance/seedance-1.0',
-            'bytedance/seedance-1.5-pro',
-            'google/veo-3.0',
-            'google/veo-3.0-fast',
-            'google/veo-3.1',
-            'google/veo-3.1-fast',
-            'klingai/kling-v1.6',
-            'klingai/kling-v2.6',
-            'klingai/kling-v3',
-            'lightricks/ltx-2-t2v',
-            'lightricks/ltx-2-t2va',
-            'openai/sora-2-pro',
-            'runway/gen-4.5',
-            'tencent/hunyuanvideo',
-            'tencent/hunyuanvideo-1.5'
-        ]
-    },
-    {
-        key: 'resolution',
-        labelKey: 'fields.resolution',
-        type: 'select',
-        options: ['720p', '1080p', '4k', '1024x576']  // d'autres formats peuvent être ajoutés manuellement via un input text si besoin, mais le select couvre l'essentiel
-    },
-    { key: 'duration', labelKey: 'fields.duration', type: 'number', placeholder: '10' },
-    {
-        key: 'with_audio',
-        labelKey: 'fields.withAudio',
-        type: 'select',
-        options: ['true', 'false']
-    },
-    {
-        key: 'datacenter_location',
-        labelKey: 'fields.datacenterLocation',
-        type: 'select',
-        options: DATACENTER_LOCATIONS
-    },
-    { key: 'datacenter_pue', labelKey: 'fields.datacenterPue', type: 'number', placeholder: '1.58' },
-    { key: 'datacenter_wue', labelKey: 'fields.datacenterWue', type: 'number', placeholder: '1.8' },
-    
-]
+  // Nœud « Result Type » : valeurs échangées, impact marginal (non calculé).
+  result_type: [
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+    { key: 'eco:contentSize', labelKey: 'fields.size', type: 'number', placeholder: '1' },
+    { key: 'eco:retentionDays', labelKey: 'fields.retentionDays', type: 'number', placeholder: '30' },
+  ],
+
+  // Nœuds méta (conteneurs / métadonnées), impact 0.
+  analytical_pattern: [
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+  ],
+  task: [
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+  ],
+  user: [
+    { key: 'eco:name', labelKey: 'fields.name', type: 'text' },
+  ],
 }

@@ -425,6 +425,9 @@ aside .nodes > * {
 .sidebar-node-operator {
   background: #dd6b20;   
 }
+.sidebar-node-meta {
+  background: #718096;
+}
 
 .sidebar-low { background: #38a169 !important; }
 .sidebar-medium { background: #d69e2e !important; }

@@ -5,3 +5,4 @@ node_modules/
 dist/
 .mypy_cache/
 *.egg-info/
+.continue/

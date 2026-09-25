@@ -31,12 +31,15 @@ const orderedParams = computed(() => {
   const fields = nodeFields[nodeTypeId.value] || []
   const isFilled = (v) => v !== undefined && v !== null && v !== ''
 
-  // Valeur d'option lisible : pour un <select> à options { value, label }
-  // (ex. pays), on affiche le label de l'option ; sinon la valeur brute.
+  // Valeur d'option lisible : pour un <select> à options { value, label } ou
+  // { value, labelKey } (ex. sous-type d'Operator), on affiche le libellé de
+  // l'option ; sinon la valeur brute.
   const displayValue = (field, value) => {
     const options = field.options || []
     const opt = options.find((o) => o && typeof o === 'object' && o.value === value)
-    return opt ? opt.label : value
+    if (!opt) return value
+    if (opt.labelKey) return t(opt.labelKey)
+    return opt.label ?? value
   }
 
   const rows = []

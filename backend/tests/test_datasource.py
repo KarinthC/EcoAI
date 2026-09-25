@@ -1,50 +1,32 @@
-"""Tests unitaires pour le nœud « Données » (représentation, sans calcul).
+"""Tests unitaires pour les nœuds neutres MoMa (représentation, sans calcul).
 
-Le nœud « Données » sert uniquement à représenter une étape données dans le
-pipeline : il ne porte aucun modèle d'impact tant que celui-ci n'est pas
-implémenté. Il doit donc :
+Les nœuds de représentation (Dataset, ML Model, Result Type, Analytical Pattern,
+Task, User) servent uniquement à décrire le pipeline : ils ne portent aucun
+modèle d'impact. Ils doivent donc :
   - retourner un impact nul (0.0) ;
   - signaler `computed=False` (exclu de l'affichage d'impact côté front) ;
   - exposer `confidence='none'` et `method='placeholder'`.
 """
 
-from app.services.carbon.acv.datasource import compute
-from app.services.carbon.orchestrator import compute_impact, NODE_COMPUTERS
+from app.services.carbon.orchestrator import compute_impact, _compute_node
 
 
-def test_datasource_registered():
-    """Le label « Données » doit être dispatché vers le nœud datasource."""
-    assert 'Données' in NODE_COMPUTERS
+def _node(node_type, params=None):
+    return {'id': '1', 'data': {'nodeType': node_type, 'params': params or {}}}
 
 
-def test_datasource_zero_impact():
-    """Aucun impact, quelle que soit la saisie."""
-    r = compute({'nom': 'Dataset', 'format': 'CSV', 'taille': 500})
+def test_dataset_is_neutral():
+    """Le nœud Dataset est neutre : impact 0, non calculé."""
+    r = _compute_node(_node('dataset', {'eco:name': 'ds'}))
     assert r['impact_kg'] == 0.0
-
-
-def test_datasource_not_computed():
-    """Le nœud est signalé comme non calculé."""
-    r = compute({'taille': 500})
     assert r['computed'] is False
-
-
-def test_datasource_metadata():
-    """Métadonnées neutres attendues par le front."""
-    r = compute({})
     assert r['method'] == 'placeholder'
     assert r['confidence'] == 'none'
-    assert r['level'] == 'low'
 
 
-def test_modele_ml_is_neutral():
-    """« Modèle ML » est un nœud de représentation : pas d'impact, non calculé."""
-    pipeline = {
-        'nodes': [
-            {'id': '1', 'data': {'label': 'Modèle ML', 'params': {'nom': 'm', 'version': 1}}},
-        ]
-    }
-    result = compute_impact(pipeline)
+def test_ml_model_is_neutral():
+    """« ML Model » est un nœud de représentation : pas d'impact, non calculé."""
+    result = compute_impact({'nodes': [_node('ml_model', {'eco:name': 'm'})]})
     node = result['nodes'][0]
     assert node['impact_kg'] == 0.0
     assert node['computed'] is False
@@ -52,22 +34,23 @@ def test_modele_ml_is_neutral():
     assert result['total_impact_kg'] == 0.0
 
 
+def test_meta_nodes_are_neutral():
+    """Les nœuds méta (pattern, task, user) sont neutres."""
+    for node_type in ('analytical_pattern', 'task', 'user'):
+        r = _compute_node(_node(node_type))
+        assert r['computed'] is False
+        assert r['impact_kg'] == 0.0
+
+
 def test_unknown_node_is_neutral():
     """Un nœud non répertorié ne doit PAS afficher de faux « impact faible »."""
-    pipeline = {'nodes': [{'id': 'x', 'data': {'label': 'Inconnu', 'params': {}}}]}
-    node = compute_impact(pipeline)['nodes'][0]
+    node = compute_impact({'nodes': [_node('inconnu')]})['nodes'][0]
     assert node['computed'] is False
     assert node['confidence'] == 'none'
 
 
-def test_datasource_does_not_affect_total():
-    """Un pipeline composé du seul nœud « Données » a un impact total nul."""
-    pipeline = {
-        'nodes': [
-            {'id': '1', 'data': {'label': 'Données', 'params': {'taille': 1000}}},
-        ]
-    }
-    result = compute_impact(pipeline)
+def test_neutral_node_does_not_affect_total():
+    """Un pipeline composé d'un seul nœud neutre a un impact total nul."""
+    result = compute_impact({'nodes': [_node('dataset')]})
     assert result['total_impact_kg'] == 0.0
     assert result['nodes'][0]['computed'] is False
-    assert result['nodes'][0]['impact_kg'] == 0.0

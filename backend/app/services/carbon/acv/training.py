@@ -16,6 +16,7 @@ import logging
 
 from ..common import get_level_from_indicators
 from .gpu_models import compute_acv, available_gpus, gpu_exists_on_server
+from .moma_adapter import moma_operator_to_acv
 
 logger = logging.getLogger(__name__)
 
@@ -24,10 +25,13 @@ TRAINING_CHARGE = 1.0
 
 
 def compute(params: dict) -> dict:
-    server_id = params.get('server_id') or 'lig1'
-    gpu_type = params.get('gpu_type') or available_gpus(server_id)[0]
-    heures = float(params.get('heures') or 1.0)
-    nb_gpu = int(params.get('nb_gpu') or 1)
+    # Traduction des paramètres MoMa (`eco:*`) vers les clés ACV attendues.
+    acv_params = moma_operator_to_acv(params)
+
+    server_id = acv_params.get('server_id') or 'lig1'
+    gpu_type = acv_params.get('gpu_type') or available_gpus(server_id)[0]
+    heures = float(acv_params.get('heures') or 1.0)
+    nb_gpu = int(acv_params.get('nb_gpu') or 1)
 
     if not gpu_exists_on_server(server_id, gpu_type):
         raise ValueError(

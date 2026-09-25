@@ -41,6 +41,10 @@ body,
   border-color: #dd6b20;        
   background-color: #fffaf0;   
 }
+.node-border-meta .custom-node {
+  border-color: #718096;
+  background-color: #f7fafc;
+}
 .vue-flow__edge-path {
   stroke: #718096;       
   stroke-width: 2;

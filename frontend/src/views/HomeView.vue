@@ -18,8 +18,27 @@ const selectedNode = ref(null)
 
 
 const store = usePipelineStore()
-const { onConnect, addEdges, setViewport } = useVueFlow()
+const { onConnect, setViewport } = useVueFlow()
 const { onDragOver, onDrop, onDragLeave, isDragOver } = useDragAndDrop()
+
+// Détermine le type d'arête MoMa à partir des types des nœuds reliés :
+//   - Operator -> ML_Model : perform_inference
+//   - Operator -> Data/ResultType : output
+//   - Data/ResultType -> Operator : input
+//   - sinon : follows (ordre d'exécution)
+function inferEdgeType(sourceId, targetId) {
+  const nodes = store.activePipeline?.nodes || []
+  const sourceType = nodes.find(n => n.id === sourceId)?.data?.nodeType
+  const targetType = nodes.find(n => n.id === targetId)?.data?.nodeType
+  if (sourceType === 'operator' && targetType === 'ml_model') return 'perform_inference'
+  if (sourceType === 'operator' && (targetType === 'data' || targetType === 'result_type')) return 'output'
+  if ((sourceType === 'data' || sourceType === 'result_type') && targetType === 'operator') return 'input'
+  return 'follows'
+}
+
+function handleConnect(connection) {
+  store.addEdge(connection.source, connection.target, inferEdgeType(connection.source, connection.target))
+}
 
 const nodeTypes = {
   custom: markRaw(CustomNode)
@@ -48,7 +67,7 @@ onMounted(async () => {
   store.applyViewport(setViewport)
 })
 
-onConnect(addEdges)
+onConnect(handleConnect)
 
 </script>
 

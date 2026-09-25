@@ -12,17 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 def compute(params: dict) -> dict:
-    model_name = params.get('model_name')
-    nb_call = int(params.get('nb_call') or 1)
+    # Paramètres MoMa (`eco:*`) avec repli sur les clés historiques.
+    model_name = params.get('eco:modelName') or params.get('model_name')
+    nb_call = int(params.get('eco:callCount') or params.get('nb_call') or 1)
 
     if not model_name:
         raise ValueError("model_name est obligatoire pour Video Generation")
 
-    resolution = params.get('resolution', '1080p')
-    duration = int(params.get('duration') or 10)
+    resolution = params.get('eco:resolution') or params.get('resolution', '1080p')
+    duration = int(params.get('eco:duration') or params.get('duration') or 10)
 
     # Gestion de with_audio
-    with_audio_param = params.get('with_audio', 'true')
+    with_audio_param = params.get('eco:withAudio', params.get('with_audio', 'true'))
     if isinstance(with_audio_param, str):
         with_audio = with_audio_param.lower() == 'true'
     else:

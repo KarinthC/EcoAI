@@ -21,6 +21,15 @@ const nodeLabel = computed(() => {
   return key ? t(key) : (props.node?.data?.label || '')
 })
 
+// Message affiché pour un nœud neutre (confidence='none'). On distingue la
+// cause : support de stockage non sélectionné vs nœud de représentation.
+const neutralMessage = computed(() => {
+  if (props.node?.data?.reason === 'missing_medium') {
+    return t('analysis.missingStorageMedium')
+  }
+  return t('analysis.confidenceNone')
+})
+
 // Libellé du niveau d'impact (couleur appliquée via la classe impact-level-*).
 const levelLabel = computed(() => {
   const level = props.node?.data?.impactLevel
@@ -157,7 +166,7 @@ function formatValue(v) {
           <span class="confidence-detail">{{ $t('analysis.confidenceLowDetail') }}</span>
         </template>
         <span v-else-if="node.data.confidence === 'none'">
-          {{ $t('analysis.confidenceNone') }}
+          {{ neutralMessage }}
         </span>
         <span v-else>{{ $t('analysis.confidenceGeneric', { level: node.data.confidence }) }}</span>
       </div>

@@ -3,17 +3,17 @@ import logging
 
 # Famille ACV (données ACV documentées, multi-indicateurs)
 from .acv import (
-    datasource as acv_datasource,
     training as acv_training,
     inference as acv_inference,
     operator as acv_operator,
     storage as acv_storage,
 )
 # Famille Ecologits (estimations, vouées à évoluer)
-from .ecologits import llm_call, llm_expert, video
+from .ecologits import llm_call, video
 from .common import (
     ACV_CRITERIA, CRITERIA_KEYS, ECOLOGITS_CRITERIA, WATER_ECOLOGITS_KEY,
 )
+from . import moma_types as mt
 
 logger = logging.getLogger(__name__)
 
@@ -24,22 +24,75 @@ logger = logging.getLogger(__name__)
 ACV_METHOD = 'acv'
 ECOLOGITS_METHOD = 'ecologits'
 
-# Dispatch explicite label -> fonction compute.
-# Les nœuds sont regroupés par famille : ACV (stable) puis Ecologits (volatile).
-NODE_COMPUTERS = {
-    # Nœuds de représentation, sans calcul (impact neutre).
-    'Données': acv_datasource.compute,
-    'Modèle ML': acv_datasource.compute,
-    'Données persistantes': acv_storage.compute_hdd,
-    'Données SSD temporaires': acv_storage.compute_ssd,
-    'Entrainement': acv_training.compute,
-    'Inférence': acv_inference.compute,
-    'Opérateur': acv_operator.compute,
-    # --- Famille Ecologits (voués à changer) ---
-    'LLM Call': llm_call.compute,
-    'LLM Expert': llm_expert.compute,
-    'Video Generation': video.compute, 
+# Types de nœuds MoMa NEUTRES (impact 0, computed=False) : représentation ou
+# métadonnée, aucun calcul d'impact.
+NEUTRAL_NODE_TYPES = {
+    mt.NODE_TYPE_DATASET,
+    mt.NODE_TYPE_ML_MODEL,
+    mt.NODE_TYPE_RESULT_TYPE,
+    mt.NODE_TYPE_ANALYTICAL_PATTERN,
+    mt.NODE_TYPE_TASK,
+    mt.NODE_TYPE_USER,
 }
+
+# Dispatch des sous-types d'Operator vers la fonction compute() du bon module.
+# Les sous-types ACV (compute local) et ecologits (API) restent séparés.
+SUBTYPE_COMPUTERS = {
+    mt.SUBTYPE_PREPROCESSING: acv_operator.compute,
+    mt.SUBTYPE_DATA_TRANSFORMATION: acv_operator.compute,
+    mt.SUBTYPE_TRAINING: acv_training.compute,
+    mt.SUBTYPE_INFERENCE_LOCAL: acv_inference.compute,
+    mt.SUBTYPE_INFERENCE_API: llm_call.compute,
+    mt.SUBTYPE_LLM_CALL: llm_call.compute,
+    mt.SUBTYPE_VIDEO_GENERATION: video.compute,
+}
+
+
+def _neutral_result() -> dict:
+    """Résultat neutre : nœud de représentation, aucun impact calculé."""
+    return {
+        'impact_kg': 0.0,
+        'computed': False,
+        'method': 'placeholder',
+        'confidence': 'none',
+        'level': 'low',
+    }
+
+
+def _compute_node(node: dict) -> dict:
+    """Calcule l'impact d'un nœud MoMa selon son type et son sous-type.
+
+    Args:
+        node: nœud du graphe, avec `data.nodeType` et `data.params`.
+
+    Returns:
+        dict au format de l'orchestrateur (impact_kg, indicators, method,
+        confidence, level, computed).
+    """
+    data = node.get('data', {})
+    node_type = data.get('nodeType')
+    params = data.get('params', {})
+
+    # Nœuds neutres (représentation / métadonnées).
+    if node_type in NEUTRAL_NODE_TYPES:
+        return _neutral_result()
+
+    # Nœud Data : stockage (impactant seulement si média calculé : SSD/HDD).
+    if node_type == mt.NODE_TYPE_DATA:
+        return acv_storage.compute_data(params)
+
+    # Nœud Operator : le sous-type pilote la formule.
+    if node_type == mt.NODE_TYPE_OPERATOR:
+        subtype = params.get('subtype')
+        compute_func = SUBTYPE_COMPUTERS.get(subtype)
+        if not compute_func:
+            logger.warning("Sous-type d'opérateur inconnu : %s", subtype)
+            return _neutral_result()
+        return compute_func(params)
+
+    # Type inconnu : traité comme neutre (aucun faux niveau d'impact).
+    logger.warning("Type de nœud MoMa inconnu : %s", node_type)
+    return _neutral_result()
 
 
 def _aggregate_indicators(nodes_analysis: list) -> dict:
@@ -155,28 +208,12 @@ def compute_impact(pipeline: dict) -> dict:
     nodes_analysis = []
 
     for node in pipeline.get('nodes', []):
-        label = node.get('data', {}).get('label', '')
-        params = node.get('data', {}).get('params', {})
         node_id = node['id']
 
-        compute_func = NODE_COMPUTERS.get(label)
-        if not compute_func:
-            # Nœud non répertorié : traité comme un nœud de représentation
-            # (aucun calcul, donc exclu de l'affichage d'impact).
-            nodes_analysis.append({
-                'id': node_id,
-                'impact_kg': 0.0,
-                'computed': False,
-                'level': 'low',
-                'method': 'placeholder',
-                'confidence': 'none',
-            })
-            continue
-
         try:
-            result = compute_func(params)
+            result = _compute_node(node)
         except Exception as e:
-            logger.error(f"Erreur lors du calcul du nœud {label} (id={node_id}): {e}")
+            logger.error(f"Erreur lors du calcul du nœud (id={node_id}): {e}")
             # En cas d'erreur, on n'affiche pas de faux niveau d'impact.
             nodes_analysis.append({
                 'id': node_id,
@@ -205,6 +242,11 @@ def compute_impact(pipeline: dict) -> dict:
         # Bloc d'indicateurs : tous les critères portés par le nœud.
         if 'indicators' in result:
             node_entry['indicators'] = result['indicators']
+
+        # Cause d'un nœud neutre (ex. support de stockage non sélectionné) :
+        # permet au front d'afficher un message adapté.
+        if result.get('reason'):
+            node_entry['reason'] = result['reason']
 
         nodes_analysis.append(node_entry)
         total_impact += node_impact

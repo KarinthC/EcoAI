@@ -3,24 +3,21 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 
-import { resolveNodeType, NODE_BORDER_CLASS, nodeTypeToBackendLabel } from '@/components/pipeline/nodeTypes.js'
+import { resolveNodeType, NODE_BORDER_CLASS } from '@/components/pipeline/nodeTypes.js'
 
-// Rétro-compatibilité : les graphes enregistrés avant i18n stockent le libellé
-// FRANÇAIS dans `data.label`. On migre chaque nœud vers l'id STABLE
-// `data.nodeType` et on recalcule sa classe CSS de bordure. Fonction pure :
-// renvoie un nouveau tableau, ne mute pas l'entrée.
+// Base des endpoints de la branche MoMa (table dédiée `pipelines_moma`).
+const MOMA_API = '/api/moma/pipelines'
+
+// Recalcule la classe CSS de bordure d'un nœud depuis son id stable.
+// Fonction pure : renvoie un nouveau tableau, ne mute pas l'entrée.
 function normalizeGraphNodes(rawNodes) {
   if (!Array.isArray(rawNodes)) return []
   return rawNodes.map((node) => {
     const nodeType = resolveNodeType(node?.data)
     if (!nodeType) return node
-    const data = { ...(node.data || {}) }
-    // On conserve `label` pour l'affichage de secours mais la source de vérité
-    // devient `nodeType`.
-    data.nodeType = nodeType
     return {
       ...node,
-      data,
+      data: { ...(node.data || {}), nodeType },
       class: NODE_BORDER_CLASS[nodeType] || node.class || '',
     }
   })
@@ -99,11 +96,13 @@ export const usePipelineStore = defineStore('pipeline', () => {
         }
     }
 
-    function addEdge(source, target) {
+    // Ajoute une arête typée (perform_inference, input, output, follows).
+    // Le type porte la sémantique du graphe MoMa ; il est conservé tel quel.
+    function addEdge(source, target, type = 'follows') {
         if (activePipeline.value) {
             const id = `edge_${source}_${target}`
             if (!activePipeline.value.edges.some(e => e.source === source && e.target === target)) {
-                activePipeline.value.edges.push({ id, source, target })
+                activePipeline.value.edges.push({ id, source, target, type })
             }
         }
     }
@@ -130,12 +129,9 @@ export const usePipelineStore = defineStore('pipeline', () => {
     function getPipelineJSON() {
         if (!activePipeline.value) return { nodes: [], edges: [] }
         const cleanNodes = activePipeline.value.nodes.map(node => {
-            // On (re)génère un `label` CANONIQUE (FR) dérivé de l'id stable :
-            // c'est le contrat de transport avec le backend (dispatch
-            // NODE_COMPUTERS). Le `nodeType` est envoyé en plus pour la
-            // robustesse, mais `label` reste la clé de dispatch actuelle.
+            // Le contrat de transport est l'id STABLE MoMa (`data.nodeType`),
+            // complété par `data.params` (dont `subtype` pour les Operator).
             const nodeType = resolveNodeType(node.data)
-            const backendLabel = nodeTypeToBackendLabel(nodeType)
             return {
                 id: node.id,
                 type: node.type,
@@ -143,32 +139,21 @@ export const usePipelineStore = defineStore('pipeline', () => {
                 data: {
                     ...node.data,
                     ...(nodeType && { nodeType }),
-                    ...(backendLabel && { label: backendLabel }),
                 },
                 class: node.class
             }
         })
+        // Arêtes typées : le `type` (perform_inference, input, output, follows)
+        // porte la sémantique du graphe MoMa.
         const cleanEdges = activePipeline.value.edges.map(edge => ({
             id: edge.id,
             source: edge.source,
             target: edge.target,
+            type: edge.type || 'follows',
             sourceHandle: edge.sourceHandle,
             targetHandle: edge.targetHandle
         }))
         return { nodes: cleanNodes, edges: cleanEdges }
-    }
-
-    async function saveCurrent() {
-        if (!activePipeline.value) return
-        const json = getPipelineJSON()
-        const name = activePipeline.value.name
-        const payload = { name, graph_json: json }
-        if (activePipeline.value.backendId) {
-            await axios.put(`/api/pipelines/${activePipeline.value.backendId}`, payload)
-        } else {
-            const res = await axios.post('/api/pipelines', payload)
-            pipelines.value[activeId.value].backendId = res.data.id
-        }
     }
 
     function exportJSON() {
@@ -185,7 +170,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
 
             const json = getPipelineJSON()
             try {
-                const response = await axios.post('/api/pipelines', {
+                const response = await axios.post(MOMA_API, {
                 name: name,
                 graph_json: json
                 })
@@ -203,9 +188,9 @@ export const usePipelineStore = defineStore('pipeline', () => {
     const json = getPipelineJSON()
     const payload = { name: activePipeline.value.name, graph_json: json }
     if (activePipeline.value.backendId) {
-        await axios.put(`/api/pipelines/${activePipeline.value.backendId}`, payload)
+        await axios.put(`${MOMA_API}/${activePipeline.value.backendId}`, payload)
     } else {
-        const res = await axios.post('/api/pipelines', payload)
+        const res = await axios.post(MOMA_API, payload)
         const newBackendId = res.data.id
         const oldId = activeId.value
         // Créer une nouvelle entrée avec le bon ID backend, puis supprimer l'ancienne
@@ -220,7 +205,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
 
     // Chargement des pipelines depuis l'API (au démarrage)
     async function loadPipelines() {
-        const res = await axios.get('/api/pipelines')
+        const res = await axios.get(MOMA_API)
         for (const p of res.data) {
         pipelines.value[p.id] = {
             name: p.name,
@@ -244,7 +229,7 @@ export const usePipelineStore = defineStore('pipeline', () => {
         const pipeline = pipelines.value[id]
         if (!pipeline) return
         if (pipeline.backendId) {
-            await axios.delete(`/api/pipelines/${pipeline.backendId}`)
+            await axios.delete(`${MOMA_API}/${pipeline.backendId}`)
         }
         delete pipelines.value[id]
         if (activeId.value === id) {
@@ -265,13 +250,16 @@ export const usePipelineStore = defineStore('pipeline', () => {
         response.data.nodes.forEach(item => {
             const node = activePipeline.value.nodes.find(n => n.id === item.id)
             if (!node) return
-            // Nœud non calculé (ex. « Données ») : pas de badge d'impact.
+            // Nœud non calculé (ex. « Données ») : pas de badge d'impact ni
+            // d'indicateurs (on purge ceux d'une éventuelle analyse précédente).
             if (item.computed === false) {
-                const { impactLevel, ...rest } = node.data
+                const { impactLevel, indicators, reason, ...rest } = node.data
                 node.data = {
                     ...rest,
                     ...(item.method && { method: item.method }),
-                    ...(item.confidence && { confidence: item.confidence })
+                    ...(item.confidence && { confidence: item.confidence }),
+                    // Cause du caractère neutre (ex. support non sélectionné).
+                    ...(item.reason && { reason: item.reason })
                 }
                 return
             }

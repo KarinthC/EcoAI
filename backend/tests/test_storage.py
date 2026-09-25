@@ -16,7 +16,6 @@ import pytest
 
 from app.services.carbon.acv.storage import (
     compute_hdd, compute_ssd, compute_storage, FAB_PER_TO, MEDIA, PUE,
-    JOURS_PER_AN, DUREE_SSD_TEMPORAIRE_JOURS,
 )
 
 

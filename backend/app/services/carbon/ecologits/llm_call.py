@@ -12,13 +12,14 @@ logger = logging.getLogger(__name__)
 
 
 def compute(params: dict) -> dict:
-    provider = params.get('provider')
-    model = params.get('model')
-    nb_call = int(params.get('nb_call') or 1)
+    # Paramètres MoMa (`eco:*`) avec repli sur les clés historiques.
+    provider = params.get('eco:provider') or params.get('provider')
+    model = params.get('eco:modelName') or params.get('model')
+    nb_call = int(params.get('eco:callCount') or params.get('nb_call') or 1)
 
     # Protéger contre les null : utilise la valeur par défaut si None ou absent
-    output_tokens = int(params.get('output_tokens') or 100)
-    request_latency = float(params.get('request_latency') or 100)
+    output_tokens = int(params.get('eco:outputTokens') or params.get('output_tokens') or 100)
+    request_latency = float(params.get('eco:requestLatency') or params.get('request_latency') or 100)
 
     # Localisation du datacenter (back uniquement, non exposée dans le frontend).
     # Détermine le mix électrique utilisé par ecologits ; WOR (monde) par défaut.

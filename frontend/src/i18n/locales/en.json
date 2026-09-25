@@ -68,6 +68,7 @@
     "confidenceLowTitle": "Low confidence",
     "confidenceLowDetail": "\u26a0\ufe0f Lack of transparency from providers",
     "confidenceNone": "Representation node: no impact calculated.",
+    "missingStorageMedium": "Select a storage medium (SSD or HDD) to calculate the impact.",
     "confidenceGeneric": "Confidence: {level}"
   },
   "panel": {
@@ -82,16 +83,23 @@
     "dropHere": "Drop here"
   },
   "nodes": {
-    "datasource": "Data",
-    "storage_persistent": "Persistent data",
-    "storage_temporary": "Temporary SSD data",
+    "dataset": "Dataset",
+    "data": "Data",
     "ml_model": "ML Model",
     "operator": "Operator",
+    "result_type": "Result type",
+    "analytical_pattern": "Analytical pattern",
+    "task": "Task",
+    "user": "User"
+  },
+  "subtypes": {
+    "preprocessing": "Preprocessing",
+    "data_transformation": "Data transformation",
     "training": "Training",
-    "inference": "Inference",
-    "llm_call": "LLM Call",
-    "llm_expert": "LLM Expert",
-    "video_generation": "Video Generation"
+    "inference_local": "Local inference",
+    "inference_api": "API inference",
+    "llm_call": "LLM call",
+    "video_generation": "Video generation"
   },
   "criteria": {
     "PEF-GWP": {
@@ -157,30 +165,27 @@
   },
   "fields": {
     "name": "Name",
-    "version": "version",
-    "type": "type",
-    "parameters": "Parameters",
-    "dataType": "Data type",
+    "description": "Description",
+    "version": "Version",
+    "architecture": "Architecture",
+    "parameterCount": "Parameter count",
+    "deployment": "Deployment",
+    "subtype": "Subtype",
     "size": "Size (GB)",
     "format": "Format",
-    "storageDurationYears": "Storage duration (years)",
-    "storageDurationDays": "Storage duration (days)",
+    "storageMedium": "Storage medium",
+    "retentionDays": "Retention (days)",
     "storageServer": "Storage server",
     "server": "Server",
     "gpu": "GPU",
     "gpuCount": "Number of GPUs",
-    "hours": "Number of hours",
+    "executionTimeSec": "Execution time (seconds)",
     "loadRate": "Load rate (%)",
     "callCount": "Number of calls",
     "provider": "Provider",
     "model": "Model",
     "outputTokens": "Generated tokens",
     "latency": "Latency (ms)",
-    "activeParams": "Active params (billion)",
-    "totalParams": "Total params (billion)",
-    "datacenterLocation": "Datacenter location",
-    "datacenterPue": "Datacenter PUE",
-    "datacenterWue": "Datacenter WUE",
     "resolution": "Resolution",
     "duration": "Duration (seconds)",
     "withAudio": "With audio"

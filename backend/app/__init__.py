@@ -14,6 +14,7 @@ def create_app():
     from .api.session import session_bp
     from .api.username import username_bp
     from .api.pipelines import pipelines_bp
+    from .api.pipelines_moma import pipelines_moma_bp
     from .api.analysis import analysis_bp
     from .api.docs import docs_bp
 
@@ -21,6 +22,7 @@ def create_app():
     app.register_blueprint(session_bp)
     app.register_blueprint(username_bp)
     app.register_blueprint(pipelines_bp)
+    app.register_blueprint(pipelines_moma_bp)
     app.register_blueprint(analysis_bp)
     app.register_blueprint(docs_bp)
     

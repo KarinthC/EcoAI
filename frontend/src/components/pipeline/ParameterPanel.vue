@@ -2,7 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
-import { nodeFields } from '@/components/pipeline/nodeConfig.js'
+import { nodeFields, VIDEO_MODELS } from '@/components/pipeline/nodeConfig.js'
 import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
 
 const props = defineProps({
@@ -18,6 +18,47 @@ const nodeTypeId = computed(() => resolveNodeType(props.node?.data))
 
 // Champs de config du nœud courant.
 const fields = computed(() => nodeFields[nodeTypeId.value] || [])
+
+// Sous-types d'Operator dont les champs sont de type « calcul local » (ACV).
+const LOCAL_SUBTYPES = ['preprocessing', 'data_transformation', 'training', 'inference_local']
+// Sous-types d'Operator dont les champs sont de type « appel API » (ecologits).
+const API_SUBTYPES = ['inference_api', 'llm_call']
+// Sous-types d'Operator dont les champs sont de type « génération vidéo ».
+const VIDEO_SUBTYPES = ['video_generation']
+
+// Clés des champs propres à chaque famille de sous-type d'Operator.
+const LOCAL_FIELD_KEYS = ['eco:serverId', 'eco:gpuModel', 'eco:gpuCount', 'eco:executionTimeSec', 'eco:gpuUtilization']
+const API_FIELD_KEYS = ['eco:provider', 'eco:modelName', 'eco:callCount', 'eco:outputTokens', 'eco:requestLatency']
+const VIDEO_FIELD_KEYS = ['eco:modelName', 'eco:callCount', 'eco:resolution', 'eco:duration', 'eco:withAudio']
+
+// Médias de stockage portant un impact (le serveur de stockage n'a de sens
+// que pour ceux-là : LIG SUMMER est un parc HDD/SSD).
+const IMPACTFUL_MEDIUMS = ['ssd', 'hdd']
+
+// Champs réellement affichés : affichage conditionnel selon le type de nœud.
+const visibleFields = computed(() => {
+  // Nœud Data : le serveur de stockage n'apparaît que pour SSD/HDD.
+  if (nodeTypeId.value === 'data') {
+    const medium = params.value['eco:storageMedium']
+    return fields.value.filter(
+      (f) => f.key !== 'eco:storageServer' || IMPACTFUL_MEDIUMS.includes(medium)
+    )
+  }
+
+  if (nodeTypeId.value !== 'operator') return fields.value
+
+  const subtype = params.value.subtype
+  if (!subtype) {
+    // Tant qu'aucun sous-type n'est choisi, on n'affiche que le sélecteur.
+    return fields.value.filter((f) => f.key === 'subtype')
+  }
+  let allowed
+  if (LOCAL_SUBTYPES.includes(subtype)) allowed = LOCAL_FIELD_KEYS
+  else if (API_SUBTYPES.includes(subtype)) allowed = API_FIELD_KEYS
+  else if (VIDEO_SUBTYPES.includes(subtype)) allowed = VIDEO_FIELD_KEYS
+  else allowed = []
+  return fields.value.filter((f) => f.key === 'subtype' || allowed.includes(f.key))
+})
 
 // Libellé traduit du nœud (en-tête du panneau).
 const nodeLabel = computed(() => {
@@ -40,6 +81,16 @@ watch(() => props.node, (newNode) => {
 // Réinitialiser la valeur du champ dépendant si le parent change
 watch(params, (newParams, oldParams) => {
   if (!props.node) return
+  // Changement de sous-type d'Operator : les listes de modèles diffèrent
+  // (LLM vs vidéo), on vide le modèle pour éviter une valeur incohérente.
+  if (newParams.subtype !== oldParams?.subtype) {
+    params.value['eco:modelName'] = ''
+  }
+  // Changement de média de stockage : le serveur ne concerne que SSD/HDD.
+  if (newParams['eco:storageMedium'] !== oldParams?.['eco:storageMedium']
+      && !IMPACTFUL_MEDIUMS.includes(newParams['eco:storageMedium'])) {
+    params.value['eco:storageServer'] = ''
+  }
   for (const field of fields.value) {
     if (field.dependsOn && newParams[field.dependsOn] !== oldParams?.[field.dependsOn]) {
       const validOptions = field.optionsMapping?.[newParams[field.dependsOn]] || []
@@ -50,10 +101,23 @@ watch(params, (newParams, oldParams) => {
   }
 }, { deep: true })
 
+// Un champ dépendant est désactivé tant que son parent n'est pas renseigné.
+// Exception : le modèle d'un Operator vidéo n'a pas de parent (liste dédiée).
+function isFieldDisabled(field) {
+  if (field.key === 'eco:modelName' && VIDEO_SUBTYPES.includes(params.value.subtype)) {
+    return false
+  }
+  return Boolean(field.dependsOn) && !params.value[field.dependsOn]
+}
+
 function getFieldOptions(field) {
+  // Cas particulier : le champ modèle d'un Operator vidéo utilise une liste
+  // dédiée (pas de dépendance à un fournisseur).
+  if (field.key === 'eco:modelName' && VIDEO_SUBTYPES.includes(params.value.subtype)) {
+    return VIDEO_MODELS
+  }
   if (field.dependsOn && field.optionsMapping) {
     const parentValue = params.value[field.dependsOn]
-    console.log(`getFieldOptions pour ${field.key}: parentValue =`, parentValue, 'mapping =', field.optionsMapping)
     return field.optionsMapping[parentValue] || []
   }
   if (field.options) {
@@ -69,7 +133,12 @@ function optOptionValue(opt) {
 }
 
 function optOptionLabel(opt) {
-  return opt && typeof opt === 'object' ? opt.label : opt
+  if (opt && typeof opt === 'object') {
+    // Options i18n : { value, labelKey } -> libellé traduit.
+    if (opt.labelKey) return t(opt.labelKey)
+    return opt.label
+  }
+  return opt
 }
 
 // Sauvegarde les paramètres
@@ -89,7 +158,7 @@ function save() {
     </div>
 
     <div class="panel-body">
-      <div v-for="field in fields" :key="field.key" class="field">
+      <div v-for="field in visibleFields" :key="field.key" class="field">
         <label>{{ field.labelKey ? $t(field.labelKey) : field.key }}</label>
 
         <!-- Menu déroulant si type === 'select' -->
@@ -97,7 +166,7 @@ function save() {
           v-if="field.type === 'select'"
           v-model="params[field.key]"
           class="field-select"
-          :disabled="field.dependsOn && !params[field.dependsOn]"
+          :disabled="isFieldDisabled(field)"
         >
           <option value="" disabled selected v-if="!params[field.key]">
             {{ $t('panel.choose') }}
@@ -203,7 +272,16 @@ function save() {
   border-radius: 4px;
   font-size: 0.9rem;
   background: white;
+  /* Couleur de texte explicite : sans elle, le select hérite d'une couleur
+     claire (contexte sombre) et devient blanc sur blanc. */
+  color: #2d3748;
   cursor: pointer;
+}
+/* Les <option> ne suivent pas toujours la couleur du <select> selon le
+   navigateur/OS : on force la couleur et le fond pour garantir la lisibilité. */
+.field select.field-select option {
+  color: #2d3748;
+  background: white;
 }
 .field select.field-select:focus {
   outline: none;

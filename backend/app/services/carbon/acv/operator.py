@@ -22,6 +22,7 @@ import logging
 
 from ..common import get_level_from_indicators
 from .gpu_models import compute_acv, available_gpus, gpu_exists_on_server
+from .moma_adapter import moma_operator_to_acv
 
 logger = logging.getLogger(__name__)
 
@@ -41,19 +42,22 @@ def _impact_nul() -> dict:
 
 
 def compute(params: dict) -> dict:
+    # Traduction des paramètres MoMa (`eco:*`) vers les clés ACV attendues.
+    acv_params = moma_operator_to_acv(params)
+
     # Sans matériel renseigné, l'opérateur ne tourne nulle part : impact nul.
-    server_id = params.get('server_id')
-    gpu_type = params.get('gpu_type')
-    heures = params.get('heures')
+    server_id = acv_params.get('server_id')
+    gpu_type = acv_params.get('gpu_type')
+    heures = acv_params.get('heures')
 
     if not server_id or not gpu_type or heures in (None, '', 0, '0'):
         return _impact_nul()
 
     heures = float(heures)
-    nb_gpu = int(params.get('nb_gpu') or 1)
+    nb_gpu = int(acv_params.get('nb_gpu') or 1)
 
     # Taux de charge : vide/absent -> 100%. Saisi en pourcent, converti en fraction.
-    charge_percent = params.get('charge')
+    charge_percent = acv_params.get('charge')
     if charge_percent in (None, ''):
         charge_percent = DEFAULT_CHARGE_PERCENT
     charge = max(0.0, min(1.0, float(charge_percent) / 100.0))

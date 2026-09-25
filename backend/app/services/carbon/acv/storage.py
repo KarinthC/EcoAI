@@ -206,3 +206,74 @@ def compute_ssd(params: dict) -> dict:
 
     """Nœud « Données SSD temporaires » : stockage SSD NVMe (SCRATCH / Intensive)."""
     return compute_storage('SSD', params)
+
+
+# Mapping des médias MoMa (`eco:storageMedium`) vers les médias ACV calculés.
+# Les médias non listés (cloud, tape) sont traités comme neutres dans un premier
+# temps : impact 0 et `computed=False` (cf. `compute_data`).
+MOMA_MEDIUM_TO_ACV = {
+    'ssd': 'SSD',
+    'hdd': 'HDD',
+}
+
+
+def _neutral_data_result(reason: str = 'not_computed') -> dict:
+    """Résultat neutre pour un nœud Data non impactant.
+
+    Args:
+        reason: cause du caractère neutre, exposée au front pour afficher un
+            message adapté :
+              - 'missing_medium' : aucun support de stockage sélectionné ;
+              - 'not_computed'   : média non calculé (cloud, tape).
+    """
+    return {
+        'impact_kg': 0.0,
+        'computed': False,
+        'method': 'placeholder',
+        'confidence': 'none',
+        'level': 'low',
+        'reason': reason,
+    }
+
+
+def compute_data(params: dict) -> dict:
+    """Nœud MoMa « Data » : stockage des données persistées.
+
+    Le nœud ne porte un impact que si les données sont stockées sur un média
+    calculé (SSD ou HDD). Pour les autres médias (cloud, tape), l'impact est nul
+    et le nœud est marqué `computed=False`.
+
+    La confiance dépend du serveur de stockage :
+      - serveur renseigné (ex. « LIG SUMMER ») -> confiance 'medium' ;
+      - serveur absent -> confiance 'low' (le calcul reste fait, mais sur des
+        hypothèses d'infrastructure non confirmées).
+
+    Champs attendus (extensions `eco:` du modèle MoMa) :
+        - eco:contentSize   : volume en Go
+        - eco:storageMedium : 'ssd' | 'hdd' | 'cloud' | 'tape'
+        - eco:retentionDays : durée de conservation en jours
+        - eco:storageServer : serveur de stockage (ex. 'LIG SUMMER')
+    """
+    medium = params.get('eco:storageMedium')
+    if not medium:
+        # Aucun support sélectionné : on ne peut pas calculer d'impact.
+        return _neutral_data_result('missing_medium')
+
+    acv_media = MOMA_MEDIUM_TO_ACV.get(medium)
+    if not acv_media:
+        # Média non calculé (cloud, tape) : neutre dans un premier temps.
+        return _neutral_data_result('not_computed')
+
+    # On adapte les champs MoMa vers les clés attendues par compute_storage.
+    storage_params = {
+        'taille': params.get('eco:contentSize'),
+        'duree_jours': params.get('eco:retentionDays'),
+    }
+    result = compute_storage(acv_media, storage_params)
+
+    # Sans serveur de stockage sélectionné, l'infrastructure est inconnue :
+    # la confiance retombe à 'low'.
+    if not params.get('eco:storageServer'):
+        result['confidence'] = 'low'
+
+    return result
