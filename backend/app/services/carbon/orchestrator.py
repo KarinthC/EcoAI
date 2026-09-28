@@ -175,6 +175,22 @@ def compute_impact(pipeline: dict) -> dict:
 
         try:
             result = compute_func(params)
+            # Lecture défensive : un compute() défaillant (dict incomplet) ne
+            # doit jamais faire échouer toute l'analyse. On retombe sur des
+            # valeurs neutres si les clés attendues sont absentes.
+            node_impact = float(result.get('impact_kg', 0.0))
+            # Par défaut un nœud est calculé ; `computed=False` signale un nœud
+            # de représentation (aucun modèle) à exclure de l'affichage d'impact.
+            node_computed = result.get('computed', True)
+            node_entry = {
+                'id': node_id,
+                'impact_kg': node_impact,
+                'computed': node_computed,
+                'level': result.get('level', 'low'),
+                # Métadonnées de méthode (prépare l'UI : ecologits = peu précis).
+                'method': result.get('method', 'unknown'),
+                'confidence': result.get('confidence', 'unknown'),
+            }
         except Exception as e:
             logger.error(f"Erreur lors du calcul du nœud {label} (id={node_id}): {e}")
             # En cas d'erreur, on n'affiche pas de faux niveau d'impact.
@@ -187,20 +203,6 @@ def compute_impact(pipeline: dict) -> dict:
                 'confidence': 'none',
             })
             continue
-
-        node_impact = result['impact_kg']
-        # Par défaut un nœud est calculé ; `computed=False` signale un nœud de
-        # représentation (aucun modèle) à exclure de l'affichage d'impact.
-        node_computed = result.get('computed', True)
-        node_entry = {
-            'id': node_id,
-            'impact_kg': node_impact,
-            'computed': node_computed,
-            'level': result['level'],
-            # Métadonnées de méthode (prépare l'UI : ecologits = peu précis).
-            'method': result.get('method', 'unknown'),
-            'confidence': result.get('confidence', 'unknown'),
-        }
 
         # Bloc d'indicateurs : tous les critères portés par le nœud.
         if 'indicators' in result:

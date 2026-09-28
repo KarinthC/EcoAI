@@ -24,17 +24,25 @@ const paletteNodes = SIDEBAR_NODE_ORDER.map((id) => ({
 }))
 
 // Télécharge l'explication PDF (statique, servie par le backend) des seuils
-// et de la démarche. Récupéré en blob pour déclencher le téléchargement avec
-// un nom de fichier explicite et gérer proprement les erreurs.
+// et de la démarche. Le document est choisi selon la langue active (FR/EN).
+// Récupéré en blob pour déclencher le téléchargement avec un nom de fichier
+// explicite et gérer proprement les erreurs.
 async function downloadSeuilsPdf() {
+  const isEnglish = locale.value.startsWith('en')
+  const endpoint = isEnglish
+    ? '/api/docs/thresholds-method.pdf'
+    : '/api/docs/seuils-demarche.pdf'
+  const filename = isEnglish
+    ? 'explanation-thresholds-method.pdf'
+    : 'explication-seuils-demarche.pdf'
   try {
-    const res = await axios.get('/api/docs/seuils-demarche.pdf', {
+    const res = await axios.get(endpoint, {
       responseType: 'blob',
     })
     const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
     const link = document.createElement('a')
     link.href = url
-    link.download = 'explication-seuils-demarche.pdf'
+    link.download = filename
     document.body.appendChild(link)
     link.click()
     link.remove()

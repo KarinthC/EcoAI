@@ -1,9 +1,10 @@
-# backend/app/services/carbon/acv/training.py
-"""Nœud « Entrainement » — calcul d'impact via le modèle ACV.
+# backend/app/services/carbon/acv/inference.py
+"""Nœud « Inférence » — calcul d'impact via le modèle ACV.
 
-L'impact est dérivé du temps d'entraînement sur un GPU serveur documenté (ACV).
-La charge est imposée côté backend (100% pour l'entraînement), conformément
-aux hypothèses du rapport ADEME.
+L'impact est dérivé du temps d'inférence sur un GPU serveur documenté (ACV).
+La charge est imposée côté backend (33% pour l'inférence), conformément aux
+hypothèses du rapport ADEME : un GPU en inférence n'est pas sollicité à 100%
+en continu, contrairement à l'entraînement.
 
 Paramètres attendus (envoyés par le front) :
   - server_id : identifiant du serveur (ex: "lig1")
@@ -19,8 +20,8 @@ from .gpu_models import compute_acv, available_gpus, gpu_exists_on_server
 
 logger = logging.getLogger(__name__)
 
-# Charge imposée pour l'entraînement (fraction).
-TRAINING_CHARGE = 1.0
+# Charge imposée pour l'inférence (fraction).
+INFERENCE_CHARGE = 0.33
 
 
 def compute(params: dict) -> dict:
@@ -35,15 +36,15 @@ def compute(params: dict) -> dict:
             f"(disponibles : {available_gpus(server_id)})"
         )
 
-    acv = compute_acv(gpu_type, hours=heures, charge=TRAINING_CHARGE, nb_gpu=nb_gpu)
+    acv = compute_acv(gpu_type, hours=heures, charge=INFERENCE_CHARGE, nb_gpu=nb_gpu)
     indicators = acv['indicators']
     # GWP comme clé technique pour l'agrégat du front (transition en cours).
     gwp = indicators['PEF-GWP']
 
     return {
-
+        'impact_kg': round(gwp, 6),
         'indicators': indicators,
         'method': 'acv',
         'confidence': 'high',
-
+        'level': get_level_from_indicators(indicators),
     }
