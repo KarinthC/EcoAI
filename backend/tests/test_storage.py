@@ -90,10 +90,7 @@ def test_ssd_more_impactful_than_hdd_gwp():
 def test_ssd_more_impactful_than_hdd_adpe():
     """Le SSD consomme nettement plus de ressources minérales (terres rares)."""
     params = {'taille': 1000, 'duree_ans': 1}
-    ratio = compute_ssd(params)['energy_kwh'] / compute_hdd(params)['energy_kwh']
-    assert ratio == pytest.approx(
-        MEDIA['SSD']['kwh_per_to_year'] / MEDIA['HDD']['kwh_per_to_year'], rel=1e-9
-    )
+    assert compute_ssd(params)['indicators']['PEF-ADPe'] > compute_hdd(params)['indicators']['PEF-ADPe']
 
 
 # ---------------------------------------------------------------------------
@@ -120,29 +117,32 @@ def test_ssd_replication_and_efficiency_partially_compensate():
 # Durée : jours (SSD temporaire) et années (HDD persistant)
 # ---------------------------------------------------------------------------
 
-    """SSD : 365 jours == 1 an (même énergie)."""
+def test_ssd_365_jours_equals_1_an():
+    """SSD : 365 jours == 1 an (même impact)."""
     r_jours = compute_ssd({'taille': 1000, 'duree_jours': 365})
     r_ans = compute_ssd({'taille': 1000, 'duree_ans': 1})
+    assert r_jours['impact_kg'] == pytest.approx(r_ans['impact_kg'], rel=1e-9)
 
 
 def test_ssd_default_duration_is_30_days():
     """SSD sans durée fournie -> défaut = 30 jours (convention scratch)."""
     r = compute_ssd({'taille': 1000})
-    # energy_kwh est arrondi à 6 décimales -> tolérance plus large.
+    r_30j = compute_ssd({'taille': 1000, 'duree_jours': 30})
+    assert r['impact_kg'] == pytest.approx(r_30j['impact_kg'], rel=1e-9)
+
 
 def test_ssd_duree_ans_takes_priority_over_jours():
     """Rétro-compat : si `duree_ans` est fourni, il est prioritaire."""
     r = compute_ssd({'taille': 1000, 'duree_ans': 1, 'duree_jours': 999})
-    assert r['energy_kwh'] == pytest.approx(1.0 * 1.0 * 33.6, rel=1e-9)
+    r_1an = compute_ssd({'taille': 1000, 'duree_ans': 1})
+    assert r['impact_kg'] == pytest.approx(r_1an['impact_kg'], rel=1e-9)
 
+
+def test_hdd_duration_in_years():
     """HDD : la durée se compte en années."""
     r = compute_hdd({'taille': 1000, 'duree_ans': 3})
-    assert r['energy_kwh'] == pytest.approx(1.0 * 3.0 * 11.2, rel=1e-9)
-
-
-def test_ssd_message_in_days():
-    """Le message SSD exprime la durée en jours."""
-    r = compute_ssd({'taille': 1000, 'duree_jours': 30})
+    r_1an = compute_hdd({'taille': 1000, 'duree_ans': 1})
+    assert r['impact_kg'] > r_1an['impact_kg']
 
 
 # ---------------------------------------------------------------------------

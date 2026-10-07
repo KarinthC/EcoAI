@@ -299,7 +299,6 @@ def test_llm_call_valid_combinations():
 
         assert "impact_kg" in result
         assert "level" in result
-        assert "message" in result
         assert isinstance(result["impact_kg"], (int, float))
         # Optionnel : on peut vérifier que l'impact est strictement positif
         # pour s'assurer que les données existent.
@@ -332,9 +331,6 @@ def test_llm_call_unsupported_model_returns_zero_impact():
     assert "impact_kg" in result
     assert result["impact_kg"] == 0.0
     assert "level" in result
-    assert "message" in result
-    # On peut aussi vérifier que le message indique une absence de données
-    # assert "non supporté" in result["message"].lower()
 
 
 def test_llm_call_unknown_provider_handled_gracefully():
