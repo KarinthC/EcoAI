@@ -182,7 +182,8 @@ const { onDragStart } = useDragAndDrop()
           v-for="c in criteria"
           :key="c.key"
           class="criterion-item"
-          :class="{ 'is-partial': c.has_partial }"
+          :class="{ 'is-partial': c.has_partial, active: store.activeAnalysisTab === c.key }"
+          @click="store.setAnalysisTab(c.key)"
         >
           <div class="criterion-head">
             <span class="criterion-label">{{ c.label }}</span>
@@ -347,6 +348,14 @@ aside .nodes > * {
   border-radius: 6px;
   padding: 0.35rem 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.criterion-item:hover {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+}
+/* Critère dont l'onglet est actuellement ouvert. */
+.criterion-item.active {
+  outline: 2px solid #2d3748;
 }
 .criterion-item.is-partial {
   border: 1px dashed #a0aec0;
@@ -444,14 +453,6 @@ aside .nodes > * {
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(255,255,255,0.3);
-}
-
-/* En mode analyse, le bandeau de suggestions (AnalysisOverlay) se superpose en
-   bas de l'écran : on réserve sa hauteur repliée pour ne pas masquer le bouton. */
-aside.sidebar-low,
-aside.sidebar-medium,
-aside.sidebar-high {
-  padding-bottom: 3.4rem;
 }
 
 @media screen and (min-width: 640px) {

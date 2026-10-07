@@ -4,18 +4,17 @@ import { usePipelineStore } from '@/stores/usePipelineStore'
 import Sidebar from '@/components/pipeline/Sidebar.vue'
 import DropzoneBackground from '@/components/pipeline/DropzoneBackground.vue'
 import useDragAndDrop from '@/composables/useDnD'
-import { markRaw, ref, onMounted, watch } from 'vue'
+import { markRaw, onMounted, watch } from 'vue'
 import CustomNode from '@/components/pipeline/CustomNode.vue'
 import ParameterPanel from '@/components/pipeline/ParameterPanel.vue'
 import ConnectionIndicator from '@/components/ConnectionIndicator.vue'
 import UserIdentification from '@/components/UserIdentification.vue'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import PipelineTabs from '@/components/pipeline/PipelineTabs.vue'
-import AnalysisOverlay from '@/components/pipeline/AnalysisOverlay.vue'
-import AnalysisNodePanel from '@/components/pipeline/AnalysisNodePanel.vue'
-
-const selectedNode = ref(null)
-
+import AnalysisTabs from '@/components/pipeline/analysis/AnalysisTabs.vue'
+import AnalysisGlobalTab from '@/components/pipeline/analysis/AnalysisGlobalTab.vue'
+import AnalysisGraphTab from '@/components/pipeline/analysis/AnalysisGraphTab.vue'
+import AnalysisIndicatorTab from '@/components/pipeline/analysis/AnalysisIndicatorTab.vue'
 
 const store = usePipelineStore()
 const { onConnect, addEdges, setViewport } = useVueFlow()
@@ -81,7 +80,8 @@ onConnect(addEdges)
 
     <PipelineTabs />
 
-    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline">
+    <!-- Mode ÉDITION : canevas éditable + panneau de paramètres -->
+    <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline && !store.isAnalyzing">
       <Sidebar />
       <VueFlow
         :key="store.activeId"
@@ -107,18 +107,22 @@ onConnect(addEdges)
         </DropzoneBackground>
       </VueFlow>
 
-      <AnalysisOverlay v-if="store.isAnalyzing" />
-
       <ParameterPanel
-        v-if="store.selectedNode && !store.isAnalyzing"
+        v-if="store.selectedNode"
         :node="store.selectedNode"
         @close="store.clearSelection"
       />
-      <AnalysisNodePanel
-        v-if="store.selectedNode && store.isAnalyzing"
-        :node="store.selectedNode"
-      />
+    </div>
 
+    <!-- Mode ANALYSE : Sidebar permanente (critères + retour édition) + onglets -->
+    <div class="dnd-flow" v-if="store.activePipeline && store.isAnalyzing">
+      <Sidebar />
+      <div class="analysis-area">
+        <AnalysisTabs />
+        <AnalysisGlobalTab v-if="store.activeAnalysisTab === 'global'" />
+        <AnalysisGraphTab v-else-if="store.activeAnalysisTab === 'graph'" />
+        <AnalysisIndicatorTab v-else />
+      </div>
     </div>
   </div>
 </template>
@@ -216,6 +220,15 @@ onConnect(addEdges)
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Zone principale du mode analyse : barre d'onglets + onglet actif. */
+.analysis-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
 }
 
 @media screen and (min-width: 640px) {

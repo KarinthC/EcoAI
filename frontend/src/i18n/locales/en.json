@@ -61,6 +61,20 @@
     "levelMedium": "Medium impact",
     "levelLow": "Low impact",
     "indicators": "Indicators",
+    "tabs": {
+      "global": "Global analysis",
+      "graph": "Graph"
+    },
+    "global": {
+      "singleScore": "Overall score (single score)",
+      "beyondBudget": "Criteria beyond the monthly budget"
+    },
+    "indicator": {
+      "threshold": "Monthly threshold / inhabitant:",
+      "ratio": "Value / threshold ratio:",
+      "byNode": "Contribution by node",
+      "noContribution": "No node contributes to this indicator."
+    },
     "waterUsage": "Water use",
     "confidenceHigh": "\u2714\ufe0f High confidence (ADEME data)",
     "confidenceMediumTitle": "Medium confidence",

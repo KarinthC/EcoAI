@@ -9,7 +9,8 @@ L’application est développée avec **Vue 3** (frontend), **Flask** (backend) 
 - **Éditeur de pipeline visuel** : glisser-déposer de nœuds (Données, Données persistantes, Données SSD temporaires, Entraînement, Inférence, LLM Call, LLM Expert, etc.) sur un canevas, connexion par arêtes dirigées.
 - **Paramétrage détaillé** : chaque type de nœud expose ses propres paramètres (taille des données, nombre d’epochs, modèle, fournisseur, tokens…) via un panneau latéral.
 - **Analyse carbone** : appel au backend qui utilise la librairie `ecologits` pour les nœuds LLM et des formules paramétrables pour les autres nœuds.
-- **Restitution visuelle** : badges de criticité (vert/orange/rouge) sur les nœuds, bandeau inférieur avec l’empreinte totale et suggestions, panneau de détail par nœud.
+- **Restitution visuelle** : badges de criticité (vert/orange/rouge) sur les nœuds, panneau de détail par nœud.
+- **Analyse par onglets** : en mode analyse, une barre d’onglets propose une analyse globale (note single score ACV + synthèse + suggestions), le graphe parcourable, puis un onglet par indicateur (comparatif jauge vs seuil + contribution par nœud). La barre latérale des critères reste affichée en permanence et sert de navigation.
 - **Gestion multi-pipelines** : système d’onglets, sauvegarde/chargement des pipelines (base PostgreSQL), suppression.
 - **Sessions utilisateur légères** : identification par cookie de session Flask, possibilité de choisir un pseudonyme.
 - **Déploiement simple** : configuration Docker Compose pour le développement (hot reload) et pour la production (Nginx + Gunicorn).
@@ -102,7 +103,7 @@ L’application est disponible sur http://localhost (Nginx écoute sur le port 8
 
     5. Sauvegarder le pipeline (💾).
 
-    6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition, affiche les impacts et des conseils.
+    6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition et ouvre une zone à onglets : « Analyse globale » (note single score + synthèse + suggestions), « Graphe » (canevas parcourable) et un onglet par indicateur (comparatif). La barre latérale des critères reste affichée et permet d’ouvrir directement l’onglet d’un indicateur.
 
     7. Revenir à l’édition avec le même bouton.
 
@@ -126,8 +127,23 @@ Les tests disponibles :
 - `tests/test_acv.py` : moteur ACV (linéarité heures/nb_gpu), parc serveurs/GPUs et nœuds Entrainement/Inférence.
 - `tests/test_storage.py` : nœuds de stockage (Données persistantes HDD / Données SSD temporaires), linéarité et ordres de grandeur.
 - `tests/test_datasource.py` : nœud « Données » (représentation sans calcul : impact 0, `computed=False`).
+- `tests/test_single_score.py` : single score ACV (note générale) — structure, linéarité, cas limites, exclusion de l’eau ecologits.
 
 Ajoutez vos propres tests au fur et à mesure.
+
+### Tests frontend
+
+Les tests frontend utilisent **Vitest** et **@vue/test-utils**.
+
+```bash
+
+cd frontend
+npm install
+npm test          # exécution unique
+npm run test:watch
+```
+
+Les tests couvrent le composable `useAnalysisTabs`, l’onglet d’analyse du store, et les composants `GlobalScoreCard` et `IndicatorComparison`.
 
 
 ## Structure détaillée du projet
@@ -158,7 +174,8 @@ backend/
 │   │   │   │   ├── storage.py    # Nœuds “Données persistantes” (HDD) & “Données SSD temporaires” (SSD)
 │   │   │   │   ├── training.py   # Nœud “Entrainement” (charge 100%)
 │   │   │   │   ├── inference.py  # Nœud “Inférence” (charge 33%)
-│   │   │   │   └── operator.py   # Nœud “Opérateur” (charge paramétrable)
+│   │   │   │   ├── operator.py   # Nœud “Opérateur” (charge paramétrable)
+│   │   │   │   └── single_score.py # Single score ACV (note générale)
 │   │   │   └── ecologits/      # Famille ecologits (estimations, vouée à évoluer)
 │   │   │       ├── llm_call.py   # Nœud “LLM Call”
 │   │   │       ├── llm_expert.py # Nœud “LLM Expert”
@@ -193,8 +210,14 @@ frontend/
 │   │   └── main.css            # Styles globaux (VueFlow, bordures de nœuds)
 │   ├── components/
 │   │   ├── pipeline/           # Composants spécifiques à l’éditeur
+│   │   │   ├── analysis/       # Composants du mode analyse (onglets)
+│   │   │   │   ├── AnalysisTabs.vue          # Barre d’onglets d’analyse
+│   │   │   │   ├── AnalysisGlobalTab.vue     # Onglet analyse globale (note + synthèse)
+│   │   │   │   ├── GlobalScoreCard.vue       # Carte single score + barre empilée
+│   │   │   │   ├── AnalysisGraphTab.vue      # Onglet graphe parcourable
+│   │   │   │   ├── AnalysisIndicatorTab.vue  # Onglet d’un indicateur
+│   │   │   │   └── IndicatorComparison.vue   # Jauge vs seuil + barres par nœud
 │   │   │   ├── AnalysisNodePanel.vue  # Panneau de détail en mode analyse
-│   │   │   ├── AnalysisOverlay.vue    # Bandeau inférieur (score + suggestions)
 │   │   │   ├── CustomNode.vue         # Rendu d’un nœud dans le graphe
 │   │   │   ├── DropzoneBackground.vue # Fond du canvas avec grille
 │   │   │   ├── ParameterPanel.vue     # Édition des paramètres d’un nœud
@@ -205,7 +228,8 @@ frontend/
 │   │   ├── UserIdentification.vue     # Affichage du pseudonyme
 │   │   └── UsernameModal.vue          # Modale de saisie du pseudonyme
 │   ├── composables/
-│   │   └── useDnD.js          # Logique de drag & drop réutilisable
+│   │   ├── useDnD.js          # Logique de drag & drop réutilisable
+│   │   └── useAnalysisTabs.js # Dérivation des onglets d’analyse + navigation
 │   ├── stores/
 │   │   └── usePipelineStore.js # État global (nœuds, arêtes, analyse, onglets)
 │   ├── router/
@@ -227,7 +251,11 @@ frontend/
 
     Le composable useDnD.js fournit la mécanique de glisser‑déposer ; il utilise également le store pour ajouter les nœuds.
 
+    Le composable useAnalysisTabs.js dérive la liste des onglets d’analyse (global, graphe, un par indicateur) et gère l’onglet actif, porté par le store.
+
     Les composants de la palette (Sidebar.vue), du canvas (CustomNode.vue) et des paramètres (ParameterPanel.vue) communiquent via le store, sans dépendances directes entre eux.
+
+    En mode analyse, HomeView.vue affiche la Sidebar (permanente) et la zone à onglets ; les composants du dossier components/pipeline/analysis/ rendent l’onglet actif.
 
     Les appels HTTP vers le backend (sauvegarde, chargement, analyse) sont encapsulés dans les actions du store, mais pourraient être extraits dans un dossier api/ à l’avenir.
 

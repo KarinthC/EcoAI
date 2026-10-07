@@ -9,6 +9,7 @@ from .acv import (
     operator as acv_operator,
     storage as acv_storage,
 )
+from .acv.single_score import compute_single_score
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, llm_expert, video
 from .common import (
@@ -233,10 +234,15 @@ def compute_impact(pipeline: dict) -> dict:
     has_ecologits = _has_ecologits_node(nodes_analysis)
     criteria = _build_criteria(total_indicators, has_ecologits)
 
+    # Single score ACV (note générale) : agrégation normalisée + pondérée des
+    # critères, avec la contribution de chaque indicateur (barre empilée front).
+    single_score = compute_single_score(criteria)
+
     return {
         'total_impact_kg': round(total_impact, 2),
         'total_indicators': total_indicators,
         'criteria': criteria,
+        'single_score': single_score,
         'has_ecologits_node': has_ecologits,
         'global_level': _global_level(criteria),
         'nodes': nodes_analysis,
