@@ -10,6 +10,7 @@ from .acv import (
     storage as acv_storage,
 )
 from .acv.single_score import compute_single_score
+from .acv.reference_usages import compute_reference_scores
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, llm_expert, video
 from .common import (
@@ -238,11 +239,16 @@ def compute_impact(pipeline: dict) -> dict:
     # critères, avec la contribution de chaque indicateur (barre empilée front).
     single_score = compute_single_score(criteria)
 
+    # Usages de référence (avion, ciment, bœuf) : même formule PEF, pour
+    # contextualiser le single score du pipeline.
+    reference_usages = compute_reference_scores()
+
     return {
         'total_impact_kg': round(total_impact, 2),
         'total_indicators': total_indicators,
         'criteria': criteria,
         'single_score': single_score,
+        'reference_usages': reference_usages,
         'has_ecologits_node': has_ecologits,
         'global_level': _global_level(criteria),
         'nodes': nodes_analysis,

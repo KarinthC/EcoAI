@@ -37,7 +37,7 @@ const { tabs, activeTab, selectTab } = useAnalysisTabs()
   border-radius: 4px 4px 0 0;
   background: #e2e8f0;
   color: #2d3748;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;

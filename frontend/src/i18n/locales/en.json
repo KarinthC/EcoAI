@@ -69,6 +69,20 @@
       "singleScore": "Overall score (single score)",
       "beyondBudget": "Criteria beyond the monthly budget"
     },
+    "reference": {
+      "chartTitle": "Total PEF score and comparison of impact profiles with other processes",
+      "pipeline": "PIPELINE",
+      "aircraft1h": "1 hour of flight",
+      "cement10kg": "10 kg of cement",
+      "beef1kg": "1 kg of beef",
+      "axisUnitAbsolute": "Single score (mPt)",
+      "axisUnitPercent": "Share of pipeline score (%)",
+      "pipelineMarker": "Pipeline (100%)",
+      "modeAbsolute": "Absolute values (mPt)",
+      "modePercent": "As % of pipeline",
+      "expand": "\u26f6 Expand",
+      "collapse": "\u2715 Collapse"
+    },
     "indicator": {
       "threshold": "Monthly threshold / inhabitant:",
       "ratio": "Value / threshold ratio:",

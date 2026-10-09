@@ -146,6 +146,57 @@ ACV_CRITERIA = {
 # Liste ordonnée des clés de critères ACV affichables.
 CRITERIA_KEYS = list(ACV_CRITERIA.keys())
 
+# ---------------------------------------------------------------------------
+# Facteurs PEF EF 3.1 (normalisation + pondération) pour le single score.
+#
+# Source : méthode EF 3.1 publiée par le Joint Research Centre (JRC) en 2023,
+# s'appuyant sur la Recommandation (UE) 2021/2279.
+#   - NF_i : facteur de normalisation (impact annuel moyen d'un citoyen mondial).
+#   - WF_i : facteur de pondération (importance relative, somme = 100 %).
+#
+# Le score unique PEF (en milli-points, mPt) se calcule par catégorie :
+#     S_i = (R_i / NF_i) × WF_i
+# puis S = Σ_i S_i, exprimé en mPt (×1000).
+#
+# NOTE : « PEF-LU » (occupation des sols) figure dans le tableau PEF officiel
+# mais est exclu du projet (pas de facteur dans les données de processus).
+# ---------------------------------------------------------------------------
+PEF_NORMALIZATION = {
+    'PEF-GWP': 7.55e3,      # kg CO₂ eq./personne
+    'PEF-ODP': 5.23e-2,     # kg CFC-11 eq./personne
+    'PEF-CTUh-c': 1.73e-5,  # CTUh/personne
+    'PEF-CTUh-nc': 1.29e-4, # CTUh/personne
+    'PEF-PM': 5.95e-4,      # disease incidences/personne
+    'PEF-IR': 4.22e3,       # kBq U-235 eq./personne
+    'PEF-POCP': 4.09e1,     # kg NMVOC eq./personne
+    'PEF-AP': 5.56e1,       # mol H+ eq./personne
+    'PEF-Epf': 1.61e0,      # kg P eq./personne
+    'PEF-Epm': 1.95e1,      # kg N eq./personne
+    'PEF-Ept': 1.77e2,      # mol N eq./personne
+    'PEF-CTUe': 5.67e4,     # CTUe/personne
+    'PEF-ADPf': 6.50e4,     # MJ/personne
+    'PEF-ADPe': 6.36e-2,    # kg Sb eq./personne
+    'PEF-WU': 1.15e4,       # m³ water eq of deprived water/personne
+}
+
+PEF_WEIGHTING = {
+    'PEF-GWP': 0.2106,      # 21,06 %
+    'PEF-ODP': 0.0631,      # 6,31 %
+    'PEF-CTUh-c': 0.0213,   # 2,13 %
+    'PEF-CTUh-nc': 0.0184,  # 1,84 %
+    'PEF-PM': 0.0896,       # 8,96 %
+    'PEF-IR': 0.0501,       # 5,01 %
+    'PEF-POCP': 0.0478,     # 4,78 %
+    'PEF-AP': 0.0620,       # 6,20 %
+    'PEF-Epf': 0.0280,      # 2,80 %
+    'PEF-Epm': 0.0296,      # 2,96 %
+    'PEF-Ept': 0.0371,      # 3,71 %
+    'PEF-CTUe': 0.0192,     # 1,92 %
+    'PEF-ADPf': 0.0832,     # 8,32 %
+    'PEF-ADPe': 0.0755,     # 7,55 %
+    'PEF-WU': 0.0851,       # 8,51 %
+}
+
 # Contribution ecologits de l'eau, exposée sous une clé distincte (litres),
 # volontairement NON fusionnée avec PEF-WU (m³ eq) faute d'unités comparables.
 WATER_ECOLOGITS_KEY = 'PEF-WU_ecologits'

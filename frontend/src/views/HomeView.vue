@@ -78,7 +78,9 @@ onConnect(addEdges)
     </div>
     </header>
 
-    <PipelineTabs />
+    <!-- Barre d'onglets : pipelines en édition, analyse en mode analyse -->
+    <PipelineTabs v-if="!store.isAnalyzing" />
+    <AnalysisTabs v-else />
 
     <!-- Mode ÉDITION : canevas éditable + panneau de paramètres -->
     <div class="dnd-flow" @drop="onDrop" v-if="store.activePipeline && !store.isAnalyzing">
@@ -118,7 +120,6 @@ onConnect(addEdges)
     <div class="dnd-flow" v-if="store.activePipeline && store.isAnalyzing">
       <Sidebar />
       <div class="analysis-area">
-        <AnalysisTabs />
         <AnalysisGlobalTab v-if="store.activeAnalysisTab === 'global'" />
         <AnalysisGraphTab v-else-if="store.activeAnalysisTab === 'graph'" />
         <AnalysisIndicatorTab v-else />
@@ -222,7 +223,8 @@ onConnect(addEdges)
   overflow: hidden;
 }
 
-/* Zone principale du mode analyse : barre d'onglets + onglet actif. */
+/* Zone principale du mode analyse : contenu de l'onglet actif (la barre
+   d'onglets est rendue au-dessus, à la place des onglets de pipelines). */
 .analysis-area {
   flex: 1;
   display: flex;

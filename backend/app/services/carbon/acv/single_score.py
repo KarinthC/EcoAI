@@ -1,59 +1,44 @@
 # backend/app/services/carbon/acv/single_score.py
-"""Single score ACV : agrégation des critères PEF en une valeur unique.
+"""Single score PEF : agrégation des critères en une valeur unique (mPt).
 
-Principe (méthodologie ACV classique, cf. openLCA / ReCiPe) :
-
+Méthodologie officielle (méthode EF 3.1, JRC 2023, Recommandation (UE)
+2021/2279) :
     Pour chaque catégorie d'impact i :
         R_i : résultat caractérisé (ex. kg CO₂ eq, mol H⁺ eq, ...).
-        N_i = R_i × NF_i   (normalisation : NF_i = facteur de normalisation)
-        S_i = N_i × W_i    (pondération : W_i = poids de la catégorie)
+        N_i = R_i / NF_i   (normalisation : NF_i = impact annuel moyen d'un
+                            citoyen mondial pour la catégorie i)
+        S_i = N_i × WF_i   (pondération : WF_i = importance relative, en %)
     Single score :
-        S = Σ_i S_i = Σ_i (R_i × NF_i × W_i)
+        S = Σ_i S_i = Σ_i (R_i / NF_i × WF_i)
 
-Le single score est SANS DIMENSION : il n'a de sens que comparé à lui-même
-(entre pipelines, ou par rapport à une échelle de référence).
+Le score est exprimé en MILLI-POINTS (mPt) : S × 1000.
 
-HYPOTHÈSES (à remplacer par des facteurs ADEME/PEF sourcés dès qu'ils seront
-disponibles) :
-  - Normalisation : NF_i = 1 / seuil mensuel par habitant (déjà défini dans
-    common.ACV_CRITERIA[key]['pb_monthly']). On réutilise ainsi la même
-    référence que le calcul des ratios de criticité, ce qui garantit la
-    cohérence de l'échelle.
-  - Pondération : W_i = 1 pour tous les critères (aucune hiérarchie imposée
-    tant qu'aucune source de pondération n'est retenue).
+Les facteurs NF_i et WF_i proviennent de `common.PEF_NORMALIZATION` et
+`common.PEF_WEIGHTING` (EF 3.1). Ils sont documentés et sourcés : toute
+modification doit être accompagnée d'un test.
 
-Ces hypothèses sont volontairement explicites : toute modification des facteurs
-doit être sourcée (référence ou hypothèse documentée) et accompagnée d'un test.
+NOTE : une contribution peut être NÉGATIVE (ex. eau évitée). Elle est
+conservée telle quelle dans le score (méthodologiquement valide), mais le
+front l'exclut de l'affichage des barres empilées (une barre ne peut pas être
+négative).
 """
 
-from ..common import ACV_CRITERIA, CRITERIA_KEYS, WATER_ECOLOGITS_KEY
-
-# Poids par critère (W_i). Valeur 1.0 par défaut : aucune pondération imposée.
-# Clé absente -> 1.0 (cf. _weight_for).
-WEIGHTS = {key: 1.0 for key in CRITERIA_KEYS}
-
-
+from ..common import (
+    CRITERIA_KEYS,
+    PEF_NORMALIZATION,
+    PEF_WEIGHTING,
+    WATER_ECOLOGITS_KEY,
+)
 def _normalization_factor(key: str) -> float:
-    """Facteur de normalisation NF_i = 1 / seuil mensuel par habitant.
-
-    Retourne 0.0 si le critère n'a pas de seuil (contribution nulle au score).
-    """
-    meta = ACV_CRITERIA.get(key)
-    if not meta:
-        return 0.0
-    pb_monthly = meta.get('pb_monthly')
-    if not pb_monthly:
-        return 0.0
-    return 1.0 / pb_monthly
+    """Facteur de normalisation NF_i (EF 3.1). 0.0 si le critère est inconnu."""
+    return PEF_NORMALIZATION.get(key, 0.0)
 
 
-def _weight_for(key: str) -> float:
-    """Poids W_i d'un critère (1.0 par défaut)."""
-    return WEIGHTS.get(key, 1.0)
-
-
+def _weighting_factor(key: str) -> float:
+    """Facteur de pondération WF_i (EF 3.1). 0.0 si le critère est inconnu."""
+    return PEF_WEIGHTING.get(key, 0.0)
 def compute_single_score(criteria: list) -> dict:
-    """Calcule le single score ACV et la contribution de chaque indicateur.
+    """Calcule le single score PEF (mPt) et la contribution de chaque indicateur.
 
     `criteria` est la liste produite par l'orchestrateur : chaque entrée porte
     au minimum `key` et `value` (valeur affichée, déjà convertie). L'eau
@@ -61,16 +46,16 @@ def compute_single_score(criteria: list) -> dict:
 
     Retourne un dict :
         {
-          'single_score': float,          # S = Σ S_i (sans dimension)
+          'single_score': float,          # S en mPt (Σ S_i × 1000)
           'contributions': [              # une entrée par critère contributif
             {'key', 'label', 'value', 'normalized', 'weight', 'score'},
             ...
           ],
         }
 
-    Les contributions sont ordonnées comme CRITERIA_KEYS (ordre d'affichage
-    stable côté front). Les critères de score nul sont conservés (utile pour
-    afficher une sous-délimitation à 0 dans la barre empilée).
+    `score` est la contribution en mPt. Les contributions sont ordonnées comme
+    CRITERIA_KEYS (ordre d'affichage stable côté front). Les critères de score
+    nul sont conservés (utile pour afficher une sous-délimitation à 0).
     """
     contributions = []
     total = 0.0
@@ -82,9 +67,14 @@ def compute_single_score(criteria: list) -> dict:
 
         value = criterion.get('value') or 0.0
         nf = _normalization_factor(key)
-        weight = _weight_for(key)
-        normalized = value * nf
-        score = normalized * weight
+        weight = _weighting_factor(key)
+        if not nf:
+            # Critère sans facteur PEF (ex. PEF-LU) : contribution nulle.
+            normalized = 0.0
+            score = 0.0
+        else:
+            normalized = value / nf
+            score = normalized * weight
 
         contributions.append({
             'key': key,
@@ -92,7 +82,8 @@ def compute_single_score(criteria: list) -> dict:
             'value': value,
             'normalized': normalized,
             'weight': weight,
-            'score': score,
+            # Contribution en mPt (×1000) pour un affichage lisible.
+            'score': score * 1000.0,
         })
         total += score
 
@@ -101,6 +92,7 @@ def compute_single_score(criteria: list) -> dict:
     contributions.sort(key=lambda c: order.get(c['key'], len(order)))
 
     return {
-        'single_score': total,
+        'single_score': total * 1000.0,
         'contributions': contributions,
     }
+

@@ -2,10 +2,15 @@
 // Onglet « Analyse globale » : note générale (single score) + synthèse
 // (critères au-delà du budget) + suggestions de réduction.
 // Reprend la logique de l'ancien AnalysisOverlay (supprimé).
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { usePipelineStore } from '@/stores/usePipelineStore'
-import GlobalScoreCard from '@/components/pipeline/analysis/GlobalScoreCard.vue'
+
+// Chargement asynchrone : ECharts (~500 ko) n'est téléchargé qu'à l'ouverture
+// de l'onglet « Analyse globale », pas dans le bundle initial.
+const ScoreComparisonChart = defineAsyncComponent(
+  () => import('@/components/pipeline/analysis/ScoreComparisonChart.vue')
+)
 
 const store = usePipelineStore()
 const { t } = useI18n()
@@ -35,7 +40,7 @@ const suggestions = computed(() => {
 
 <template>
   <div class="global-tab">
-    <GlobalScoreCard />
+    <ScoreComparisonChart />
 
     <div class="summary-card" :class="`level-${globalLevel}`">
       <div class="summary-row">

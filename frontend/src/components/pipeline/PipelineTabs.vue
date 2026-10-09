@@ -24,26 +24,36 @@ const store = usePipelineStore()
 <style scoped>
 .tabs-bar {
   display: flex;
+  gap: 0.25rem;
   background: #edf2f7;
   border-bottom: 1px solid #cbd5e0;
   padding: 0.25rem 0.5rem;
   overflow-x: auto;
+  flex-shrink: 0;
 }
+/* Style aligné sur les onglets d'analyse (AnalysisTabs) : même police, même
+   taille, même couleur et même état actif. */
 .tab {
-  padding: 0.3rem 0.8rem;
+  padding: 0.35rem 0.8rem;
   border: 1px solid transparent;
-  border-bottom: none;
   border-radius: 4px 4px 0 0;
-  margin-right: 0.2rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.4rem;
   background: #e2e8f0;
+  color: #2d3748;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.tab:hover {
+  background: #cbd5e0;
 }
 .tab.active {
   background: white;
   border-color: #cbd5e0;
+  border-bottom-color: white;
 }
 .tab-name {
   max-width: 120px;
