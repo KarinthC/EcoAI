@@ -1,4 +1,4 @@
-// Tests de IndicatorComparison : jauge vs seuil et barres par nœud.
+// Tests de IndicatorComparison : deux jauges CSS (seuil + PEF) et barres par nœud.
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import IndicatorComparison from '@/components/pipeline/analysis/IndicatorComparison.vue'
@@ -17,16 +17,124 @@ const criterion = {
   value: 50,
   threshold_monthly: 100,
   ratio: 0.5,
+  pef_contribution: 12.5,
+  pef_share: 40,
 }
 
 describe('IndicatorComparison', () => {
-  it('affiche la valeur et le seuil', () => {
+  it('rend deux jauges (seuil + PEF)', () => {
     const wrapper = mount(IndicatorComparison, {
       props: { criterion, nodeContributions: [] },
       global: globalMocks,
     })
-    expect(wrapper.find('.gauge-value').text()).toContain('50')
-    expect(wrapper.find('.gauge-threshold').text()).toContain('100')
+    expect(wrapper.findAll('.gauge-block')).toHaveLength(2)
+  })
+
+  it('remplit la jauge de seuil selon le ratio (50 % ici)', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: { criterion, nodeContributions: [] },
+      global: globalMocks,
+    })
+    const fills = wrapper.findAll('.gauge-fill')
+    expect(fills[0].attributes('style')).toContain('width: 50%')
+  })
+
+  it('plafonne la jauge de seuil à 100 % en cas de dépassement', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: { criterion: { ...criterion, value: 250, ratio: 2.5 }, nodeContributions: [] },
+      global: globalMocks,
+    })
+    expect(wrapper.findAll('.gauge-fill')[0].attributes('style')).toContain('width: 100%')
+  })
+
+  it('remplit la jauge PEF selon la contribution (2.5 mPt -> 50 %)', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: { criterion: { ...criterion, pef_contribution: 2.5 }, nodeContributions: [] },
+      global: globalMocks,
+    })
+    expect(wrapper.findAll('.gauge-fill')[1].attributes('style')).toContain('width: 50%')
+  })
+
+  it('plafonne la jauge PEF à 100 % au-delà de 5 mPt', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: { criterion: { ...criterion, pef_contribution: 12.5 }, nodeContributions: [] },
+      global: globalMocks,
+    })
+    expect(wrapper.findAll('.gauge-fill')[1].attributes('style')).toContain('width: 100%')
+  })
+
+  it('grise la jauge de seuil d\'un critère partiel non problématique', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, has_partial: true, ratio: 0.05 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    // PARTIAL_GRAY = #4a5568.
+    expect(wrapper.findAll('.gauge-fill')[0].attributes('style')).toContain('rgb(74, 85, 104)')
+  })
+
+  // --- Interprétation (4 cas) ------------------------------------------------
+  // Seuils : ratio >= 0.25 (25 % du seuil) et |pef_contribution| >= 1 mPt.
+  function interpretationClass(wrapper) {
+    const el = wrapper.find('.interpretation')
+    return [...el.classes()].find((c) => c.startsWith('interpretation-'))
+  }
+
+  it('cas « les deux au-dessus »', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, ratio: 0.5, pef_contribution: 2 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    expect(interpretationClass(wrapper)).toBe('interpretation-bothAbove')
+  })
+
+  it('cas « seuil au-dessus, PEF en dessous »', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, ratio: 0.5, pef_contribution: 0.5 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    expect(interpretationClass(wrapper)).toBe('interpretation-ratioAbove')
+  })
+
+  it('cas « PEF au-dessus, seuil en dessous »', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, ratio: 0.1, pef_contribution: 2 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    expect(interpretationClass(wrapper)).toBe('interpretation-pefAbove')
+  })
+
+  it('cas « les deux en dessous »', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, ratio: 0.1, pef_contribution: 0.5 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    expect(interpretationClass(wrapper)).toBe('interpretation-bothBelow')
+  })
+
+  it('une contribution PEF négative significative compte comme « au-dessus »', () => {
+    const wrapper = mount(IndicatorComparison, {
+      props: {
+        criterion: { ...criterion, ratio: 0.1, pef_contribution: -2 },
+        nodeContributions: [],
+      },
+      global: globalMocks,
+    })
+    expect(interpretationClass(wrapper)).toBe('interpretation-pefAbove')
   })
 
   it('rend une barre par nœud contributeur', () => {
@@ -49,36 +157,6 @@ describe('IndicatorComparison', () => {
       global: globalMocks,
     })
     expect(wrapper.find('.bars-empty').exists()).toBe(true)
-  })
-
-  it('n\'affiche pas de marqueur partiel pour un critère complet', () => {
-    const wrapper = mount(IndicatorComparison, {
-      props: { criterion, nodeContributions: [] },
-      global: globalMocks,
-    })
-    expect(wrapper.find('.partial-mark').exists()).toBe(false)
-    expect(wrapper.find('.partial-notice').exists()).toBe(false)
-  })
-
-  it('marque « + ? » et affiche le message pour un critère partiel', () => {
-    const wrapper = mount(IndicatorComparison, {
-      props: { criterion: { ...criterion, has_partial: true }, nodeContributions: [] },
-      global: globalMocks,
-    })
-    expect(wrapper.find('.partial-mark').exists()).toBe(true)
-    expect(wrapper.find('.partial-notice').exists()).toBe(true)
-  })
-
-  it('grise la jauge d\'un critère partiel non problématique', () => {
-    const wrapper = mount(IndicatorComparison, {
-      props: {
-        criterion: { ...criterion, has_partial: true, ratio: 0.05 },
-        nodeContributions: [],
-      },
-      global: globalMocks,
-    })
-    // PARTIAL_GRAY = #4a5568 (même règle que la Sidebar).
-    expect(wrapper.find('.gauge-value').attributes('style')).toContain('rgb(74, 85, 104)')
   })
 
   it('n\'affiche pas de section ecologits sans contributions en litres', () => {
@@ -107,3 +185,4 @@ describe('IndicatorComparison', () => {
     expect(wrapper.findAll('.bar-fill-ecologits')).toHaveLength(2)
   })
 })
+

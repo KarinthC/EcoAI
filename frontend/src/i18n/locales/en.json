@@ -86,8 +86,23 @@
     "indicator": {
       "threshold": "Monthly threshold / inhabitant:",
       "ratio": "Value / threshold ratio:",
+      "thresholdBar": "Monthly threshold / inhabitant",
+      "pefBar": "Contribution to the PEF score",
+      "pefScale": "Scale: 0 → 5 mPt",
+      "interpretation": {
+        "bothAbove": "This criterion exceeds both 25% of the planet's sustainable monthly budget per inhabitant and 1 mPt of PEF score: it puts notable pressure on planetary boundaries and weighs heavily in the overall environmental balance, which aggregates impacts on human health, ecosystems and resources (here: {area}).",
+        "ratioAbove": "This criterion exceeds 25% of the planet's sustainable monthly budget per inhabitant, but its contribution to the PEF score remains low: it puts notable pressure on planetary boundaries without weighing heavily in the overall environmental balance (human health, ecosystems, resources).",
+        "pefAbove": "This criterion stays below 25% of the planet's sustainable monthly budget per inhabitant, but its contribution to the PEF score exceeds 1 mPt: it does not weigh heavily on planetary boundaries, but weighs heavily in the overall environmental balance, which aggregates impacts on human health, ecosystems and resources (here: {area}).",
+        "bothBelow": "This criterion stays below 25% of the planet's sustainable monthly budget per inhabitant and below 1 mPt of PEF score: its pressure on planetary boundaries and its weight in the overall environmental balance (human health, ecosystems, resources) remain low."
+      },
       "byNode": "Contribution by node",
       "noContribution": "No node contributes to this indicator."
+    },
+    "protectionArea": {
+      "humanHealth": "human health",
+      "ecosystems": "ecosystems",
+      "resources": "resources",
+      "generic": "human health, ecosystems and resources"
     },
     "waterUsage": "Water use",
     "confidenceHigh": "\u2714\ufe0f High confidence (ADEME data)",

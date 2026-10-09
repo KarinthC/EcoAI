@@ -1,5 +1,5 @@
 <script setup>
-// Onglet d'un indicateur : comparatif dédié (jauge vs seuil + barres par nœud).
+// Onglet d'un indicateur : jauge (seuil + PEF) et barres par nœud.
 // Le critère est résolu depuis l'onglet actif du store.
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -86,3 +86,4 @@ const ecologitsContributions = computed(() => {
   color: #718096;
 }
 </style>
+

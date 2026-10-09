@@ -133,6 +133,29 @@ def _build_criteria(total_indicators: dict, has_ecologits: bool) -> list:
     return criteria
 
 
+def _attach_pef_contributions(criteria: list, single_score: dict) -> None:
+    """Rattache à chaque critère sa contribution au single score PEF.
+
+    Ajoute deux champs à chaque critère (mutation en place) :
+      - pef_contribution : contribution de l'indicateur au single score (mPt),
+                           telle que calculée par compute_single_score() ;
+      - pef_share        : part de cette contribution dans le score total (%).
+
+    La contribution peut être NÉGATIVE (ex. eau évitée) : elle est conservée
+    telle quelle (méthodologiquement valide) ; le front la signale sans dessiner
+    de segment négatif. Un critère absent des contributions (ex. PEF-LU) reçoit
+    0.0. L'eau ecologits (clé dédiée) n'entre pas dans le single score.
+    """
+    by_key = {c['key']: c for c in single_score.get('contributions', [])}
+    total = single_score.get('single_score', 0.0)
+    for criterion in criteria:
+        contribution = by_key.get(criterion['key'])
+        score = contribution['score'] if contribution else 0.0
+        criterion['pef_contribution'] = score
+        # Part du score total : indéfinie si le score total est nul.
+        criterion['pef_share'] = (score / total * 100.0) if total else 0.0
+
+
 def _global_level(criteria: list) -> str:
     """Couleur globale : celle du PIRE facteur (ratio valeur/seuil le plus haut).
 
@@ -238,6 +261,12 @@ def compute_impact(pipeline: dict) -> dict:
     # Single score ACV (note générale) : agrégation normalisée + pondérée des
     # critères, avec la contribution de chaque indicateur (barre empilée front).
     single_score = compute_single_score(criteria)
+
+    # On rattache à chaque critère sa contribution au single score PEF (mPt) et
+    # sa part du score total (%). Le front affiche ainsi, dans l'onglet d'un
+    # indicateur, une barre « contribution au score PEF » cohérente avec la
+    # barre empilée de l'analyse globale (mêmes NF/WF EF 3.1).
+    _attach_pef_contributions(criteria, single_score)
 
     # Usages de référence (avion, ciment, bœuf) : même formule PEF, pour
     # contextualiser le single score du pipeline.
