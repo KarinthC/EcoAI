@@ -29,15 +29,43 @@ const description = computed(() =>
 
 // Contributions par nœud pour une clé d'indicateur donnée : on lit la valeur
 // dans node.data.indicators (posée par le store lors de l'analyse).
+//
+// Plusieurs nœuds peuvent partager le même type (ex. deux « Entraînement ») :
+// on les distingue alors par un numéro d'occurrence (« Entraînement 1 », « 2 »…).
+// Le numéro n'est ajouté QUE si le type apparaît plusieurs fois dans le
+// pipeline (un type unique reste sans numéro). Le comptage porte sur l'ENSEMBLE
+// des nœuds (pas seulement les contributeurs) pour rester stable d'un
+// indicateur à l'autre.
 function contributionsFor(key) {
+  // Nombre total de nœuds par type, dans l'ordre des nœuds du pipeline.
+  const typeTotals = {}
+  for (const node of store.nodes) {
+    const typeKey = nodeTypeLabelKey(resolveNodeType(node.data))
+    const typeId = typeKey || node.data?.label || node.id
+    typeTotals[typeId] = (typeTotals[typeId] || 0) + 1
+  }
+
+  // Numéro d'occurrence par nœud (uniquement utile si le type est multiple).
+  const typeCounters = {}
+  const occurrence = {}
+  for (const node of store.nodes) {
+    const typeKey = nodeTypeLabelKey(resolveNodeType(node.data))
+    const typeId = typeKey || node.data?.label || node.id
+    typeCounters[typeId] = (typeCounters[typeId] || 0) + 1
+    occurrence[node.id] = typeCounters[typeId]
+  }
+
   const rows = []
   for (const node of store.nodes) {
     const indicators = node.data?.indicators
     if (!indicators || !(key in indicators)) continue
     const typeKey = nodeTypeLabelKey(resolveNodeType(node.data))
+    const typeId = typeKey || node.data?.label || node.id
+    const baseLabel = typeKey ? t(typeKey) : (node.data?.label || node.id)
+    const suffix = typeTotals[typeId] > 1 ? ` ${occurrence[node.id]}` : ''
     rows.push({
       id: node.id,
-      label: typeKey ? t(typeKey) : (node.data?.label || node.id),
+      label: `${baseLabel}${suffix}`,
       value: indicators[key],
     })
   }
@@ -53,6 +81,11 @@ const ecologitsContributions = computed(() => {
   if (store.activeAnalysisTab !== 'PEF-WU') return []
   return contributionsFor(WATER_ECOLOGITS_KEY)
 })
+
+// Vrai si ecologits remonte une contribution (eau en litres) : la valeur
+// affichée est alors incomplète (non fusionnée avec l'ACV), comme un critère
+// partiel. Sert à griser la jauge PEF et à masquer l'interprétation verte.
+const hasEcologits = computed(() => ecologitsContributions.value.length > 0)
 </script>
 
 <template>
@@ -65,6 +98,7 @@ const ecologitsContributions = computed(() => {
       :criterion="criterion"
       :node-contributions="nodeContributions"
       :ecologits-contributions="ecologitsContributions"
+      :has-ecologits="hasEcologits"
     />
   </div>
 </template>

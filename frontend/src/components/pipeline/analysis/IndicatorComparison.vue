@@ -1,12 +1,18 @@
 <script setup>
 // Comparatif d'un indicateur :
 //   - deux jauges CSS : seuil mensuel par habitant + contribution au score PEF ;
-//   - barres : contribution de chaque nœud à cet indicateur.
+//   - camembert : contribution de chaque nœud à cet indicateur.
 // Présentation pure : les données sont passées en props par l'onglet.
-import { computed } from 'vue'
+import { computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import useImpactColor from '@/composables/useImpactColor'
 import { protectionAreaKey } from '@/components/pipeline/analysis/protectionAreas.js'
+
+// Chargement asynchrone : ECharts (~500 ko) n'est téléchargé qu'à l'ouverture
+// d'un onglet d'indicateur, pas dans le bundle initial.
+const NodeContributionPie = defineAsyncComponent(
+  () => import('@/components/pipeline/analysis/NodeContributionPie.vue')
+)
 
 const props = defineProps({
   // Critère courant (issu de analysisResult.criteria).
@@ -16,6 +22,10 @@ const props = defineProps({
   // Contributions ecologits par nœud, en litres (eau uniquement) :
   // [{ id, label, value }]. Vide pour les autres critères.
   ecologitsContributions: { type: Array, default: () => [] },
+  // Vrai si des contributions ecologits existent pour ce critère (eau en
+  // litres). Comme pour un critère partiel, la valeur affichée est incomplète :
+  // on grise la jauge PEF et on masque l'interprétation « les deux en dessous ».
+  hasEcologits: { type: Boolean, default: false },
 })
 
 const { t, locale } = useI18n()
@@ -28,6 +38,11 @@ const ratio = computed(() => props.criterion?.ratio ?? null)
 // Contribution partielle : des nœuds ecologits ne rapportent pas ce critère,
 // la valeur réelle est donc supérieure à celle affichée.
 const hasPartial = computed(() => !!props.criterion?.has_partial)
+
+// Valeur incomplète : soit le critère est partiel (ecologits ne le remonte
+// pas), soit ecologits remonte une contribution en litres (eau) non fusionnée
+// avec l'ACV. Dans les deux cas, la valeur affichée est sous-estimée.
+const isIncomplete = computed(() => hasPartial.value || props.hasEcologits)
 
 // --- Jauge 1 : seuil mensuel ------------------------------------------------
 // Largeur = ratio plafonné à 100 % (au-delà = dépassement).
@@ -43,7 +58,7 @@ const PARTIAL_GRAY = '#4a5568'
 const HIGH_RATIO = 0.15
 
 const gaugeColor = computed(() => {
-  if (hasPartial.value && !(ratio.value >= HIGH_RATIO)) return PARTIAL_GRAY
+  if (isIncomplete.value && !(ratio.value >= HIGH_RATIO)) return PARTIAL_GRAY
   return ratioColor(ratio.value)
 })
 
@@ -85,11 +100,23 @@ const PEF_SIGNIFICANT = 1
 const ratioSignificant = computed(() => (ratio.value ?? 0) >= RATIO_SIGNIFICANT)
 const pefSignificant = computed(() => Math.abs(pefContribution.value) >= PEF_SIGNIFICANT)
 
-// Clé i18n du cas d'interprétation (4 combinaisons possibles).
+// Couleur de la jauge PEF affichée. Comme pour le seuil, un critère partiel ne
+// doit PAS apparaître vert quand il n'est pas déjà significatif (fausse
+// impression de sûreté) : on le grise, SAUF s'il dépasse déjà 1 mPt.
+const pefGaugeColor = computed(() => {
+  if (isIncomplete.value && !pefSignificant.value) return PARTIAL_GRAY
+  return pefColor(pefContribution.value)
+})
+
+// Clé i18n du cas d'interprétation (4 combinaisons possibles). En présence
+// d'une inconnue (critère partiel), on n'affiche PAS le cas « les deux en
+// dessous » (vert) : la valeur réelle peut être supérieure, l'affirmation
+// serait trompeuse.
 const interpretationKey = computed(() => {
   if (ratioSignificant.value && pefSignificant.value) return 'bothAbove'
   if (ratioSignificant.value) return 'ratioAbove'
   if (pefSignificant.value) return 'pefAbove'
+  if (isIncomplete.value) return null
   return 'bothBelow'
 })
 
@@ -99,19 +126,6 @@ const protectionArea = computed(() => {
   const key = protectionAreaKey(props.criterion?.key)
   return key ? t(key) : t('analysis.protectionArea.generic')
 })
-
-// Valeur maximale d'une liste de contributions, pour normaliser les barres.
-function maxValue(rows) {
-  return rows.reduce((m, n) => Math.max(m, Math.abs(n.value || 0)), 0)
-}
-
-// Largeur d'une barre, normalisée sur le maximum de SA section (les deux
-// sections — m³ eq et litres — ont des échelles distinctes).
-function barWidth(v, rows) {
-  const max = maxValue(rows)
-  if (!max) return 0
-  return (Math.abs(v) / max) * 100
-}
 
 function formatValue(v) {
   if (v === null || v === undefined) return '—'
@@ -133,7 +147,7 @@ function formatValue(v) {
         <span class="gauge-value" :style="{ color: gaugeColor }">
           {{ formatValue(value) }}
           <span class="gauge-unit">{{ criterion.unit }}</span>
-          <span v-if="hasPartial" class="partial-mark" :title="$t('sidebar.partialMark')">+ ?</span>
+          <span v-if="isIncomplete" class="partial-mark" :title="$t('sidebar.partialMark')">+ ?</span>
         </span>
       </div>
       <div class="gauge-track">
@@ -150,72 +164,76 @@ function formatValue(v) {
       <p v-if="hasPartial" class="partial-notice">{{ $t('sidebar.tooltipPartial') }}</p>
     </div>
 
-    <!-- Jauge 2 : contribution au score PEF (0 -> 100 mPt) -->
+    <!-- Jauge 2 : contribution au score PEF (0 -> 5 mPt) -->
     <div class="gauge-block">
       <div class="gauge-header">
         <span class="gauge-title">{{ $t('analysis.indicator.pefBar') }}</span>
-        <span class="gauge-value" :style="{ color: pefColor(pefContribution) }">
+        <span class="gauge-value" :style="{ color: pefGaugeColor }">
           {{ formatValue(pefContribution) }} <span class="gauge-unit">mPt</span>
+          <span v-if="isIncomplete" class="partial-mark" :title="$t('sidebar.partialMark')">+ ?</span>
         </span>
       </div>
       <div class="gauge-track">
-        <div
-          class="gauge-fill"
-          :style="{ width: pefWidth + '%', background: pefColor(pefContribution) }"
-        ></div>
+        <div class="gauge-fill" :style="{ width: pefWidth + '%', background: pefGaugeColor }"></div>
       </div>
       <div class="gauge-foot">
         <span class="gauge-threshold">{{ $t('analysis.indicator.pefScale') }}</span>
       </div>
+      <p v-if="hasPartial" class="partial-notice">{{ $t('sidebar.tooltipPartial') }}</p>
     </div>
 
-    <!-- Interprétation : phrase selon les deux jauges (4 cas) -->
-    <div class="interpretation" :class="`interpretation-${interpretationKey}`">
-      <span class="interpretation-icon" aria-hidden="true">💡</span>
+    <!-- Interprétation : phrase selon les deux jauges (4 cas). Masquée quand
+         le cas est indéterminé (critère partiel sous les deux seuils). -->
+    <div
+      v-if="interpretationKey"
+      class="interpretation"
+      :class="`interpretation-${interpretationKey}`"
+    >
+      <span class="interpretation-icon" aria-hidden="true">
+        <!-- Icône Lucide « brain-cog » (cerveau + engrenage) : interprétation.
+             Source : lucide-icons/lucide (licence ISC). -->
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="m10.852 14.772-.383.923" />
+          <path d="m10.852 9.228-.383-.923" />
+          <path d="m13.148 14.772.382.924" />
+          <path d="m13.531 8.305-.383.923" />
+          <path d="m14.772 10.852.923-.383" />
+          <path d="m14.772 13.148.923.383" />
+          <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 0 0-5.63-1.446 3 3 0 0 0-.368 1.571 4 4 0 0 0-2.525 5.771" />
+          <path d="M17.998 5.125a4 4 0 0 1 2.525 5.771" />
+          <path d="M19.505 10.294a4 4 0 0 1-1.5 7.706" />
+          <path d="M4.032 17.483A4 4 0 0 0 11.464 20c.18-.311.892-.311 1.072 0a4 4 0 0 0 7.432-2.516" />
+          <path d="M4.5 10.291A4 4 0 0 0 6 18" />
+          <path d="M6.002 5.125a3 3 0 0 0 .4 1.375" />
+          <path d="m9.228 10.852-.923-.383" />
+          <path d="m9.228 13.148-.923.383" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      </span>
       <p class="interpretation-text">
         {{ $t(`analysis.indicator.interpretation.${interpretationKey}`, { area: protectionArea }) }}
       </p>
     </div>
 
-    <!-- Barres : contribution de chaque nœud (unité du critère) -->
-    <div class="bars-block">
+    <!-- Camembert : contribution de chaque nœud (unité du critère) -->
+    <div class="pie-card">
       <h4>
         {{ $t('analysis.indicator.byNode') }}
-        <span v-if="criterion.unit" class="bars-unit">({{ criterion.unit }})</span>
+        <span v-if="criterion.unit" class="pie-unit">({{ criterion.unit }})</span>
       </h4>
-      <p v-if="!nodeContributions.length" class="bars-empty">
-        {{ $t('analysis.indicator.noContribution') }}
-      </p>
-      <ul v-else class="bars-list">
-        <li v-for="n in nodeContributions" :key="n.id" class="bar-item">
-          <span class="bar-label">{{ n.label }}</span>
-          <div class="bar-track">
-            <div class="bar-fill" :style="{ width: barWidth(n.value, nodeContributions) + '%' }"></div>
-          </div>
-          <span class="bar-value">{{ formatValue(n.value) }}</span>
-        </li>
-      </ul>
+      <NodeContributionPie :contributions="nodeContributions" :unit="criterion.unit" />
     </div>
 
-    <!-- Barres ecologits (eau en litres) : section distincte, unités non
-         comparables à l'ACV (m³ eq) -> échelle de barres indépendante. -->
-    <div v-if="ecologitsContributions.length" class="bars-block">
+    <!-- Camembert ecologits (eau en litres) : section distincte, unités non
+         comparables à l'ACV (m³ eq) -> graphique indépendant. -->
+    <div v-if="ecologitsContributions.length" class="pie-card">
       <h4>
         {{ $t('analysis.indicator.byNode') }}
-        <span class="bars-unit">(L ecologits)</span>
+        <span class="pie-unit">(L ecologits)</span>
       </h4>
-      <ul class="bars-list">
-        <li v-for="n in ecologitsContributions" :key="n.id" class="bar-item">
-          <span class="bar-label">{{ n.label }}</span>
-          <div class="bar-track">
-            <div
-              class="bar-fill bar-fill-ecologits"
-              :style="{ width: barWidth(n.value, ecologitsContributions) + '%' }"
-            ></div>
-          </div>
-          <span class="bar-value">{{ formatValue(n.value) }}</span>
-        </li>
-      </ul>
+      <NodeContributionPie :contributions="ecologitsContributions" unit="L ecologits" />
     </div>
   </div>
 </template>
@@ -297,8 +315,11 @@ function formatValue(v) {
   background: #f7fafc;
 }
 .interpretation-icon {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  color: #4a5568;
   line-height: 1.4;
+  flex-shrink: 0;
 }
 .interpretation-text {
   margin: 0;
@@ -321,65 +342,19 @@ function formatValue(v) {
   border-left-color: #e53e3e;
   background: #fff5f5;
 }
-.bars-block {
+.pie-card {
   background: white;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 }
-.bars-block h4 {
+.pie-card h4 {
   margin: 0 0 0.75rem;
 }
-.bars-unit {
+.pie-unit {
   font-size: 0.75rem;
   font-weight: 400;
   color: #718096;
-}
-.bars-empty {
-  color: #718096;
-  font-style: italic;
-  margin: 0;
-}
-.bars-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.bar-item {
-  display: grid;
-  grid-template-columns: 120px 1fr 90px;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.8rem;
-}
-.bar-label {
-  color: #4a5568;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.bar-track {
-  height: 12px;
-  border-radius: 3px;
-  background: #edf2f7;
-  overflow: hidden;
-}
-.bar-fill {
-  height: 100%;
-  background: #3182ce;
-  transition: width 0.3s ease;
-}
-/* Section ecologits (eau en litres) : couleur neutre, non comparable à l'ACV. */
-.bar-fill-ecologits {
-  background: #4a5568;
-}
-.bar-value {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: #2d3748;
 }
 </style>
 

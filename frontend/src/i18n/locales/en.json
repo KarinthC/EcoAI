@@ -90,10 +90,10 @@
       "pefBar": "Contribution to the PEF score",
       "pefScale": "Scale: 0 → 5 mPt",
       "interpretation": {
-        "bothAbove": "This criterion exceeds both 25% of the planet's sustainable monthly budget per inhabitant and 1 mPt of PEF score: it puts notable pressure on planetary boundaries and weighs heavily in the overall environmental balance, which aggregates impacts on human health, ecosystems and resources (here: {area}).",
-        "ratioAbove": "This criterion exceeds 25% of the planet's sustainable monthly budget per inhabitant, but its contribution to the PEF score remains low: it puts notable pressure on planetary boundaries without weighing heavily in the overall environmental balance (human health, ecosystems, resources).",
-        "pefAbove": "This criterion stays below 25% of the planet's sustainable monthly budget per inhabitant, but its contribution to the PEF score exceeds 1 mPt: it does not weigh heavily on planetary boundaries, but weighs heavily in the overall environmental balance, which aggregates impacts on human health, ecosystems and resources (here: {area}).",
-        "bothBelow": "This criterion stays below 25% of the planet's sustainable monthly budget per inhabitant and below 1 mPt of PEF score: its pressure on planetary boundaries and its weight in the overall environmental balance (human health, ecosystems, resources) remain low."
+        "bothAbove": "This criterion exceeds two benchmarks at once: 25% of the sustainable monthly budget per person and 1 mPt of PEF score. It therefore weighs both on planetary boundaries and on the overall environmental balance. The PEF score aggregates impacts on human health, ecosystems and resources into a single score: here, the area at stake is {area}.",
+        "ratioAbove": "This criterion exceeds 25% of the sustainable monthly budget per person: it therefore weighs on planetary boundaries. Its contribution to the PEF score remains low, however, so its weight in the overall environmental balance (human health, ecosystems, resources) stays limited.",
+        "pefAbove": "This criterion stays below 25% of the sustainable monthly budget per person, but its contribution to the PEF score exceeds 1 mPt: it therefore weighs on the overall environmental balance, even though its pressure on planetary boundaries remains low. The PEF score aggregates impacts on human health, ecosystems and resources into a single score: here, the area at stake is {area}.",
+        "bothBelow": "This criterion stays below both benchmarks: 25% of the sustainable monthly budget per person and 1 mPt of PEF score. Its pressure on planetary boundaries and its weight in the overall environmental balance (human health, ecosystems, resources) therefore remain low."
       },
       "byNode": "Contribution by node",
       "noContribution": "No node contributes to this indicator."

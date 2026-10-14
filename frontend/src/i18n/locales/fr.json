@@ -90,10 +90,10 @@
       "pefBar": "Contribution au score PEF",
       "pefScale": "Échelle : 0 → 5 mPt",
       "interpretation": {
-        "bothAbove": "Ce critère dépasse à la fois 25 % du budget mensuel soutenable de la planète par habitant et 1 mPt du score PEF : il exerce une pression notable sur les limites planétaires et pèse lourd dans le bilan environnemental global, qui agrège les impacts sur la santé humaine, les écosystèmes et les ressources (ici : {area}).",
-        "ratioAbove": "Ce critère dépasse 25 % du budget mensuel soutenable de la planète par habitant, mais sa contribution au score PEF reste faible : il exerce une pression notable sur les limites planétaires, sans peser lourd dans le bilan environnemental global (santé humaine, écosystèmes, ressources).",
-        "pefAbove": "Ce critère reste sous 25 % du budget mensuel soutenable de la planète par habitant, mais sa contribution au score PEF dépasse 1 mPt : il ne pèse pas lourd sur les limites planétaires, mais pèse lourd dans le bilan environnemental global, qui agrège les impacts sur la santé humaine, les écosystèmes et les ressources (ici : {area}).",
-        "bothBelow": "Ce critère reste sous 25 % du budget mensuel soutenable de la planète par habitant et sous 1 mPt du score PEF : sa pression sur les limites planétaires et son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) restent faibles."
+        "bothAbove": "Ce critère dépasse deux repères à la fois : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Il pèse donc à la fois sur les limites planétaires et sur le bilan environnemental global. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
+        "ratioAbove": "Ce critère dépasse 25 % du budget mensuel soutenable par personne : il pèse donc sur les limites planétaires. Sa contribution au score PEF reste en revanche faible, donc son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) reste limité.",
+        "pefAbove": "Ce critère reste sous 25 % du budget mensuel soutenable par personne, mais sa contribution au score PEF dépasse 1 mPt : il pèse donc sur le bilan environnemental global, même si sa pression sur les limites planétaires reste faible. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
+        "bothBelow": "Ce critère reste sous les deux repères : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Sa pression sur les limites planétaires comme son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) restent donc faibles."
       },
       "byNode": "Contribution par nœud",
       "noContribution": "Aucun nœud ne contribue à cet indicateur."
