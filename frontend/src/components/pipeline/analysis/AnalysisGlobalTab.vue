@@ -12,6 +12,18 @@ const ScoreComparisonChart = defineAsyncComponent(
   () => import('@/components/pipeline/analysis/ScoreComparisonChart.vue')
 )
 
+// Heatmap « hotspots » (nœuds × indicateurs) : également chargée à la demande
+// pour garder ECharts hors du bundle initial.
+const NodeIndicatorHeatmap = defineAsyncComponent(
+  () => import('@/components/pipeline/analysis/NodeIndicatorHeatmap.vue')
+)
+
+// Treemap des contributions PEF (surface ∝ contribution du nœud) : chargé à la
+// demande pour garder ECharts hors du bundle initial.
+const IndicatorTreemap = defineAsyncComponent(
+  () => import('@/components/pipeline/analysis/IndicatorTreemap.vue')
+)
+
 const store = usePipelineStore()
 const { t } = useI18n()
 
@@ -42,6 +54,11 @@ const suggestions = computed(() => {
   <div class="global-tab">
     <ScoreComparisonChart />
 
+    <div class="pef-explainer">
+      <span class="pef-explainer-icon" aria-hidden="true">ℹ️</span>
+      <p>{{ $t('analysis.global.pefExplainer') }}</p>
+    </div>
+
     <div class="summary-card" :class="`level-${globalLevel}`">
       <div class="summary-row">
         <span class="summary-label">{{ $t('analysis.global.beyondBudget') }}</span>
@@ -56,6 +73,12 @@ const suggestions = computed(() => {
       </ul>
       <p v-else class="suggestions-empty">{{ $t('overlay.noSuggestion') }}</p>
     </div>
+
+    <!-- Rangée du bas : heatmap (gauche) + treemap (droite), 50 % chacune. -->
+    <div class="charts-row">
+      <NodeIndicatorHeatmap />
+      <IndicatorTreemap />
+    </div>
   </div>
 </template>
 
@@ -66,6 +89,40 @@ const suggestions = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+/* Encart explicatif : distingue le PEF des seuils planétaires par habitant. */
+.pef-explainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: #ebf8ff;
+  border-left: 4px solid #4299e1;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+.pef-explainer-icon {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.pef-explainer p {
+  margin: 0;
+  color: #2c5282;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+/* Rangée du bas : deux graphiques côte à côte (50 % / 50 %). */
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+/* Sur écran étroit, on empile les deux graphiques. */
+@media (max-width: 900px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
 }
 .summary-card {
   background: white;
@@ -111,3 +168,4 @@ const suggestions = computed(() => {
   margin: 0;
 }
 </style>
+

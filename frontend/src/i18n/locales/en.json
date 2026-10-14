@@ -67,7 +67,8 @@
     },
     "global": {
       "singleScore": "Overall score (single score)",
-      "beyondBudget": "Criteria beyond the monthly budget"
+      "beyondBudget": "Criteria beyond the monthly budget",
+      "pefExplainer": "The PEF (Product Environmental Footprint) assesses the overall environmental footprint of a process (resource use, impacts on human health, ecosystem destruction), whereas the monthly planetary thresholds per inhabitant assess the stability and sustainability of the Earth system."
     },
     "reference": {
       "chartTitle": "Total PEF score and comparison of impact profiles with other processes",
@@ -82,6 +83,16 @@
       "modePercent": "As % of pipeline",
       "expand": "\u26f6 Expand",
       "collapse": "\u2715 Collapse"
+    },
+    "heatmap": {
+      "title": "Monthly threshold per inhabitant hotspot map (nodes × indicators)",
+      "legend": "Share of monthly threshold (%)",
+      "noData": "No data",
+      "axisNodes": "Nodes",
+      "axisIndicators": "Indicators"
+    },
+    "treemap": {
+      "title": "PEF contribution breakdown (indicators × nodes)"
     },
     "indicator": {
       "threshold": "Monthly threshold / inhabitant:",

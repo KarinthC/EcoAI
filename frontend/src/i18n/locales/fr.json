@@ -1,231 +1,242 @@
 {
   "app": {
-    "title": "Estimation Carbone"
+    "title": "Carbon Estimation"
   },
   "header": {
-    "savePipeline": "Sauvegarder Pipeline",
-    "deletePipeline": "Supprimer Pipeline"
+    "savePipeline": "Save Pipeline",
+    "deletePipeline": "Delete Pipeline"
   },
   "language": {
-    "label": "Langue"
+    "label": "Language"
   },
   "connection": {
-    "connected": "Connecté",
-    "serverError": "Erreur serveur",
-    "checking": "Vérification...",
+    "connected": "Connected",
+    "serverError": "Server error",
+    "checking": "Checking...",
     "api": "API"
   },
   "user": {
-    "connectedAs": "Connecté en tant que {username}",
-    "anonymousClick": "Anonyme - Cliquez pour choisir un nom",
-    "serverUnreachable": "Serveur inaccessible",
-    "connecting": "Connexion en cours...",
-    "anonymous": "Anonyme",
-    "online": "Hors ligne",
-    "anonymousShort": "Connexion..."
+    "connectedAs": "Connected as {username}",
+    "anonymousClick": "Anonymous - Click to choose a name",
+    "serverUnreachable": "Server unreachable",
+    "connecting": "Connecting...",
+    "anonymous": "Anonymous",
+    "online": "Offline",
+    "anonymousShort": "Connecting..."
   },
   "username": {
-    "welcome": "Bienvenue !",
-    "chooseName": "Choisissez un nom d'utilisateur pour commencer.",
-    "placeholder": "Votre nom...",
-    "submit": "Valider",
-    "saving": "Enregistrement...",
-    "networkError": "Erreur réseau"
+    "welcome": "Welcome!",
+    "chooseName": "Choose a username to get started.",
+    "placeholder": "Your name...",
+    "submit": "Confirm",
+    "saving": "Saving...",
+    "networkError": "Network error"
   },
   "sidebar": {
-    "description": "Glissez-déposez ces nœuds sur le canvas.",
-    "downloadThresholds": "📄 Télécharger l'explication des seuils",
-    "analyze": "🔍 Lancer l'analyse",
-    "analyzing": "⏳ Analyse...",
-    "backToEdit": "🔙 Retour à l'édition",
-    "globalHigh": "Impact élevé",
-    "globalMedium": "Impact plutôt élevé",
-    "globalLow": "Impact faible",
-    "tooltipAria": "Détail du critère",
-    "partialMark": "Contribution partielle",
-    "tooltipThreshold": "Seuil mensuel / habitant :",
-    "tooltipPartial": "⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère. La valeur réelle est donc plus élevée."
+    "description": "Drag and drop these nodes onto the canvas.",
+    "downloadThresholds": "\ud83d\udcc4 Download the thresholds explanation",
+    "analyze": "\ud83d\udd0d Run the analysis",
+    "analyzing": "\u23f3 Analyzing...",
+    "backToEdit": "\ud83d\udd19 Back to editing",
+    "globalHigh": "High impact",
+    "globalMedium": "Fairly high impact",
+    "globalLow": "Low impact",
+    "tooltipAria": "Criterion details",
+    "partialMark": "Partial contribution",
+    "tooltipThreshold": "Monthly threshold / inhabitant:",
+    "tooltipPartial": "\u26a0\ufe0f Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
   },
   "overlay": {
-    "suggestions": "💡 Suggestions",
-    "criteriaBeyondBudget": "{count} critère(s) au-delà du budget mensuel",
-    "reduceImpact": "Pour réduire l'impact :",
-    "noSuggestion": "Aucune suggestion particulière pour ce pipeline.",
+    "suggestions": "\ud83d\udca1 Suggestions",
+    "criteriaBeyondBudget": "{count} criterion/criteria beyond the monthly budget",
+    "reduceImpact": "To reduce the impact:",
+    "noSuggestion": "No particular suggestion for this pipeline.",
     "items": {
-      "veryHighFootprint": "L'empreinte totale est très élevée ({impact} kg CO₂ eq). Pensez à utiliser des modèles pré-entraînés.",
-      "reduceEpochsOrBatch": "Réduire le nombre d'epochs ou la taille du batch peut significativement baisser l'impact."
+      "veryHighFootprint": "The total footprint is very high ({impact} kg CO\u2082 eq). Consider using pre-trained models.",
+      "reduceEpochsOrBatch": "Reducing the number of epochs or the batch size can significantly lower the impact."
     }
   },
   "analysis": {
-    "levelHigh": "Impact élevé",
-    "levelMedium": "Impact moyen",
-    "levelLow": "Impact faible",
-    "indicators": "Indicateurs",
+    "levelHigh": "High impact",
+    "levelMedium": "Medium impact",
+    "levelLow": "Low impact",
+    "indicators": "Indicators",
     "tabs": {
-      "global": "Analyse globale",
-      "graph": "Graphe"
+      "global": "Global analysis",
+      "graph": "Graph"
     },
     "global": {
       "singleScore": "Note générale (single score)",
-      "beyondBudget": "Critères au-delà du budget mensuel"
-    },
+      "beyondBudget": "Critères au-delà du budget mensuel",
+      "pefExplainer": "Le PEF (Product Environmental Footprint) évalue l'empreinte environnementale globale d'un processus (utilisation de ressources, impacts sur la santé humaine, destruction d'écosystèmes), alors que les seuils mensuels planétaires par habitant évaluent la stabilité du système Terre et sa pérennité."
+  },
     "reference": {
-      "chartTitle": "Score PEF total et comparaison des profils d'impacts avec d'autres processus",
-      "pipeline": "VOTRE PIPELINE",
-      "aircraft1h": "1 heure d'avion",
-      "cement10kg": "10 kg de ciment",
-      "beef1kg": "1 kg de bœuf",
+      "chartTitle": "Total PEF score and comparison of impact profiles with other processes",
+      "pipeline": "PIPELINE",
+      "aircraft1h": "1 hour of flight",
+      "cement10kg": "10 kg of cement",
+      "beef1kg": "1 kg of beef",
       "axisUnitAbsolute": "Single score (mPt)",
-      "axisUnitPercent": "Part du score du pipeline (%)",
-      "pipelineMarker": "Pipeline (100 %)",
-      "modeAbsolute": "Valeurs absolues (mPt)",
-      "modePercent": "En % du pipeline",
-      "expand": "⛶ Agrandir",
-      "collapse": "✕ Réduire"
+      "axisUnitPercent": "Share of pipeline score (%)",
+      "pipelineMarker": "Pipeline (100%)",
+      "modeAbsolute": "Absolute values (mPt)",
+      "modePercent": "As % of pipeline",
+      "expand": "\u26f6 Expand",
+      "collapse": "\u2715 Collapse"
+    },
+    "heatmap": {
+      "title": "Monthly threshold per inhabitant hotspot map (nodes × indicators)",
+      "legend": "Share of monthly threshold (%)",
+      "noData": "No data",
+      "axisNodes": "Nodes",
+      "axisIndicators": "Indicators"
+    },
+    "treemap": {
+      "title": "PEF contribution breakdown (indicators × nodes)"
     },
     "indicator": {
-      "threshold": "Seuil mensuel / habitant :",
-      "ratio": "Ratio valeur / seuil :",
-      "thresholdBar": "Seuil mensuel / habitant",
-      "pefBar": "Contribution au score PEF",
-      "pefScale": "Échelle : 0 → 5 mPt",
+      "threshold": "Monthly threshold / inhabitant:",
+      "ratio": "Value / threshold ratio:",
+      "thresholdBar": "Monthly threshold / inhabitant",
+      "pefBar": "Contribution to the PEF score",
+      "pefScale": "Scale: 0 → 5 mPt",
       "interpretation": {
-        "bothAbove": "Ce critère dépasse deux repères à la fois : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Il pèse donc à la fois sur les limites planétaires et sur le bilan environnemental global. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
-        "ratioAbove": "Ce critère dépasse 25 % du budget mensuel soutenable par personne : il pèse donc sur les limites planétaires. Sa contribution au score PEF reste en revanche faible, donc son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) reste limité.",
-        "pefAbove": "Ce critère reste sous 25 % du budget mensuel soutenable par personne, mais sa contribution au score PEF dépasse 1 mPt : il pèse donc sur le bilan environnemental global, même si sa pression sur les limites planétaires reste faible. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
-        "bothBelow": "Ce critère reste sous les deux repères : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Sa pression sur les limites planétaires comme son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) restent donc faibles."
+        "bothAbove": "This criterion exceeds two benchmarks at once: 25% of the sustainable monthly budget per person and 1 mPt of PEF score. It therefore weighs both on planetary boundaries and on the overall environmental balance. The PEF score aggregates impacts on human health, ecosystems and resources into a single score: here, the area at stake is {area}.",
+        "ratioAbove": "This criterion exceeds 25% of the sustainable monthly budget per person: it therefore weighs on planetary boundaries. Its contribution to the PEF score remains low, however, so its weight in the overall environmental balance (human health, ecosystems, resources) stays limited.",
+        "pefAbove": "This criterion stays below 25% of the sustainable monthly budget per person, but its contribution to the PEF score exceeds 1 mPt: it therefore weighs on the overall environmental balance, even though its pressure on planetary boundaries remains low. The PEF score aggregates impacts on human health, ecosystems and resources into a single score: here, the area at stake is {area}.",
+        "bothBelow": "This criterion stays below both benchmarks: 25% of the sustainable monthly budget per person and 1 mPt of PEF score. Its pressure on planetary boundaries and its weight in the overall environmental balance (human health, ecosystems, resources) therefore remain low."
       },
-      "byNode": "Contribution par nœud",
-      "noContribution": "Aucun nœud ne contribue à cet indicateur."
+      "byNode": "Contribution by node",
+      "noContribution": "No node contributes to this indicator."
     },
     "protectionArea": {
-      "humanHealth": "santé humaine",
-      "ecosystems": "écosystèmes",
-      "resources": "ressources",
-      "generic": "santé humaine, écosystèmes et ressources"
+      "humanHealth": "human health",
+      "ecosystems": "ecosystems",
+      "resources": "resources",
+      "generic": "human health, ecosystems and resources"
     },
-    "waterUsage": "Utilisation de l'eau",
-    "confidenceHigh": "✔️ Confiance élevée (données ADEME)",
-    "confidenceMediumTitle": "Confiance moyenne",
-    "confidenceMediumDetail": "Données d'infrastructure extrapolées, données d'impact ADEME",
-    "confidenceLowTitle": "Confiance faible",
-    "confidenceLowDetail": "⚠️ Manque de transparence des acteurs",
-    "confidenceNone": "Nœud de représentation : aucun impact calculé.",
-    "confidenceGeneric": "Confiance : {level}"
+    "waterUsage": "Water use",
+    "confidenceHigh": "\u2714\ufe0f High confidence (ADEME data)",
+    "confidenceMediumTitle": "Medium confidence",
+    "confidenceMediumDetail": "Extrapolated infrastructure data, ADEME impact data",
+    "confidenceLowTitle": "Low confidence",
+    "confidenceLowDetail": "\u26a0\ufe0f Lack of transparency from providers",
+    "confidenceNone": "Representation node: no impact calculated.",
+    "confidenceGeneric": "Confidence: {level}"
   },
   "panel": {
-    "apply": "💾 Appliquer",
-    "delete": "🗑️ Supprimer",
-    "choose": "-- Choisir --"
+    "apply": "\ud83d\udcbe Apply",
+    "delete": "\ud83d\uddd1\ufe0f Delete",
+    "choose": "-- Choose --"
   },
   "node": {
-    "configure": "Cliquer pour configurer"
+    "configure": "Click to configure"
   },
   "canvas": {
-    "dropHere": "Déposer ici"
+    "dropHere": "Drop here"
   },
   "nodes": {
-    "datasource": "Données",
-    "storage_persistent": "Données persistantes",
-    "storage_temporary": "Données SSD temporaires",
-    "ml_model": "Modèle ML",
-    "operator": "Opérateur",
-    "training": "Entrainement",
-    "inference": "Inférence",
+    "datasource": "Data",
+    "storage_persistent": "Persistent data",
+    "storage_temporary": "Temporary SSD data",
+    "ml_model": "ML Model",
+    "operator": "Operator",
+    "training": "Training",
+    "inference": "Inference",
     "llm_call": "LLM Call",
     "llm_expert": "LLM Expert",
     "video_generation": "Video Generation"
   },
   "criteria": {
     "PEF-GWP": {
-      "label": "Changement climatique",
-      "description": "Potentiel de réchauffement global (GWP), indicateur le plus courant de l'empreinte carbone."
+      "label": "Climate change",
+      "description": "Global warming potential (GWP), the most common indicator of carbon footprint."
     },
     "PEF-ODP": {
-      "label": "Appauvrissement de l'ozone",
-      "description": "Destruction de la couche d'ozone stratosphérique."
+      "label": "Ozone depletion",
+      "description": "Destruction of the stratospheric ozone layer."
     },
     "PEF-PM": {
-      "label": "Particules fines",
-      "description": "Émissions de particules fines et leur impact sur la santé humaine."
+      "label": "Fine particulates",
+      "description": "Fine particulate emissions and their impact on human health."
     },
     "PEF-AP": {
       "label": "Acidification",
-      "description": "Acidification des sols et des eaux (pluies acides)."
+      "description": "Acidification of soils and water (acid rain)."
     },
     "PEF-Epf": {
-      "label": "Eutrophisation eau douce",
-      "description": "Enrichissement en phosphore des eaux douces."
+      "label": "Freshwater eutrophication",
+      "description": "Phosphorus enrichment of freshwater."
     },
     "PEF-Epm": {
-      "label": "Eutrophisation marine",
-      "description": "Enrichissement en azote des eaux marines."
+      "label": "Marine eutrophication",
+      "description": "Nitrogen enrichment of marine waters."
     },
     "PEF-Ept": {
-      "label": "Eutrophisation terrestre",
-      "description": "Enrichissement en azote des milieux terrestres."
+      "label": "Terrestrial eutrophication",
+      "description": "Nitrogen enrichment of terrestrial environments."
     },
     "PEF-IR": {
-      "label": "Rayonnements ionisants",
-      "description": "Impact sur la santé humaine des rayonnements ionisants."
+      "label": "Ionizing radiation",
+      "description": "Impact on human health from ionizing radiation."
     },
     "PEF-POCP": {
-      "label": "Ozone photochimique",
-      "description": "Formation d'ozone troposphérique (smog) affectant la santé humaine."
+      "label": "Photochemical ozone",
+      "description": "Tropospheric ozone formation (smog) affecting human health."
     },
     "PEF-CTUh-nc": {
-      "label": "Toxicité humaine (non cancer.)",
-      "description": "Effets toxiques non cancérigènes sur la santé humaine."
+      "label": "Human toxicity (non-carc.)",
+      "description": "Non-carcinogenic toxic effects on human health."
     },
     "PEF-ADPf": {
-      "label": "Épuisement fossile",
-      "description": "Épuisement des ressources abiotiques fossiles (énergie primaire)."
+      "label": "Fossil depletion",
+      "description": "Depletion of fossil abiotic resources (primary energy)."
     },
     "PEF-ADPe": {
-      "label": "Épuisement minéraux/métaux",
-      "description": "Épuisement des ressources minérales et métalliques."
+      "label": "Mineral/metal depletion",
+      "description": "Depletion of mineral and metal resources."
     },
     "PEF-WU": {
-      "label": "Utilisation de l'eau",
-      "description": "Consommation d'eau douce. L'ACV (PEF-WU, en m³ eq) et la contribution ecologits (WCF, en litres) ne sont pas fusionnées car issues de méthodologies différentes : elles sont affichées côte à côte comme deux contributions distinctes."
+      "label": "Water use",
+      "description": "Freshwater consumption. The LCA (PEF-WU, in m\u00b3 eq) and the ecologits contribution (WCF, in litres) are not merged because they come from different methodologies: they are shown side by side as two distinct contributions."
     },
     "PEF-CTUe": {
-      "label": "Écotoxicité eau douce",
-      "description": "Effets écotoxicologiques sur les écosystèmes d'eau douce."
+      "label": "Freshwater ecotoxicity",
+      "description": "Ecotoxicological effects on freshwater ecosystems."
     },
     "PEF-CTUh-c": {
-      "label": "Toxicité humaine (cancer.)",
-      "description": "Effets toxiques cancérigènes sur la santé humaine."
+      "label": "Human toxicity (carc.)",
+      "description": "Carcinogenic toxic effects on human health."
     }
   },
   "fields": {
-    "name": "Nom",
+    "name": "Name",
     "version": "version",
     "type": "type",
-    "parameters": "Paramètres",
-    "dataType": "Type de données",
-    "size": "Taille (Go)",
+    "parameters": "Parameters",
+    "dataType": "Data type",
+    "size": "Size (GB)",
     "format": "Format",
-    "storageDurationYears": "Durée de stockage (années)",
-    "storageDurationDays": "Durée de stockage (jours)",
-    "storageServer": "Serveur de stockage",
-    "server": "Serveur",
+    "storageDurationYears": "Storage duration (years)",
+    "storageDurationDays": "Storage duration (days)",
+    "storageServer": "Storage server",
+    "server": "Server",
     "gpu": "GPU",
-    "gpuCount": "Nombre de cartes GPU",
-    "hours": "Nombre d'heures",
-    "loadRate": "Taux de charge (%)",
-    "callCount": "Nombre d'appels",
-    "provider": "Fournisseur",
-    "model": "Modèle",
-    "outputTokens": "Tokens générés",
-    "latency": "Latence (ms)",
-    "activeParams": "Param. actifs (milliards)",
-    "totalParams": "Param. totaux (milliards)",
-    "datacenterLocation": "Localisation du datacenter",
-    "datacenterPue": "PUE Datacenter",
-    "datacenterWue": "WUE Datacenter",
-    "resolution": "Résolution",
-    "duration": "Durée (secondes)",
-    "withAudio": "Avec audio"
+    "gpuCount": "Number of GPUs",
+    "hours": "Number of hours",
+    "loadRate": "Load rate (%)",
+    "callCount": "Number of calls",
+    "provider": "Provider",
+    "model": "Model",
+    "outputTokens": "Generated tokens",
+    "latency": "Latency (ms)",
+    "activeParams": "Active params (billion)",
+    "totalParams": "Total params (billion)",
+    "datacenterLocation": "Datacenter location",
+    "datacenterPue": "Datacenter PUE",
+    "datacenterWue": "Datacenter WUE",
+    "resolution": "Resolution",
+    "duration": "Duration (seconds)",
+    "withAudio": "With audio"
   }
 }
