@@ -8,9 +8,10 @@ L’application est développée avec **Vue 3** (frontend), **Flask** (backend) 
 
 - **Éditeur de pipeline visuel** : glisser-déposer de nœuds (Données, Données persistantes, Données SSD temporaires, Entraînement, Inférence, LLM Call, LLM Expert, etc.) sur un canevas, connexion par arêtes dirigées.
 - **Paramétrage détaillé** : chaque type de nœud expose ses propres paramètres (taille des données, nombre d’epochs, modèle, fournisseur, tokens…) via un panneau latéral.
-- **Analyse carbone** : appel au backend qui utilise la librairie `ecologits` pour les nœuds LLM et des formules paramétrables pour les autres nœuds.
+- **Analyse carbone** : appel au backend qui utilise la librairie `ecologits` pour les nœuds LLM et des formules ACV documentées (multi-indicateurs PEF) pour les autres nœuds.
+- **Single score PEF** : l’analyse agrège les critères en une note unique en milli-points (mPt) selon la méthode EF 3.1 (JRC 2023, Recommandation (UE) 2021/2279), puis la compare à des usages de référence (avion, ciment, bœuf) pour contextualiser l’impact.
 - **Restitution visuelle** : badges de criticité (vert/orange/rouge) sur les nœuds, panneau de détail par nœud.
-- **Analyse par onglets** : en mode analyse, une barre d’onglets propose une analyse globale (note single score ACV + synthèse + suggestions), le graphe parcourable, puis un onglet par indicateur (comparatif jauge vs seuil + contribution par nœud). La barre latérale des critères reste affichée en permanence et sert de navigation.
+- **Analyse par onglets** : en mode analyse, une barre d’onglets propose une analyse globale (note single score PEF + synthèse + suggestions + heatmap hotspots + treemap des contributions), le graphe parcourable, puis un onglet par indicateur (comparatif jauge vs seuil + contribution par nœud). La barre latérale des critères reste affichée en permanence et sert de navigation.
 - **Gestion multi-pipelines** : système d’onglets, sauvegarde/chargement des pipelines (base PostgreSQL), suppression.
 - **Sessions utilisateur légères** : identification par cookie de session Flask, possibilité de choisir un pseudonyme.
 - **Déploiement simple** : configuration Docker Compose pour le développement (hot reload) et pour la production (Nginx + Gunicorn).
@@ -103,7 +104,7 @@ L’application est disponible sur http://localhost (Nginx écoute sur le port 8
 
     5. Sauvegarder le pipeline (💾).
 
-    6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition et ouvre une zone à onglets : « Analyse globale » (note single score + synthèse + suggestions), « Graphe » (canevas parcourable) et un onglet par indicateur (comparatif). La barre latérale des critères reste affichée et permet d’ouvrir directement l’onglet d’un indicateur.
+    6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition et ouvre une zone à onglets : « Analyse globale » (note single score PEF + synthèse + suggestions + heatmap hotspots + treemap des contributions), « Graphe » (canevas parcourable) et un onglet par indicateur (comparatif). La barre latérale des critères reste affichée et permet d’ouvrir directement l’onglet d’un indicateur.
 
     7. Revenir à l’édition avec le même bouton.
 
@@ -127,13 +128,15 @@ Les tests disponibles :
 - `tests/test_acv.py` : moteur ACV (linéarité heures/nb_gpu), parc serveurs/GPUs et nœuds Entrainement/Inférence.
 - `tests/test_storage.py` : nœuds de stockage (Données persistantes HDD / Données SSD temporaires), linéarité et ordres de grandeur.
 - `tests/test_datasource.py` : nœud « Données » (représentation sans calcul : impact 0, `computed=False`).
-- `tests/test_single_score.py` : single score ACV (note générale) — structure, linéarité, cas limites, exclusion de l’eau ecologits.
+- `tests/test_single_score.py` : single score PEF (note générale) — conformité à la formule EF 3.1, contributions négatives, ordre stable.
+- `tests/test_reference_usages.py` : usages de référence (avion, ciment, bœuf) — structure, cohérence de formule, ordres de grandeur, hypothèses d’échelle.
+- `tests/test_orchestrator.py` : orchestrateur — dispatch des nœuds, agrégation des indicateurs, construction des critères, single score et usages de référence.
 
 Ajoutez vos propres tests au fur et à mesure.
 
 ### Tests frontend
 
-Les tests frontend utilisent **Vitest** et **@vue/test-utils**.
+Les tests frontend utilisent **Vitest** et **@vue/test-utils**. Par convention, chaque test est **colocalisé** avec son sujet (`Xxx.test.js` à côté de `Xxx.vue` ou `Xxx.js`) ; Vitest les découvre via le motif `src/**/*.test.js` défini dans `vite.config.js`.
 
 ```bash
 
@@ -143,7 +146,7 @@ npm test          # exécution unique
 npm run test:watch
 ```
 
-Les tests couvrent le composable `useAnalysisTabs`, l’onglet d’analyse du store, et les composants `GlobalScoreCard` et `IndicatorComparison`.
+Les tests couvrent le store (`usePipelineStore`), le composable `useAnalysisTabs`, et les composants du mode analyse : `IndicatorComparison`, `ScoreComparisonChart`, `NodeContributionPie`, `NodeIndicatorHeatmap`, `IndicatorTreemap`, ainsi que les modules de support `indicatorColors`, `nodeColors` et `protectionAreas`. Les composants ECharts sont testés en mockant `vue-echarts` (le rendu Canvas n’est pas supporté en jsdom) et en inspectant l’`option` passée.
 
 
 ## Structure détaillée du projet
@@ -165,17 +168,18 @@ backend/
 │   │   └── user.py             # Table users (id, public_id, username, dates)
 │   ├── services/               # Logique métier (appelée par les blueprints)
 │   │   ├── carbon/             # Calcul d’impact carbone (2 familles de nœuds)
-│   │   │   ├── common.py       # Fonctions partagées (seuils, extraction GWP/énergie)
-│   │   │   ├── equivalences.py # Équivalences parlantes (streaming, marche, course, VE)
+│   │   │   ├── common.py       # Fonctions partagées (seuils, critères PEF, NF/WF EF 3.1)
 │   │   │   ├── orchestrator.py # Dispatcheur : label -> compute() du bon module
 │   │   │   ├── acv/            # Famille ACV (données documentées, multi-indicateurs PEF)
 │   │   │   │   ├── gpu_models.py # Modèles ACV GPUs + parc serveurs + moteur compute_acv()
+│   │   │   │   ├── parametric.py # Modèle paramétrable (linéarité heures / nb_gpu)
 │   │   │   │   ├── datasource.py # Nœud “Données” (représentation, aucun calcul)
 │   │   │   │   ├── storage.py    # Nœuds “Données persistantes” (HDD) & “Données SSD temporaires” (SSD)
 │   │   │   │   ├── training.py   # Nœud “Entrainement” (charge 100%)
 │   │   │   │   ├── inference.py  # Nœud “Inférence” (charge 33%)
 │   │   │   │   ├── operator.py   # Nœud “Opérateur” (charge paramétrable)
-│   │   │   │   └── single_score.py # Single score ACV (note générale)
+│   │   │   │   ├── single_score.py # Single score PEF (note générale, méthode EF 3.1)
+│   │   │   │   └── reference_usages.py # Usages de référence (avion, ciment, bœuf)
 │   │   │   └── ecologits/      # Famille ecologits (estimations, vouée à évoluer)
 │   │   │       ├── llm_call.py   # Nœud “LLM Call”
 │   │   │       ├── llm_expert.py # Nœud “LLM Expert”
@@ -195,7 +199,7 @@ backend/
 
     Les services interagissent avec les modèles (models/) pour lire/écrire en base.
 
-    Le sous‑package carbon/ est isolé et organisé en deux familles de nœuds : `acv/` (calculs ACV documentés, multi‑indicateurs PEF, confiance `high`) et `ecologits/` (estimations, confiance `low`, vouées à évoluer). L’orchestrateur mappe chaque label de nœud vers la fonction `compute()` du module correspondant, puis agrège les impacts et les indicateurs.
+    Le sous‑package carbon/ est isolé et organisé en deux familles de nœuds : `acv/` (calculs ACV documentés, multi‑indicateurs PEF, confiance `high`) et `ecologits/` (estimations, confiance `low`, vouées à évoluer). L’orchestrateur mappe chaque label de nœud vers la fonction `compute()` du module correspondant, puis agrège les impacts et les indicateurs. Il calcule aussi le single score PEF (`acv/single_score.py`, méthode EF 3.1) et les usages de référence (`acv/reference_usages.py`), et rattache à chaque nœud ses ratios au seuil mensuel (`threshold_ratios`) et ses contributions PEF (`pef_contributions`).
 
     Les extensions (extensions.py) sont importées dans la factory pour lier SQLAlchemy et Flask-Migrate à l’application.
 
@@ -213,22 +217,31 @@ frontend/
 │   │   │   ├── analysis/       # Composants du mode analyse (onglets)
 │   │   │   │   ├── AnalysisTabs.vue          # Barre d’onglets d’analyse
 │   │   │   │   ├── AnalysisGlobalTab.vue     # Onglet analyse globale (note + synthèse)
-│   │   │   │   ├── GlobalScoreCard.vue       # Carte single score + barre empilée
 │   │   │   │   ├── AnalysisGraphTab.vue      # Onglet graphe parcourable
 │   │   │   │   ├── AnalysisIndicatorTab.vue  # Onglet d’un indicateur
-│   │   │   │   └── IndicatorComparison.vue   # Jauge vs seuil + barres par nœud
+│   │   │   │   ├── IndicatorComparison.vue   # Jauge vs seuil + camembert par nœud
+│   │   │   │   ├── ScoreComparisonChart.vue  # Comparaison single score (usages de référence)
+│   │   │   │   ├── NodeIndicatorHeatmap.vue  # Heatmap hotspots (nœuds × indicateurs)
+│   │   │   │   ├── IndicatorTreemap.vue      # Treemap des contributions PEF
+│   │   │   │   ├── NodeContributionPie.vue   # Camembert de contribution par nœud
+│   │   │   │   ├── indicatorColors.js        # Couleur stable par indicateur
+│   │   │   │   ├── nodeColors.js             # Palette stable par nœud
+│   │   │   │   └── protectionAreas.js        # Aires de protection EF 3.1
 │   │   │   ├── AnalysisNodePanel.vue  # Panneau de détail en mode analyse
 │   │   │   ├── CustomNode.vue         # Rendu d’un nœud dans le graphe
 │   │   │   ├── DropzoneBackground.vue # Fond du canvas avec grille
 │   │   │   ├── ParameterPanel.vue     # Édition des paramètres d’un nœud
 │   │   │   ├── PipelineTabs.vue       # Barre d’onglets (multi‑pipelines)
 │   │   │   ├── Sidebar.vue            # Palette de nœuds + bouton analyse
-│   │   │   └── nodeConfig.js          # Définition des champs par type de nœud
+│   │   │   ├── nodeConfig.js          # Définition des champs par type de nœud
+│   │   │   ├── nodeTypes.js           # Ids stables de nœuds + libellés i18n
+│   │   │   └── criterionI18n.js       # Résolution i18n des critères PEF
 │   │   ├── ConnectionIndicator.vue    # Indicateur de connexion API
 │   │   ├── UserIdentification.vue     # Affichage du pseudonyme
 │   │   └── UsernameModal.vue          # Modale de saisie du pseudonyme
 │   ├── composables/
 │   │   ├── useDnD.js          # Logique de drag & drop réutilisable
+│   │   ├── useImpactColor.js  # Couleur d’impact (vert/orange/rouge) selon un ratio
 │   │   └── useAnalysisTabs.js # Dérivation des onglets d’analyse + navigation
 │   ├── stores/
 │   │   └── usePipelineStore.js # État global (nœuds, arêtes, analyse, onglets)
@@ -255,7 +268,7 @@ frontend/
 
     Les composants de la palette (Sidebar.vue), du canvas (CustomNode.vue) et des paramètres (ParameterPanel.vue) communiquent via le store, sans dépendances directes entre eux.
 
-    En mode analyse, HomeView.vue affiche la Sidebar (permanente) et la zone à onglets ; les composants du dossier components/pipeline/analysis/ rendent l’onglet actif.
+    En mode analyse, HomeView.vue affiche la Sidebar (permanente) et la zone à onglets ; les composants du dossier components/pipeline/analysis/ rendent l’onglet actif. Les graphiques (ECharts) sont chargés en import asynchrone (`defineAsyncComponent`) pour isoler ECharts dans un chunk séparé, hors bundle initial.
 
     Les appels HTTP vers le backend (sauvegarde, chargement, analyse) sont encapsulés dans les actions du store, mais pourraient être extraits dans un dossier api/ à l’avenir.
 
