@@ -89,6 +89,16 @@ const suggestions = computed(() => {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  /* Dans un parent flex column, un enfant scrollable doit pouvoir rétrécir
+     (min-height: 0) pour que overflow-y: auto s'active : sinon il prend sa
+     hauteur de contenu et le bas est coupé sans possibilité de défiler. */
+  flex: 1;
+  min-height: 0;
+}
+/* Les blocs enfants gardent leur hauteur naturelle : sans flex-shrink: 0, ils
+   se compriment quand la place manque au lieu de laisser le conteneur défiler. */
+.global-tab > * {
+  flex-shrink: 0;
 }
 /* Encart explicatif : distingue le PEF des seuils planétaires par habitant. */
 .pef-explainer {

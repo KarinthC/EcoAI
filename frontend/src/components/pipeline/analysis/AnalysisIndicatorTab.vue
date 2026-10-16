@@ -7,6 +7,7 @@ import { usePipelineStore } from '@/stores/usePipelineStore'
 import { criterionLabel, criterionDescription } from '@/components/pipeline/criterionI18n.js'
 import { resolveNodeType, nodeTypeLabelKey } from '@/components/pipeline/nodeTypes.js'
 import IndicatorComparison from '@/components/pipeline/analysis/IndicatorComparison.vue'
+import IndicatorStakes from '@/components/pipeline/analysis/IndicatorStakes.vue'
 
 // Clé dédiée de l'eau ecologits (litres), non fusionnée avec PEF-WU (m³ eq).
 const WATER_ECOLOGITS_KEY = 'PEF-WU_ecologits'
@@ -94,6 +95,7 @@ const hasEcologits = computed(() => ecologitsContributions.value.length > 0)
       <h3>{{ label }}</h3>
       <p v-if="description" class="indicator-desc">{{ description }}</p>
     </div>
+    <IndicatorStakes :criterion-key="criterion.key" />
     <IndicatorComparison
       :criterion="criterion"
       :node-contributions="nodeContributions"
@@ -107,9 +109,23 @@ const hasEcologits = computed(() => ecologitsContributions.value.length > 0)
 .indicator-tab {
   padding: 1rem;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  /* Dans un parent flex column, un enfant scrollable doit pouvoir rétrécir
+     (min-height: 0) pour que overflow-y: auto s'active : sinon il prend sa
+     hauteur de contenu et le bas est coupé sans possibilité de défiler. */
+  flex: 1;
+  min-height: 0;
+}
+/* Les blocs enfants gardent leur hauteur naturelle : sans flex-shrink: 0, ils
+   se compriment quand la place manque (le bloc Enjeux disparaît) au lieu de
+   laisser le conteneur défiler. */
+.indicator-tab > * {
+  flex-shrink: 0;
 }
 .indicator-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 .indicator-header h3 {
   margin: 0 0 0.25rem;

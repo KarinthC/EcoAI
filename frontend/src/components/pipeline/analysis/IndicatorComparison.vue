@@ -7,6 +7,7 @@ import { computed, defineAsyncComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
 import useImpactColor from '@/composables/useImpactColor'
 import { protectionAreaKey } from '@/components/pipeline/analysis/protectionAreas.js'
+import IndicatorReference from '@/components/pipeline/analysis/IndicatorReference.vue'
 
 // Chargement asynchrone : ECharts (~500 ko) n'est téléchargé qu'à l'ouverture
 // d'un onglet d'indicateur, pas dans le bundle initial.
@@ -217,13 +218,16 @@ function formatValue(v) {
       </p>
     </div>
 
-    <!-- Camembert : contribution de chaque nœud (unité du critère) -->
-    <div class="pie-card">
-      <h4>
-        {{ $t('analysis.indicator.byNode') }}
-        <span v-if="criterion.unit" class="pie-unit">({{ criterion.unit }})</span>
-      </h4>
-      <NodeContributionPie :contributions="nodeContributions" :unit="criterion.unit" />
+    <!-- Camembert nœuds (gauche) + références fondatrices (droite), 50/50 -->
+    <div class="bottom-row">
+      <div class="pie-card">
+        <h4>
+          {{ $t('analysis.indicator.byNode') }}
+          <span v-if="criterion.unit" class="pie-unit">({{ criterion.unit }})</span>
+        </h4>
+        <NodeContributionPie :contributions="nodeContributions" :unit="criterion.unit" />
+      </div>
+      <IndicatorReference :criterion-key="criterion.key" />
     </div>
 
     <!-- Camembert ecologits (eau en litres) : section distincte, unités non
@@ -341,6 +345,21 @@ function formatValue(v) {
 .interpretation-bothAbove {
   border-left-color: #e53e3e;
   background: #fff5f5;
+}
+/* Camembert nœuds + références : deux blocs côte à côte, 50/50. */
+.bottom-row {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+.bottom-row > * {
+  flex: 1 1 50%;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .bottom-row {
+    flex-direction: column;
+  }
 }
 .pie-card {
   background: white;
