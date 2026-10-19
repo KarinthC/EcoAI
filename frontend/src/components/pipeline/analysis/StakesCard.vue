@@ -26,8 +26,15 @@ const props = defineProps({
 
 const { locale } = useI18n()
 
-// Image d'illustration du critère ({ src, position } ou null).
+// Image d'illustration du critère ({ src, focal } ou null).
 const image = computed(() => stakesImage(props.criterionKey))
+
+// `object-position` en pixels : le point focal de l'image source est centré
+// dans le cadre (petit carré comme bloc agrandi), sans conversion.
+const objectPosition = computed(() => {
+  const focal = image.value?.focal
+  return focal ? `${focal.x}px ${focal.y}px` : 'center'
+})
 
 // Citation « révélation » (vide tant qu'elle n'est pas rédigée).
 const quote = computed(() => indicatorQuote(props.criterionKey, locale.value))
@@ -49,7 +56,7 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
       <img
         class="stakes-image"
         :src="image.src"
-        :style="{ objectPosition: image.position }"
+        :style="{ objectPosition }"
         alt=""
         aria-hidden="true"
       />

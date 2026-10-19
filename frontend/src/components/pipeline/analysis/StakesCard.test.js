@@ -13,6 +13,14 @@ vi.mock('vue-i18n', () => ({
   useI18n: () => ({ t: (k) => k, locale: { value: 'fr' } }),
 }))
 
+// Images mockées : une image de test pour PEF-GWP, aucune pour les autres.
+vi.mock('@/components/pipeline/analysis/stakesImages.js', () => ({
+  stakesImage: (key) =>
+    key === 'PEF-GWP'
+      ? { src: 'test.webp', focal: { x: 1000, y: 400 } }
+      : null,
+}))
+
 // `$t` est utilisé dans le template : on le fournit via les globals de montage.
 const global = { mocks: { $t: (k) => k } }
 
@@ -61,6 +69,15 @@ describe('StakesCard', () => {
       global,
     })
     expect(wrapper.find('img.stakes-image').exists()).toBe(false)
+  })
+
+  it('applique le point focal en pixels comme object-position', () => {
+    const wrapper = mount(StakesCard, {
+      props: { criterionKey: 'PEF-GWP', text: 'texte' },
+      global,
+    })
+    const img = wrapper.find('img.stakes-image')
+    expect(img.attributes('style')).toContain('object-position: 1000px 400px')
   })
 
   it('pulse au survol de la zone image', async () => {
