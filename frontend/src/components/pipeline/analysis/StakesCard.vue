@@ -11,7 +11,7 @@
 //   - après 5 s de survol continu, l'image submerge le bloc (fondu) ;
 //   - une citation apparaît alors sur un voile sombre, puis disparaît (10 s).
 // La logique d'état et de timers vit dans useStakesReveal (composable).
-import { computed } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { stakesImage } from '@/components/pipeline/analysis/stakesImages.js'
 import { indicatorQuote } from '@/components/pipeline/analysis/indicatorStakes.js'
@@ -26,14 +26,71 @@ const props = defineProps({
 
 const { locale } = useI18n()
 
-// Image d'illustration du critère ({ src, focal } ou null).
+// Image d'illustration du critère ({ src, focal, zoom } ou null).
 const image = computed(() => stakesImage(props.criterionKey))
 
-// `object-position` en pixels : le point focal de l'image source est centré
-// dans le cadre (petit carré comme bloc agrandi), sans conversion.
-const objectPosition = computed(() => {
-  const focal = image.value?.focal
-  return focal ? `${focal.x}px ${focal.y}px` : 'center'
+// Dimensions naturelles de l'image source (remplies au chargement).
+const naturalSize = ref({ width: 0, height: 0 })
+
+// Dimensions courantes de la zone image (fenêtre ou bloc submergé), mesurées
+// par ResizeObserver : elles varient avec l'état et la taille du bloc.
+const zoneSize = ref({ width: 0, height: 0 })
+const zoneEl = ref(null)
+let resizeObserver = null
+
+function onImageLoad(event) {
+  const img = event.target
+  naturalSize.value = { width: img.naturalWidth, height: img.naturalHeight }
+}
+
+// Observe la zone image pour suivre ses dimensions réelles (fenêtre fixe en
+// état normal, bloc entier en submersion).
+watch(zoneEl, (el) => {
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
+  if (!el || typeof ResizeObserver === 'undefined') return
+  resizeObserver = new ResizeObserver((entries) => {
+    const rect = entries[0].contentRect
+    zoneSize.value = { width: rect.width, height: rect.height }
+  })
+  resizeObserver.observe(el)
+})
+
+onBeforeUnmount(() => {
+  if (resizeObserver) resizeObserver.disconnect()
+})
+
+// Transform de l'image : elle est affichée à sa taille réelle, mise à l'échelle
+// (scale) puis translatée pour que le point focal tombe au centre de la zone.
+//
+// - En état normal : scale = zoom, point focal = `focal`.
+// - En submersion : scale = max(zoom, couverture) pour que l'image couvre tout
+//   le bloc (comme object-fit: cover), point focal = `focalWide` s'il est
+//   défini (cadrage propre au format large), sinon `focal`.
+//
+// Le point focal reste donc TOUJOURS au centre, quel que soit l'état.
+const imageTransform = computed(() => {
+  const img = image.value
+  const { width: natW, height: natH } = naturalSize.value
+  const { width: zoneW, height: zoneH } = zoneSize.value
+  if (!img?.focal || !natW || !natH || !zoneW || !zoneH) return 'none'
+
+  // Point focal : celui du mode large en submersion (repli sur le normal).
+  const focal = isRevealed.value && img.focalWide ? img.focalWide : img.focal
+
+  const zoom = img.zoom ?? 1
+  let scale = zoom
+  if (isRevealed.value) {
+    // Couverture : l'image doit remplir la zone dans les deux dimensions.
+    const coverScale = Math.max(zoneW / natW, zoneH / natH)
+    scale = Math.max(zoom, coverScale)
+  }
+
+  const dx = zoneW / 2 - focal.x * scale
+  const dy = zoneH / 2 - focal.y * scale
+  return `translate(${dx}px, ${dy}px) scale(${scale})`
 })
 
 // Citation « révélation » (vide tant qu'elle n'est pas rédigée).
@@ -48,6 +105,7 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
     <!-- Zone image : déclenche l'effet au survol (coin inférieur droit). -->
     <div
       v-if="image"
+      ref="zoneEl"
       class="stakes-image-zone"
       :class="{ 'is-pulsing': isPulsing }"
       @mouseenter="onEnter"
@@ -56,9 +114,10 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
       <img
         class="stakes-image"
         :src="image.src"
-        :style="{ objectPosition }"
+        :style="{ transform: imageTransform }"
         alt=""
         aria-hidden="true"
+        @load="onImageLoad"
       />
     </div>
 
@@ -99,7 +158,7 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
 /* Réserve la largeur de la zone image pour que le texte ne passe jamais
    dessous (l'image reste en absolu, fondue dans le coin). */
 .stakes-card.has-image {
-  padding-right: 180px;
+  padding-right: 250px;
 }
 /* Zone de survol de l'image : hauteur FIXE (cadrage stable quelle que soit la
    hauteur du bloc), ancrée en bas à droite. */
@@ -107,15 +166,34 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 170px;
-  height: 130px;
+  width: 240px;
+  height: 180px;
   pointer-events: auto;
+  /* Fenêtre : ne montre qu'une partie de l'image. */
+  overflow: hidden;
+  /* Fond les bords de la fenêtre (dégradé) pour éviter les lignes droites
+     visibles quand le voile pulse. */
+  -webkit-mask-image: radial-gradient(
+    ellipse 100% 100% at 100% 100%,
+    #000 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 100% 100% at 100% 100%,
+    #000 55%,
+    transparent 100%
+  );
 }
-/* Image : remplit la zone sans déformation, cadrée par object-position. */
+/* Image affichée à sa taille réelle (mise à l'échelle par zoom), ancrée en haut
+   à gauche de la fenêtre puis translatée (transform) pour centrer le point
+   focal. Le cadre agit comme une fenêtre sur l'image native. */
 .stakes-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: none;
+  max-height: none;
+  transform-origin: top left;
   pointer-events: none;
   user-select: none;
 }
@@ -127,10 +205,10 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 130% 130% at 100% 100%,
+    ellipse 120% 120% at 100% 100%,
     transparent 0%,
-    transparent 30%,
-    #f7fafc 78%
+    transparent 45%,
+    #f7fafc 90%
   );
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
@@ -146,14 +224,18 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
     opacity: 1;
   }
   50% {
-    transform: translate(-6%, -6%) scale(1.15);
-    opacity: 0.85;
+    transform: translate(-12%, -12%) scale(1.3);
+    opacity: 0.8;
   }
 }
-/* Submersion : l'image remplit le bloc, le voile s'efface en fondu. */
+/* Submersion : la zone prend tout le bloc, le voile s'efface en fondu. Le
+   transform de l'image (calculé en JS) la fait couvrir la zone en gardant le
+   point focal centré. */
 .stakes-card.is-revealed .stakes-image-zone {
   width: 100%;
   height: 100%;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 .stakes-card.is-revealed .stakes-image-zone::after {
   animation: none;

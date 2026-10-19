@@ -17,7 +17,12 @@ vi.mock('vue-i18n', () => ({
 vi.mock('@/components/pipeline/analysis/stakesImages.js', () => ({
   stakesImage: (key) =>
     key === 'PEF-GWP'
-      ? { src: 'test.webp', focal: { x: 1000, y: 400 } }
+      ? {
+          src: 'test.webp',
+          focal: { x: 1000, y: 400 },
+          focalWide: { x: 600, y: 300 },
+          zoom: 0.5,
+        }
       : null,
 }))
 
@@ -38,10 +43,36 @@ function mockMedia({ hover = true, reduced = false } = {}) {
   }))
 }
 
+// ResizeObserver mocké : on capture le callback pour simuler une taille de zone.
+let resizeCallback = null
+class MockResizeObserver {
+  constructor(cb) {
+    resizeCallback = cb
+  }
+  observe() {}
+  disconnect() {}
+}
+
+// Simule une mesure de la zone image (déclenche le callback du ResizeObserver).
+async function setZoneSize(wrapper, width, height) {
+  resizeCallback([{ contentRect: { width, height } }])
+  await wrapper.vm.$nextTick()
+}
+
+// Simule le chargement de l'image (dimensions naturelles).
+async function setNaturalSize(wrapper, width, height) {
+  const img = wrapper.find('img.stakes-image')
+  Object.defineProperty(img.element, 'naturalWidth', { value: width, configurable: true })
+  Object.defineProperty(img.element, 'naturalHeight', { value: height, configurable: true })
+  await img.trigger('load')
+}
+
 describe('StakesCard', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     mockMedia()
+    resizeCallback = null
+    globalThis.ResizeObserver = MockResizeObserver
   })
   afterEach(() => {
     vi.useRealTimers()
@@ -71,13 +102,37 @@ describe('StakesCard', () => {
     expect(wrapper.find('img.stakes-image').exists()).toBe(false)
   })
 
-  it('applique le point focal en pixels comme object-position', () => {
+  it('centre le point focal dans la fenêtre via transform (avec zoom)', async () => {
     const wrapper = mount(StakesCard, {
       props: { criterionKey: 'PEF-GWP', text: 'texte' },
       global,
     })
-    const img = wrapper.find('img.stakes-image')
-    expect(img.attributes('style')).toContain('object-position: 1000px 400px')
+    await setNaturalSize(wrapper, 2000, 1000)
+    await setZoneSize(wrapper, 240, 180)
+    // Fenêtre 240×180, focal (1000, 400), zoom 0.5 :
+    // dx = 120 - 1000*0.5 = -380, dy = 90 - 400*0.5 = -110.
+    const style = wrapper.find('img.stakes-image').attributes('style')
+    expect(style).toContain('translate(-380px, -110px)')
+    expect(style).toContain('scale(0.5)')
+  })
+
+  it('utilise focalWide et couvre le bloc en submersion', async () => {
+    const wrapper = mount(StakesCard, {
+      props: { criterionKey: 'PEF-GWP', text: 'texte' },
+      global,
+    })
+    await setNaturalSize(wrapper, 2000, 1000)
+    await setZoneSize(wrapper, 240, 180)
+    // Submersion : la zone prend la taille du bloc (ex. 600×300).
+    await wrapper.find('.stakes-image-zone').trigger('mouseenter')
+    vi.advanceTimersByTime(PULSE_DURATION_MS)
+    await wrapper.vm.$nextTick()
+    await setZoneSize(wrapper, 600, 300)
+    // coverScale = max(600/2000, 300/1000) = 0.3 ; zoom 0.5 → scale 0.5.
+    // focalWide (600, 300) : dx = 300 - 600*0.5 = 0, dy = 150 - 300*0.5 = 0.
+    const style = wrapper.find('img.stakes-image').attributes('style')
+    expect(style).toContain('translate(0px, 0px)')
+    expect(style).toContain('scale(0.5)')
   })
 
   it('pulse au survol de la zone image', async () => {
