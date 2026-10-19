@@ -11,7 +11,13 @@
 //   - après 5 s de survol continu, l'image submerge le bloc (fondu) ;
 //   - une citation apparaît alors sur un voile sombre, puis disparaît (10 s).
 // La logique d'état et de timers vit dans useStakesReveal (composable).
-import { computed, ref, watch, onBeforeUnmount } from 'vue'
+//
+// Deux régimes de rendu, volontairement disjoints :
+//   - état normal : fenêtre fixe 240×180, image positionnée par transform
+//     (point focal `focal` + `zoom`) ;
+//   - submersion : le bloc est forcé au ratio 19:10 et l'image le remplit en
+//     CSS pur (object-fit: cover + object-position). Aucune mesure JS.
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { stakesImage } from '@/components/pipeline/analysis/stakesImages.js'
 import { indicatorQuote } from '@/components/pipeline/analysis/indicatorStakes.js'
@@ -26,71 +32,31 @@ const props = defineProps({
 
 const { locale } = useI18n()
 
-// Image d'illustration du critère ({ src, focal, zoom } ou null).
+// Image d'illustration du critère ({ src, focal, focalWide, zoom } ou null).
 const image = computed(() => stakesImage(props.criterionKey))
 
-// Dimensions naturelles de l'image source (remplies au chargement).
-const naturalSize = ref({ width: 0, height: 0 })
+// Dimensions de la fenêtre image en état normal (cf. CSS .stakes-image-zone).
+const NORMAL_ZONE = { width: 240, height: 180 }
 
-// Dimensions courantes de la zone image (fenêtre ou bloc submergé), mesurées
-// par ResizeObserver : elles varient avec l'état et la taille du bloc.
-const zoneSize = ref({ width: 0, height: 0 })
-const zoneEl = ref(null)
-let resizeObserver = null
-
-function onImageLoad(event) {
-  const img = event.target
-  naturalSize.value = { width: img.naturalWidth, height: img.naturalHeight }
-}
-
-// Observe la zone image pour suivre ses dimensions réelles (fenêtre fixe en
-// état normal, bloc entier en submersion).
-watch(zoneEl, (el) => {
-  if (resizeObserver) {
-    resizeObserver.disconnect()
-    resizeObserver = null
-  }
-  if (!el || typeof ResizeObserver === 'undefined') return
-  resizeObserver = new ResizeObserver((entries) => {
-    const rect = entries[0].contentRect
-    zoneSize.value = { width: rect.width, height: rect.height }
-  })
-  resizeObserver.observe(el)
-})
-
-onBeforeUnmount(() => {
-  if (resizeObserver) resizeObserver.disconnect()
-})
-
-// Transform de l'image : elle est affichée à sa taille réelle, mise à l'échelle
-// (scale) puis translatée pour que le point focal tombe au centre de la zone.
-//
-// - En état normal : scale = zoom, point focal = `focal`.
-// - En submersion : scale = max(zoom, couverture) pour que l'image couvre tout
-//   le bloc (comme object-fit: cover), point focal = `focalWide` s'il est
-//   défini (cadrage propre au format large), sinon `focal`.
-//
-// Le point focal reste donc TOUJOURS au centre, quel que soit l'état.
+// Transform de l'image en état normal : affichée à sa taille réelle, mise à
+// l'échelle (zoom) puis translatée pour que le point focal tombe au centre de
+// la fenêtre fixe. En submersion, le CSS reprend la main (object-fit: cover).
 const imageTransform = computed(() => {
   const img = image.value
-  const { width: natW, height: natH } = naturalSize.value
-  const { width: zoneW, height: zoneH } = zoneSize.value
-  if (!img?.focal || !natW || !natH || !zoneW || !zoneH) return 'none'
-
-  // Point focal : celui du mode large en submersion (repli sur le normal).
-  const focal = isRevealed.value && img.focalWide ? img.focalWide : img.focal
-
+  if (!img?.focal) return 'none'
   const zoom = img.zoom ?? 1
-  let scale = zoom
-  if (isRevealed.value) {
-    // Couverture : l'image doit remplir la zone dans les deux dimensions.
-    const coverScale = Math.max(zoneW / natW, zoneH / natH)
-    scale = Math.max(zoom, coverScale)
-  }
+  const dx = NORMAL_ZONE.width / 2 - img.focal.x * zoom
+  const dy = NORMAL_ZONE.height / 2 - img.focal.y * zoom
+  return `translate(${dx}px, ${dy}px) scale(${zoom})`
+})
 
-  const dx = zoneW / 2 - focal.x * scale
-  const dy = zoneH / 2 - focal.y * scale
-  return `translate(${dx}px, ${dy}px) scale(${scale})`
+// Cadrage de l'image en submersion : point focal exprimé en fraction de
+// l'image (0–1), `focalWide` prioritaire, repli sur `focal`.
+const wideObjectPosition = computed(() => {
+  const img = image.value
+  const focal = img?.focalWide || img?.focal
+  if (!focal) return '50% 50%'
+  return `${focal.x * 100}% ${focal.y * 100}%`
 })
 
 // Citation « révélation » (vide tant qu'elle n'est pas rédigée).
@@ -105,7 +71,6 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
     <!-- Zone image : déclenche l'effet au survol (coin inférieur droit). -->
     <div
       v-if="image"
-      ref="zoneEl"
       class="stakes-image-zone"
       :class="{ 'is-pulsing': isPulsing }"
       @mouseenter="onEnter"
@@ -114,10 +79,9 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
       <img
         class="stakes-image"
         :src="image.src"
-        :style="{ transform: imageTransform }"
+        :style="{ transform: imageTransform, objectPosition: wideObjectPosition }"
         alt=""
         aria-hidden="true"
-        @load="onImageLoad"
       />
     </div>
 
@@ -228,10 +192,14 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
     opacity: 0.8;
   }
 }
-/* Submersion : la zone prend tout le bloc, le voile s'efface en fondu. Le
-   transform de l'image (calculé en JS) la fait couvrir la zone en gardant le
-   point focal centré. */
+/* Submersion : le bloc est forcé au ratio 19:10 (hauteur indépendante du
+   texte) et l'image le remplit en CSS pur. */
+.stakes-card.is-revealed {
+  aspect-ratio: 19 / 10;
+  padding: 0;
+}
 .stakes-card.is-revealed .stakes-image-zone {
+  inset: 0;
   width: 100%;
   height: 100%;
   -webkit-mask-image: none;
@@ -242,13 +210,25 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
   opacity: 0;
   transform: scale(1.4);
 }
-/* Le contenu passe au-dessus de l'image, et s'efface quand l'image submerge. */
+/* L'image remplit la zone (cover) : plus de transform, le cadrage vient de
+   object-position (point focal en fraction de l'image). */
+.stakes-card.is-revealed .stakes-image {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: none !important;
+}
+/* Le contenu passe au-dessus de l'image, et s'efface quand l'image submerge.
+   En submersion il sort du flux : c'est le ratio 19:10 qui fixe la hauteur. */
 .stakes-content {
   position: relative;
   z-index: 1;
   transition: opacity 0.4s ease;
 }
 .stakes-content.is-hidden {
+  position: absolute;
+  inset: 0;
   opacity: 0;
   pointer-events: none;
 }

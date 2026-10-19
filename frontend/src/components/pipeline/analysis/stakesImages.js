@@ -11,8 +11,9 @@
 //   - focal     : point focal en PIXELS de l'image source { x, y }, utilisé en
 //                 mode normal (petite fenêtre). L'image doit être composée pour
 //                 que le sujet reste lisible autour de ce point ;
-//   - focalWide : point focal (px) utilisé en mode élargi (submersion), où le
-//                 cadrage diffère fortement. Optionnel : repli sur `focal` ;
+//   - focalWide : point focal en FRACTION de l'image { x, y } (0–1), utilisé en
+//                 mode large (submersion) via object-position. Optionnel :
+//                 repli sur `focal` (converti en fraction par le composant) ;
 //   - zoom      : facteur d'échelle en mode normal (1 = taille réelle, 0.5 =
 //                 moitié). Plus la valeur est petite, moins l'image est zoomée.
 //                 Défaut : 1.
@@ -24,7 +25,8 @@ const STAKES_IMAGES = {
   'PEF-GWP': {
     src: climateImg,
     focal: { x: 750, y: 370 },
-    focalWide: { x: 960, y: 450 },
+    // 960/1920 et 450/900 : centre de l'image source (1920×900).
+    focalWide: { x: 0.5, y: 0.5 },
     zoom: 0.25,
   },
 }
