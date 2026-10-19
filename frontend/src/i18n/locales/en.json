@@ -42,7 +42,7 @@
     "globalMedium": "Fairly high impact",
     "globalLow": "Low impact",
     "partialMark": "Partial contribution",
-    "tooltipPartial": "\u26a0\ufe0f Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
+    "tooltipPartial": "\u26a0\ufe0f Partial contribution: ecologits nodes do not report this criterion because of a lack of transparency from the actors. The actual value is therefore higher."
   },
   "overlay": {
     "suggestions": "\ud83d\udca1 Suggestions",

@@ -42,7 +42,7 @@
     "globalMedium": "Impact plutôt élevé",
     "globalLow": "Impact faible",
     "partialMark": "Contribution partielle",
-    "tooltipPartial": "⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère. La valeur réelle est donc plus élevée."
+    "tooltipPartial": "⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère à cause d'un manque de transparence des acteurs. La valeur réelle est donc plus élevée."
   },
   "overlay": {
     "suggestions": "💡 Suggestions",
@@ -82,7 +82,7 @@
         "vanOers2002": "L. van Oers, A. de Koning, J. B. Guinée, et al. Abiotic resource depletion in LCA: improving characterisation factors for abiotic resource depletion as recommended in the new Dutch LCA handbook. Road and Hydraulic Engineering Institute, 2002.",
         "boulay2018": "A.-M. Boulay, J. Bare, L. Benini, et al. The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE). International Journal of Life Cycle Assessment, 23(2):368–378, 2018."
       },
-      "chartTitle": "Score d'empreinte environnementale de votre pipeline et comparaison du profil avec d'autres produits/services",
+      "chartTitle": "Score d'empreinte environnementale (PEF) de votre pipeline et comparaison du profil avec d'autres produits/services",
       "pipeline": "VOTRE PIPELINE",
       "aircraft1h": "1 heure d'avion",
       "cement10kg": "10 kg de ciment",
