@@ -41,9 +41,7 @@
     "globalHigh": "Impact élevé",
     "globalMedium": "Impact plutôt élevé",
     "globalLow": "Impact faible",
-    "tooltipAria": "Détail du critère",
     "partialMark": "Contribution partielle",
-    "tooltipThreshold": "Seuil mensuel / habitant :",
     "tooltipPartial": "⚠️ Contribution partielle : les nœuds ecologits ne remontent pas ce critère. La valeur réelle est donc plus élevée."
   },
   "overlay": {

@@ -41,9 +41,7 @@
     "globalHigh": "High impact",
     "globalMedium": "Fairly high impact",
     "globalLow": "Low impact",
-    "tooltipAria": "Criterion details",
     "partialMark": "Partial contribution",
-    "tooltipThreshold": "Monthly threshold / inhabitant:",
     "tooltipPartial": "\u26a0\ufe0f Partial contribution: ecologits nodes do not report this criterion. The actual value is therefore higher."
   },
   "overlay": {
