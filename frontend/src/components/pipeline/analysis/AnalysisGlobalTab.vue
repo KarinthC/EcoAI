@@ -54,16 +54,16 @@ const suggestions = computed(() => {
   <div class="global-tab">
     <ScoreComparisonChart />
 
-    <div class="pef-explainer">
-      <span class="pef-explainer-icon" aria-hidden="true">ℹ️</span>
-      <p>{{ $t('analysis.global.pefExplainer') }}</p>
-    </div>
-
     <div class="summary-card" :class="`level-${globalLevel}`">
       <div class="summary-row">
         <span class="summary-label">{{ $t('analysis.global.beyondBudget') }}</span>
         <span class="summary-value">{{ redCount }}</span>
       </div>
+    </div>
+
+    <div class="pef-explainer">
+      <span class="pef-explainer-icon" aria-hidden="true">ℹ️</span>
+      <p>{{ $t('analysis.global.pefExplainer') }}</p>
     </div>
 
     <div class="suggestions-card">

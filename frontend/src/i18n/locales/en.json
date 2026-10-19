@@ -65,7 +65,7 @@
     },
     "global": {
       "singleScore": "Overall score (single score)",
-      "beyondBudget": "Criteria beyond the monthly budget",
+      "beyondBudget": "Criteria beyond the monthly budget per inhabitant",
       "pefExplainer": "The PEF (Product Environmental Footprint) assesses the overall environmental footprint of a process (resource use, impacts on human health, ecosystem destruction), whereas the monthly planetary thresholds per inhabitant assess the stability and sustainability of the Earth system."
     },
     "reference": {
@@ -82,7 +82,7 @@
         "vanOers2002": "L. van Oers, A. de Koning, J. B. Guinée, et al. Abiotic resource depletion in LCA: improving characterisation factors for abiotic resource depletion as recommended in the new Dutch LCA handbook. Road and Hydraulic Engineering Institute, 2002.",
         "boulay2018": "A.-M. Boulay, J. Bare, L. Benini, et al. The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE). International Journal of Life Cycle Assessment, 23(2):368–378, 2018."
       },
-      "chartTitle": "Total PEF score and comparison of impact profiles with other processes",
+      "chartTitle": "Product Environmental Footprint score and profile of your pipeline compared with other products/services",
       "pipeline": "PIPELINE",
       "aircraft1h": "1 hour of flight",
       "cement10kg": "10 kg of cement",

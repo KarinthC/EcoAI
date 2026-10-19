@@ -65,7 +65,7 @@
     },
     "global": {
       "singleScore": "Note générale (single score)",
-      "beyondBudget": "Critères au-delà du budget mensuel",
+      "beyondBudget": "Critères au-delà du budget mensuel par habitant",
       "pefExplainer": "Le PEF (Product Environmental Footprint) évalue l'empreinte environnementale globale d'un processus (utilisation de ressources, impacts sur la santé humaine, destruction d'écosystèmes), alors que les seuils mensuels planétaires par habitant évaluent la stabilité du système Terre et sa pérennité."
     },
     "reference": {
@@ -82,7 +82,7 @@
         "vanOers2002": "L. van Oers, A. de Koning, J. B. Guinée, et al. Abiotic resource depletion in LCA: improving characterisation factors for abiotic resource depletion as recommended in the new Dutch LCA handbook. Road and Hydraulic Engineering Institute, 2002.",
         "boulay2018": "A.-M. Boulay, J. Bare, L. Benini, et al. The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE). International Journal of Life Cycle Assessment, 23(2):368–378, 2018."
       },
-      "chartTitle": "Score PEF total et comparaison des profils d'impacts avec d'autres processus",
+      "chartTitle": "Score d'empreinte environnementale de votre pipeline et comparaison du profil avec d'autres produits/services",
       "pipeline": "VOTRE PIPELINE",
       "aircraft1h": "1 heure d'avion",
       "cement10kg": "10 kg de ciment",
@@ -96,7 +96,7 @@
       "collapse": "✕ Réduire"
     },
     "heatmap": {
-      "title": "Carte des hotspots au seuil mensuel par habitant (nœuds × indicateurs)",
+      "title": "Carte des poinds chauds proches du budget mensuel par habitant (nœuds × indicateurs)",
       "legend": "Part du seuil mensuel (%)",
       "noData": "Pas de données",
       "axisNodes": "Nœuds",
