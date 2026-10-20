@@ -97,10 +97,10 @@ export function indicatorStakes(key, lang = 'fr') {
 // ---------------------------------------------------------------------------
 const QUOTES = {
   'PEF-GWP': {
-    fr: "Tant que ça n'arrive qu'aux autres, on ne s'y intéresse pas. Mais ça se rapproche de chez vous, de plus en plus.",
-    en: "As long as it only happens to others, we don't care. But it's getting closer to home, more and more.",
+    fr: "Le changement climatique se manifeste comme une série de catastrophes vues à travers nos téléphones, avec des images qui se rapprochent de plus en plus de chez vous, jusqu'à ce que ce soit vous qui les filmiez.",
+    en: "Climate change is manifesting as a series of disasters viewed through phones with footage that gets closer and closer to where you live until you’re the one filming it.",
   },
-  'PEF-ODP': { fr: '', en: '' },
+  'PEF-ODP': { fr: ' ', en: '' },
   'PEF-PM': { fr: '', en: '' },
   'PEF-AP': { fr: '', en: '' },
   'PEF-Epf': { fr: '', en: '' },
