@@ -210,7 +210,12 @@ function formatValue(v) {
 }
 .panel-header h3 { margin: 0; font-size: 1rem; }
 .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; }
-.panel-body { padding: 1rem; }
+.panel-body {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  min-height: 0;
+}
 .impact-level-label {
   font-size: 0.95rem;
   font-weight: 700;

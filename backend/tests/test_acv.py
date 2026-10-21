@@ -58,18 +58,32 @@ def test_unknown_server_raises():
 
 # ---------------------------------------------------------------------------
 # Nœuds Entrainement / Inférence
+#
+# Les nœuds Operator MoMa portent leurs paramètres sous forme d'extensions
+# `eco:` (cf. moma_adapter.py). Les tests ci-dessous utilisent ce contrat.
 # ---------------------------------------------------------------------------
 
+def _operator_params(server_id, gpu_type, nb_gpu, heures):
+    """Construit des paramètres Operator MoMa (`eco:`) depuis des valeurs ACV."""
+    return {
+        'eco:serverId': server_id,
+        'eco:gpuModel': gpu_type,
+        'eco:gpuCount': nb_gpu,
+        'eco:executionTimeSec': heures * 3600,
+    }
+
+
 def test_training_node():
-    r = training.compute({'server_id': 'lig3', 'gpu_type': 'GTX 1080 Ti', 'nb_gpu': 2, 'heures': 4})
+    r = training.compute(_operator_params('lig3', 'GTX 1080 Ti', 2, 4))
     assert r['method'] == 'acv'
     assert r['confidence'] == 'high'
     assert r['indicators']['PEF-GWP'] > 0
-    assert r['impact_kg'] == pytest.approx(r['indicators']['PEF-GWP'], rel=1e-6)
+    # impact_kg est arrondi à 6 décimales -> tolérance relative.
+    assert r['impact_kg'] == pytest.approx(r['indicators']['PEF-GWP'], rel=1e-5)
 
 
 def test_inference_node():
-    r = inference.compute({'server_id': 'lig1', 'gpu_type': 'GTX 1080 Ti', 'nb_gpu': 1, 'heures': 10})
+    r = inference.compute(_operator_params('lig1', 'GTX 1080 Ti', 1, 10))
     assert r['method'] == 'acv'
     assert r['confidence'] == 'high'
     assert r['indicators']['PEF-GWP'] > 0
@@ -77,10 +91,11 @@ def test_inference_node():
 
 def test_inference_lower_impact_than_training():
     """À params égaux, l'inférence (charge 33%) impacte moins que l'entraînement (100%)."""
-    params = {'server_id': 'lig1', 'gpu_type': 'GTX 1080 Ti', 'nb_gpu': 1, 'heures': 5}
+    params = _operator_params('lig1', 'GTX 1080 Ti', 1, 5)
     assert inference.compute(params)['impact_kg'] < training.compute(params)['impact_kg']
 
 
 def test_node_rejects_gpu_not_on_server():
     with pytest.raises(ValueError, match="n'est pas disponible"):
-        training.compute({'server_id': 'lig1', 'gpu_type': 'A100'})
+        training.compute(_operator_params('lig1', 'A100', 1, 1))
+

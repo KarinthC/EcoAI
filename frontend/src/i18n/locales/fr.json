@@ -61,6 +61,76 @@
     "levelMedium": "Impact moyen",
     "levelLow": "Impact faible",
     "indicators": "Indicateurs",
+    "tabs": {
+      "global": "Analyse globale",
+      "graph": "Graphe"
+    },
+    "global": {
+      "singleScore": "Note générale (single score)",
+      "beyondBudget": "Critères au-delà du budget mensuel par habitant",
+      "pefExplainer": "Le PEF (Product Environmental Footprint) évalue l'empreinte environnementale globale d'un processus (utilisation de ressources, impacts sur la santé humaine, destruction d'écosystèmes), alors que les seuils mensuels planétaires par habitant évaluent la stabilité du système Terre et sa pérennité."
+    },
+    "reference": {
+      "title": "Références fondatrices",
+      "source": {
+        "ipccAr5": "IPCC. Climate Change 2013: The Physical Science Basis. Contribution of Working Group I to the Fifth Assessment Report of the Intergovernmental Panel on Climate Change. Cambridge University Press, 2013.",
+        "wmoOzone1998": "World Meteorological Organization (WMO). Scientific Assessment of Ozone Depletion: 1998. Global Ozone Research and Monitoring Project, Report No. 44, 1999.",
+        "vanZelm2008": "R. van Zelm, M. A. J. Huijbregts, H. A. den Hollander, et al. European characterisation factors for human health damage of PM10 and ozone in life cycle impact assessment. Atmospheric Environment, 42(3):441–453, 2008.",
+        "seppala2006": "J. Seppälä, M. Posch, M. Johansson, et al. Country-dependent characterisation factors for acidification and terrestrial eutrophication based on accumulated exceedance as an impact category indicator. International Journal of Life Cycle Assessment, 11(6):403–416, 2006.",
+        "posch2008": "M. Posch, J. Seppälä, J.-P. Hettelingh, et al. The role of atmospheric dispersion models and ecosystem sensitivity in the determination of characterisation factors for acidifying and eutrophying emissions in LCIA. International Journal of Life Cycle Assessment, 13(6):477–486, 2008.",
+        "struijsRecipe2008": "J. Struijs, A. Beusen, H. van Jaarsveld, et al. EUTREND model as implemented in ReCiPe 2008. In: Goedkoop et al., ReCiPe 2008: A life cycle impact assessment method which comprises harmonised category indicators at the midpoint and the endpoint level, 2009.",
+        "externe1995": "ExternE: Externalities of Energy – Methodology Annexes. European Commission, DG XII, 1995.",
+        "rosenbaum2008": "R. K. Rosenbaum, T. M. Bachmann, L. S. Gold, et al. USEtox – the UNEP-SETAC toxicity model: recommended characterisation factors for human toxicity and freshwater ecotoxicity in life cycle impact assessment. International Journal of Life Cycle Assessment, 13(7):532–546, 2008.",
+        "vanOers2002": "L. van Oers, A. de Koning, J. B. Guinée, et al. Abiotic resource depletion in LCA: improving characterisation factors for abiotic resource depletion as recommended in the new Dutch LCA handbook. Road and Hydraulic Engineering Institute, 2002.",
+        "boulay2018": "A.-M. Boulay, J. Bare, L. Benini, et al. The WULCA consensus characterization model for water scarcity footprints: assessing impacts of water consumption based on available water remaining (AWARE). International Journal of Life Cycle Assessment, 23(2):368–378, 2018."
+      },
+      "chartTitle": "Score d'empreinte environnementale (PEF) de votre pipeline et comparaison du profil avec d'autres produits/services",
+      "pipeline": "VOTRE PIPELINE",
+      "aircraft1h": "1 heure d'avion",
+      "cement10kg": "10 kg de ciment",
+      "beef1kg": "1 kg de bœuf",
+      "axisUnitAbsolute": "Single score (mPt)",
+      "axisUnitPercent": "Part du score du pipeline (%)",
+      "pipelineMarker": "Pipeline (100 %)",
+      "modeAbsolute": "Valeurs absolues (mPt)",
+      "modePercent": "En % du pipeline",
+      "expand": "⛶ Agrandir",
+      "collapse": "✕ Réduire"
+    },
+    "heatmap": {
+      "title": "Carte des points chauds proches du budget mensuel par habitant (nœuds × indicateurs)",
+      "legend": "Part du seuil mensuel (%)",
+      "noData": "Pas de données",
+      "axisNodes": "Nœuds",
+      "axisIndicators": "Indicateurs"
+    },
+    "treemap": {
+      "title": "Répartition des contributions PEF (indicateurs × nœuds)"
+    },
+    "stakes": {
+      "title": "Enjeux"
+    },
+    "indicator": {
+      "threshold": "Seuil mensuel / habitant :",
+      "ratio": "Ratio valeur / seuil :",
+      "thresholdBar": "Seuil mensuel / habitant",
+      "pefBar": "Contribution au score PEF",
+      "pefScale": "Échelle : 0 → 5 mPt",
+      "interpretation": {
+        "bothAbove": "Ce critère dépasse deux repères à la fois : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Il pèse donc à la fois sur les limites planétaires et sur le bilan environnemental global. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
+        "ratioAbove": "Ce critère dépasse 25 % du budget mensuel soutenable par personne : il pèse donc sur les limites planétaires. Sa contribution au score PEF reste en revanche faible, donc son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) reste limité.",
+        "pefAbove": "Ce critère reste sous 25 % du budget mensuel soutenable par personne, mais sa contribution au score PEF dépasse 1 mPt : il pèse donc sur le bilan environnemental global, même si sa pression sur les limites planétaires reste faible. Le score PEF agrège en une note unique les impacts sur la santé humaine, les écosystèmes et les ressources : ici, l'enjeu concerné est {area}.",
+        "bothBelow": "Ce critère reste sous les deux repères : 25 % du budget mensuel soutenable par personne et 1 mPt du score PEF. Sa pression sur les limites planétaires comme son poids dans le bilan environnemental global (santé humaine, écosystèmes, ressources) restent donc faibles."
+      },
+      "byNode": "Contribution par nœud",
+      "noContribution": "Aucun nœud ne contribue à cet indicateur."
+    },
+    "protectionArea": {
+      "humanHealth": "santé humaine",
+      "ecosystems": "écosystèmes",
+      "resources": "ressources",
+      "generic": "santé humaine, écosystèmes et ressources"
+    },
     "waterUsage": "Utilisation de l'eau",
     "confidenceHigh": "✔️ Confiance élevée (données ADEME)",
     "confidenceMediumTitle": "Confiance moyenne",

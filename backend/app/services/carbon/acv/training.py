@@ -28,9 +28,21 @@ def compute(params: dict) -> dict:
     # Traduction des paramètres MoMa (`eco:*`) vers les clés ACV attendues.
     acv_params = moma_operator_to_acv(params)
 
-    server_id = acv_params.get('server_id') or 'lig1'
-    gpu_type = acv_params.get('gpu_type') or available_gpus(server_id)[0]
-    heures = float(acv_params.get('heures') or 1.0)
+    # Sans matériel renseigné (ni serveur, ni GPU, ni durée), l'entraînement
+    # ne tourne nulle part : impact nul (cohérent avec operator.compute).
+    server_id = acv_params.get('server_id')
+    gpu_type = acv_params.get('gpu_type')
+    heures = acv_params.get('heures')
+    if not server_id or not gpu_type or heures in (None, '', 0, '0'):
+        return {
+            'impact_kg': 0.0,
+            'indicators': {},
+        'method': 'acv',
+        'confidence': 'high',
+            'level': 'low',
+    }
+
+    heures = float(heures)
     nb_gpu = int(acv_params.get('nb_gpu') or 1)
 
     if not gpu_exists_on_server(server_id, gpu_type):
@@ -51,3 +63,4 @@ def compute(params: dict) -> dict:
         'confidence': 'high',
         'level': get_level_from_indicators(indicators),
     }
+

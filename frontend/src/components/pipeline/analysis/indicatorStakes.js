@@ -1,0 +1,129 @@
+// frontend/src/components/pipeline/analysis/indicatorStakes.js
+//
+// Texte « Enjeux » par critère PEF : un paragraphe narratif (4 à 6 lignes) qui
+// explique le « pourquoi » de l'indicateur — enjeu physique, populations et
+// écosystèmes touchés, cas réels / scandales qu'il permet d'évaluer, et lien
+// avec le numérique et l'IA.
+//
+// Ce contenu est volontairement séparé des fichiers i18n (fr.json / en.json) :
+// il s'agit de texte long et rédactionnel, plus lisible dans un module dédié.
+// Chaque entrée porte les deux langues (fr / en).
+//
+// Un critère absent du mapping n'affiche aucun encart (repli silencieux).
+
+const STAKES = {
+  'PEF-GWP': {
+    fr: "Le changement climatique mesure l'élévation de la température moyenne via les émissions de gaz à effet de serre, exprimées en équivalent CO₂. Il touche d'abord les populations les plus vulnérables : vagues de chaleur meurtrières, submersions côtières, sécheresses et déplacements forcés. C'est l'indicateur derrière les engagements de l'Accord de Paris et les rapports du GIEC. Le numérique représente aujourd'hui 3 à 4 % des émissions mondiales, et cette part ne cesse de croître à mesure que les usages et les modèles d'IA se multiplient.",
+    en: "Climate change measures the rise in average temperature through greenhouse gas emissions, expressed in CO₂ equivalent. It hits the most vulnerable populations first: deadly heatwaves, coastal flooding, droughts and forced displacement. This is the indicator behind the Paris Agreement commitments and the IPCC reports. Digital technology now accounts for 3 to 4% of global emissions, and this share keeps growing as uses and AI models multiply.",
+  },
+  'PEF-ODP': {
+    fr: "L'appauvrissement de la couche d'ozone mesure la destruction du bouclier stratosphérique qui filtre les rayons ultraviolets, exprimée en équivalent CFC-11. Sans lui, l'exposition aux UV provoque cancers de la peau, cataractes et dommages aux cultures et au plancton marin. Le trou d'ozone découvert en 1985 au-dessus de l'Antarctique a déclenché le Protocole de Montréal (1987), l'un des rares traités environnementaux réellement efficaces. Certains gaz réfrigérants utilisés pour refroidir les datacenters restent des menaces pour cette couche.",
+    en: "Ozone depletion measures the destruction of the stratospheric shield that filters ultraviolet rays, expressed in CFC-11 equivalent. Without it, UV exposure causes skin cancer, cataracts and damage to crops and marine plankton. The ozone hole discovered in 1985 over Antarctica triggered the Montreal Protocol (1987), one of the few genuinely effective environmental treaties. Some refrigerants used to cool data centers remain threats to this layer.",
+  },
+  'PEF-PM': {
+    fr: "Les particules fines mesurent l'émission de poussières microscopiques (PM2,5 et PM10) qui pénètrent profondément dans les poumons et le sang. Elles sont responsables de millions de morts prématurées par an, notamment cardiovasculaires et respiratoires, et frappent surtout les habitants des villes et des zones industrielles. C'est l'indicateur derrière les pics de pollution qui paralysent régulièrement les métropoles asiatiques et européennes. La fabrication des composants électroniques et l'extraction des métaux exposent des travailleurs à ces particules.",
+    en: "Fine particulates measure the emission of microscopic dust (PM2.5 and PM10) that penetrates deep into the lungs and bloodstream. They cause millions of premature deaths per year, mainly cardiovascular and respiratory, and hit city and industrial-zone residents hardest. This is the indicator behind the pollution peaks that regularly paralyze Asian and European metropolises. Manufacturing electronic components and extracting metals expose workers to these particles.",
+  },
+  'PEF-AP': {
+    fr: "L'acidification mesure les rejets de composés soufrés et azotés qui rendent les sols et les eaux plus acides, exprimés en équivalent ion hydrogène. Elle dégrade les forêts, appauvrit les lacs et corrode les bâtiments — les pluies acides des années 1980 ont ravagé des forêts entières en Europe centrale. Elle touche les écosystèmes d'eau douce et les sols agricoles dont dépend l'alimentation. La production d'électricité et le raffinage des métaux pour les équipements informatiques en sont des sources majeures.",
+    en: "Acidification measures the release of sulfur and nitrogen compounds that make soils and waters more acidic, expressed in hydrogen ion equivalent. It degrades forests, impoverishes lakes and corrodes buildings — the acid rain of the 1980s devastated entire forests in Central Europe. It affects freshwater ecosystems and the agricultural soils on which food depends. Electricity generation and metal refining for IT equipment are major sources.",
+  },
+  'PEF-Epf': {
+    fr: "L'eutrophisation des eaux douces mesure l'enrichissement en phosphore des rivières et des lacs, qui déclenche des proliférations d'algues asphyxiantes. Ces « marées vertes » et cyanobactéries rendent l'eau impropre à la consommation, tuent les poissons et ferment des plages — la Bretagne en subit les conséquences chaque été. Elle touche les pêcheurs, les agriculteurs et les riverains. Les rejets liés à l'extraction minière des métaux rares utilisés dans l'électronique y contribuent.",
+    en: "Freshwater eutrophication measures phosphorus enrichment of rivers and lakes, which triggers suffocating algae blooms. These 'green tides' and cyanobacteria make water unfit for consumption, kill fish and close beaches — Brittany suffers the consequences every summer. It affects fishermen, farmers and local residents. Discharges linked to the mining of rare metals used in electronics contribute to it.",
+  },
+  'PEF-Epm': {
+    fr: "L'eutrophisation marine mesure l'enrichissement en azote des mers et océans, qui provoque des zones mortes privées d'oxygène. Ces étendues où la vie disparaît se multiplient dans le golfe du Mexique, la mer Baltique ou au large de la Chine, menaçant la pêche et la sécurité alimentaire de millions de personnes. C'est l'un des indicateurs des limites planétaires déjà largement dépassées. Les engrais et les rejets industriels, dont ceux de la chaîne électronique, en sont les principaux moteurs.",
+    en: "Marine eutrophication measures nitrogen enrichment of seas and oceans, which creates oxygen-deprived dead zones. These lifeless expanses are multiplying in the Gulf of Mexico, the Baltic Sea and off China, threatening fishing and the food security of millions. It is one of the planetary boundaries already largely exceeded. Fertilizers and industrial discharges, including those of the electronics chain, are its main drivers.",
+  },
+  'PEF-Ept': {
+    fr: "L'eutrophisation terrestre mesure l'enrichissement en azote des sols, qui modifie la végétation et appauvrit la biodiversité des milieux naturels. Elle favorise quelques espèces au détriment d'une flore diversifiée, transformant prairies et forêts en écosystèmes appauvris. Elle touche les sols agricoles, la faune sauvage et, à terme, la fertilité des terres nourricières. Les dépôts d'azote issus du transport et de l'industrie, y compris la logistique du numérique, l'aggravent.",
+    en: "Terrestrial eutrophication measures nitrogen enrichment of soils, which alters vegetation and impoverishes the biodiversity of natural environments. It favors a few species at the expense of diverse flora, turning meadows and forests into impoverished ecosystems. It affects agricultural soils, wildlife and, ultimately, the fertility of food-producing land. Nitrogen deposition from transport and industry, including digital logistics, worsens it.",
+  },
+  'PEF-IR': {
+    fr: "Les rayonnements ionisants mesurent l'exposition humaine aux radiations issues du cycle du combustible nucléaire, exprimée en équivalent uranium-235. Une exposition prolongée abîme l'ADN des cellules et augmente le risque de cancers (leucémies, thyroïde, poumon) et de malformations génétiques, avec un effet cumulatif sur la vie entière. Les populations les plus exposées sont les mineurs d'uranium et les travailleurs du cycle du combustible (extraction, enrichissement, retraitement). Le risque sanitaire se concentre donc en amont de la filière, sur les sites de minage souvent situés dans des pays à faible régulation. Le mix électrique qui alimente les datacenters détermine directement cette contribution.",
+    en: "Ionizing radiation measures human exposure to radiation from the nuclear fuel cycle, expressed in uranium-235 equivalent. Prolonged exposure damages cell DNA and increases the risk of cancers (leukemia, thyroid, lung) and genetic defects, with a cumulative effect over a lifetime. The most exposed populations are uranium miners and fuel-cycle workers (extraction, enrichment, reprocessing). The health risk is therefore concentrated upstream, at mining sites often located in countries with weak regulation. The electricity mix powering data centers directly determines this contribution.",
+  },
+  'PEF-POCP': {
+    fr: "L'ozone photochimique mesure la formation d'ozone au niveau du sol (smog) à partir de polluants comme les composés organiques volatils. Contrairement à l'ozone stratosphérique protecteur, celui-ci irrite les voies respiratoires, aggrave l'asthme et réduit les rendements agricoles. Il touche en priorité les enfants, les personnes âgées et les travailleurs en extérieur, lors des canicules urbaines. Le transport et l'industrie, dont la fabrication des équipements électroniques, en sont les sources principales.",
+    en: "Photochemical ozone measures ground-level ozone formation (smog) from pollutants such as volatile organic compounds. Unlike protective stratospheric ozone, this one irritates the airways, worsens asthma and reduces crop yields. It hits children, the elderly and outdoor workers first, during urban heatwaves. Transport and industry, including the manufacture of electronic equipment, are its main sources.",
+  },
+  'PEF-CTUh-nc': {
+    fr: "La toxicité humaine non cancérigène mesure l'exposition à des substances chimiques provoquant des atteintes chroniques : atteintes rénales, neurologiques ou hormonales. Elle touche les travailleurs des usines chimiques et électroniques, ainsi que les populations vivant près des sites pollués. Des catastrophes comme Bhopal (1984), qui fit des milliers de morts, illustrent l'ampleur de ces risques. L'extraction et le raffinage des métaux pour les composants informatiques exposent directement à ces substances.",
+    en: "Non-carcinogenic human toxicity measures exposure to chemicals causing chronic harm: kidney, neurological or hormonal damage. It affects chemical and electronics factory workers, as well as populations living near polluted sites. Disasters such as Bhopal (1984), which killed thousands, illustrate the scale of these risks. Extracting and refining metals for computer components directly exposes people to these substances.",
+  },
+  'PEF-ADPf': {
+    fr: "L'épuisement fossile mesure la consommation de ressources énergétiques non renouvelables : pétrole, gaz et charbon, exprimée en mégajoules. Ces ressources mettent des millions d'années à se former et sont inégalement réparties : certaines régions en sont dépourvues et dépendent entièrement d'importations, ce qui les expose à la volatilité des prix et aux ruptures d'approvisionnement. Leur raréfaction touche en premier lieu les populations qui n'ont pas les moyens de se tourner vers d'autres énergies. Les datacenters et l'entraînement des modèles d'IA sont des consommateurs d'électricité en forte croissance.",
+    en: "Fossil depletion measures the consumption of non-renewable energy resources: oil, gas and coal, expressed in megajoules. These resources take millions of years to form and are unevenly distributed: some regions have none and depend entirely on imports, exposing them to price volatility and supply disruptions. Their scarcity hits first the populations that cannot afford to switch to other energies. Data centers and AI model training are fast-growing electricity consumers.",
+  },
+  'PEF-ADPe': {
+    fr: "L'épuisement des minéraux et métaux mesure la raréfaction des ressources non renouvelables comme le cuivre, l'or ou les terres rares, exprimée en équivalent antimoine. L'enjeu n'est pas tant la disparition totale de ces métaux que la dégradation des conditions d'extraction à mesure que les gisements les plus riches s'épuisent : il faut exploiter des minerais de plus en plus pauvres, dans des zones de plus en plus difficiles, avec des impacts sociaux et environnementaux croissants (mines à ciel ouvert, pollution des eaux, travail des enfants dans certains gisements). Cette dégradation touche les communautés minières, souvent les plus pauvres, et fragilise l'approvisionnement des industries. Chaque GPU, chaque smartphone dépend de ces métaux.",
+    en: "Mineral and metal depletion measures the scarcity of non-renewable resources such as copper, gold or rare earths, expressed in antimony equivalent. The issue is not so much the total disappearance of these metals as the worsening extraction conditions as the richest deposits are depleted: ever poorer ores must be mined, in ever more difficult areas, with growing social and environmental impacts (open-pit mines, water pollution, child labor in some deposits). This degradation affects mining communities, often the poorest, and weakens industrial supply chains. Every GPU, every smartphone depends on these metals.",
+  },
+  'PEF-WU': {
+    fr: "L'utilisation de l'eau mesure la consommation d'eau douce, pondérée selon sa rareté locale (méthode AWARE), exprimée en m³ équivalent. Elle touche les régions déjà en stress hydrique, où l'eau des nappes est détournée au détriment des populations et de l'agriculture. Le refroidissement des datacenters consomme des millions de litres par jour, parfois dans des zones arides. C'est un enjeu de justice environnementale : l'eau utilisée pour refroidir des serveurs n'est plus disponible pour boire ou irriguer.",
+    en: "Water use measures freshwater consumption, weighted by local scarcity (AWARE method), expressed in m³ equivalent. It affects regions already under water stress, where groundwater is diverted at the expense of populations and agriculture. Cooling data centers consumes millions of liters per day, sometimes in arid areas. It is a matter of environmental justice: water used to cool servers is no longer available for drinking or irrigation.",
+  },
+  'PEF-CTUe': {
+    fr: "L'écotoxicité des eaux douces mesure l'impact de substances chimiques toxiques sur les organismes aquatiques, exprimée en unités toxiques comparatives. Elle touche les poissons, les invertébrés et toute la chaîne alimentaire des rivières et des lacs, jusqu'aux populations qui en dépendent. Des rivières empoisonnées par les rejets industriels et miniers, comme dans certaines régions d'Asie ou d'Amérique du Sud, en sont l'illustration directe. L'extraction des métaux pour l'électronique rejette des métaux lourds dans les cours d'eau.",
+    en: "Freshwater ecotoxicity measures the impact of toxic chemicals on aquatic organisms, expressed in comparative toxic units. It affects fish, invertebrates and the entire food chain of rivers and lakes, up to the populations that depend on them. Rivers poisoned by industrial and mining discharges, as in parts of Asia and South America, are a direct illustration. Extracting metals for electronics releases heavy metals into waterways.",
+  },
+  'PEF-CTUh-c': {
+    fr: "La toxicité humaine cancérigène mesure l'exposition à des substances provoquant des cancers, comme l'amiante, le benzène ou certains métaux lourds. Elle touche les travailleurs exposés sur leur lieu de travail et les riverains de sites industriels ou miniers pollués. Des drames comme l'amiante, qui tue encore des dizaines de milliers de personnes par an, montrent la gravité de ces expositions. La fabrication des composants électroniques et le recyclage informel des déchets électroniques exposent à ces substances.",
+    en: "Carcinogenic human toxicity measures exposure to cancer-causing substances such as asbestos, benzene or certain heavy metals. It affects workers exposed on the job and residents near polluted industrial or mining sites. Tragedies such as asbestos, which still kills tens of thousands of people a year, show the severity of these exposures. Manufacturing electronic components and informal e-waste recycling expose people to these substances.",
+  },
+}
+
+/**
+ * Texte « Enjeux » d'un critère PEF, dans la langue demandée.
+ * @param {string} key   clé technique stable (ex. « PEF-GWP »)
+ * @param {string} lang  code langue (« fr » ou « en »), repli sur « fr »
+ * @returns {string} paragraphe, ou chaîne vide si le critère est inconnu
+ */
+export function indicatorStakes(key, lang = 'fr') {
+  const entry = STAKES[key]
+  if (!entry) return ''
+  return entry[lang] || entry.fr || ''
+}
+
+// ---------------------------------------------------------------------------
+// Citations « révélation » par critère PEF.
+//
+// Affichées lorsque l'image submerge l'encart Enjeux (cf. StakesCard.vue), en
+// fondu sur un voile sombre. Texte court et incisif, propre à chaque indicateur.
+//
+// PLACEHOLDER : les citations restent à rédiger. Tant qu'une entrée est vide,
+// aucune citation n'est affichée (repli silencieux).
+// ---------------------------------------------------------------------------
+const QUOTES = {
+  'PEF-GWP': {
+    fr: "Le changement climatique se manifeste comme une série de catastrophes vues à travers nos téléphones, avec des images qui se rapprochent de plus en plus de chez vous, jusqu'à ce que ce soit vous qui les filmiez.",
+    en: "Climate change is manifesting as a series of disasters viewed through phones with footage that gets closer and closer to where you live until you’re the one filming it.",
+  },
+  'PEF-ODP': { fr: ' ', en: '' },
+  'PEF-PM': { fr: '', en: '' },
+  'PEF-AP': { fr: '', en: '' },
+  'PEF-Epf': { fr: '', en: '' },
+  'PEF-Epm': { fr: '', en: '' },
+  'PEF-Ept': { fr: '', en: '' },
+  'PEF-IR': { fr: '', en: '' },
+  'PEF-POCP': { fr: '', en: '' },
+  'PEF-CTUh-nc': { fr: '', en: '' },
+  'PEF-ADPf': { fr: '', en: '' },
+  'PEF-ADPe': { fr: '', en: '' },
+  'PEF-WU': { fr: '', en: '' },
+  'PEF-CTUe': { fr: '', en: '' },
+  'PEF-CTUh-c': { fr: '', en: '' },
+}
+
+/**
+ * Citation « révélation » d'un critère PEF, dans la langue demandée.
+ * @param {string} key   clé technique stable (ex. « PEF-GWP »)
+ * @param {string} lang  code langue (« fr » ou « en »), repli sur « fr »
+ * @returns {string} citation, ou chaîne vide si absente / non rédigée
+ */
+export function indicatorQuote(key, lang = 'fr') {
+  const entry = QUOTES[key]
+  if (!entry) return ''
+  return entry[lang] || entry.fr || ''
+}

@@ -189,6 +189,9 @@ def compute_storage(media: str, params: dict) -> dict:
     return {
         'impact_kg': round(gwp, 6),
         'indicators': indicators,
+        # Énergie totale consommée (kWh) : exposée pour les tests et la
+        # traçabilité du poste usage, arrondie à 6 décimales.
+        'energy_kwh': round(energy_kwh, 6),
         'method': 'acv',
         # Valeurs partiellement extrapolées (13 catégories non-GWP par ratios
         # issus de la littérature ACV électronique) -> confiance moyenne.

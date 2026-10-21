@@ -37,6 +37,14 @@ export const usePipelineStore = defineStore('pipeline', () => {
     const analysisResult = ref(null)
     const isAnalyzing = computed(() => analysisResult.value !== null)
 
+    // Onglet d'analyse actif : 'global' | 'graph' | <clé de critère>.
+    // État partagé entre la Sidebar (navigation) et la zone d'onglets.
+    const activeAnalysisTab = ref('global')
+
+    function setAnalysisTab(tabId) {
+        activeAnalysisTab.value = tabId
+    }
+
     // Propriétés exposées (liées au pipeline actif)
     const nodes = computed(() => activePipeline.value?.nodes || [])
     const edges = computed(() => activePipeline.value?.edges || [])
@@ -245,6 +253,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
     try {
         const response = await axios.post('/api/analyze', json)
         analysisResult.value = response.data
+        // À chaque nouvelle analyse, on revient sur l'onglet « Analyse globale ».
+        activeAnalysisTab.value = 'global'
         // Mettre à jour les nœuds avec leurs données d'impact
         if (activePipeline.value && response.data.nodes) {
         response.data.nodes.forEach(item => {
@@ -267,6 +277,12 @@ export const usePipelineStore = defineStore('pipeline', () => {
                 ...node.data,
                 impactLevel: item.level,
                 ...(item.indicators && { indicators: item.indicators }),
+                // Ratio au seuil mensuel par indicateur (%) : alimente la heatmap
+                // « hotspots » (nœuds × indicateurs) de l'analyse globale.
+                ...(item.threshold_ratios && { threshold_ratios: item.threshold_ratios }),
+                // Contributions PEF par indicateur (mPt) : alimentent le treemap
+                // (surface ∝ contribution du nœud à l'indicateur).
+                ...(item.pef_contributions && { pef_contributions: item.pef_contributions }),
                 ...(item.method && { method: item.method }),
                 ...(item.confidence && { confidence: item.confidence })
             }
@@ -280,9 +296,12 @@ export const usePipelineStore = defineStore('pipeline', () => {
 
     function clearAnalysis() {
     analysisResult.value = null
+    activeAnalysisTab.value = 'global'
     if (activePipeline.value) {
         activePipeline.value.nodes.forEach(node => {
         delete node.data.impactLevel
+        delete node.data.threshold_ratios
+        delete node.data.pef_contributions
         })
     }}
 
@@ -314,6 +333,8 @@ export const usePipelineStore = defineStore('pipeline', () => {
         edges,
         analysisResult,
         isAnalyzing,
+        activeAnalysisTab,
+        setAnalysisTab,
         addNode,
         updateNodeData,
         removeNode,

@@ -39,10 +39,21 @@ def compute(params: dict) -> dict:
     gwp_kg = nb_call * extract_gwp(impacts)
     indicators = extract_ecologits_indicators(impacts, nb_call)
 
+    # Modèle non reconnu par ecologits : impacts à None -> impact nul. On
+    # expose un message explicite pour que le front distingue « pas de
+    # données » d'un impact réellement nul.
+    unsupported = getattr(impacts, 'gwp', None) is None
+    message = (
+        "Modèle non supporté par ecologits : aucun impact calculé."
+        if unsupported else ""
+    )
+
     return {
         'impact_kg': round(gwp_kg, 6),
         'indicators': indicators,
         'method': 'ecologits',
         'confidence': 'low',
         'level': get_level_from_indicators(indicators),
+        'message': message,
     }
+

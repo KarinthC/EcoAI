@@ -65,31 +65,6 @@ async function toggleAnalysis() {
   }
 }
 
-// Info-bulle « ? » : rendue en position fixe pour éviter tout clipping par
-// les conteneurs défilables (liste des critères, sidebar).
-const tooltip = ref({ visible: false, x: 0, y: 0, criterion: null })
-
-function showTooltip(event, criterion) {
-  const rect = event.currentTarget.getBoundingClientRect()
-  const width = 220
-  // Par défaut à droite de l'icône ; bascule à gauche si ça déborde.
-  let x = rect.right + 8
-  if (x + width > window.innerWidth) {
-    x = rect.left - width - 8
-  }
-  // Remonte le tooltip s'il déborde par le bas.
-  let y = rect.top
-  const estimatedHeight = 150
-  if (y + estimatedHeight > window.innerHeight) {
-    y = Math.max(8, window.innerHeight - estimatedHeight - 8)
-  }
-  tooltip.value = { visible: true, x, y, criterion }
-}
-
-function hideTooltip() {
-  tooltip.value = { ...tooltip.value, visible: false }
-}
-
 // Colorisation de la sidebar selon le PIRE facteur (ratio le plus élevé).
 const asideClass = computed(() => {
   if (!store.isAnalyzing || !store.analysisResult) return ''
@@ -182,20 +157,11 @@ const { onDragStart } = useDragAndDrop()
           v-for="c in criteria"
           :key="c.key"
           class="criterion-item"
-          :class="{ 'is-partial': c.has_partial }"
+          :class="{ 'is-partial': c.has_partial, active: store.activeAnalysisTab === c.key }"
+          @click="store.setAnalysisTab(c.key)"
         >
           <div class="criterion-head">
             <span class="criterion-label">{{ c.label }}</span>
-            <span
-              class="info-icon"
-              tabindex="0"
-              role="button"
-              aria-label="Détail du critère"
-              @mouseenter="showTooltip($event, c)"
-              @mouseleave="hideTooltip"
-              @focus="showTooltip($event, c)"
-              @blur="hideTooltip"
-            >?</span>
           </div>
 
           <div class="criterion-value-row">
@@ -229,26 +195,6 @@ const { onDragStart } = useDragAndDrop()
       <span v-else>{{ store.isAnalyzing ? $t('sidebar.backToEdit') : $t('sidebar.analyze') }}</span>
     </button>
   </div>
-
-    <!-- Info-bulle de critère : en position fixe pour ne jamais être clippée -->
-    <Teleport to="body">
-      <div
-        v-if="tooltip.visible && tooltip.criterion"
-        class="criterion-tooltip"
-        :style="{ left: tooltip.x + 'px', top: tooltip.y + 'px' }"
-        role="tooltip"
-      >
-        <strong>{{ tooltip.criterion.label }}</strong>
-        <span class="tooltip-desc">{{ tooltip.criterion.description }}</span>
-        <span class="tooltip-line">
-          {{ $t('sidebar.tooltipThreshold') }}
-          {{ formatValue(tooltip.criterion.threshold_monthly) }} {{ tooltip.criterion.unit }}
-        </span>
-        <span v-if="tooltip.criterion.has_partial" class="tooltip-partial">
-          {{ $t('sidebar.tooltipPartial') }}
-        </span>
-      </div>
-    </Teleport>
   </aside>
 </template>
 
@@ -347,6 +293,14 @@ aside .nodes > * {
   border-radius: 6px;
   padding: 0.35rem 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+.criterion-item:hover {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+}
+/* Critère dont l'onglet est actuellement ouvert. */
+.criterion-item.active {
+  outline: 2px solid #2d3748;
 }
 .criterion-item.is-partial {
   border: 1px dashed #a0aec0;
@@ -395,22 +349,6 @@ aside .nodes > * {
   color: #4a5568;
 }
 
-/* Info-bulle du critère (dans la sidebar) */
-.info-icon {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px; height: 15px;
-  border-radius: 50%;
-  background: #cbd5e0;
-  color: #2d3748;
-  font-size: 0.68rem;
-  font-weight: 700;
-  cursor: help;
-  flex-shrink: 0;
-}
-
 .sidebar-node {
   margin-bottom: 10px;
   cursor: grab;
@@ -433,6 +371,8 @@ aside .nodes > * {
 .sidebar-node-operator {
   background: #dd6b20;   
 }
+/* Nœuds de métadonnées (patron analytique, tâche, utilisateur) : gris neutre,
+   cohérent avec la bordure `node-border-meta` du canevas. */
 .sidebar-node-meta {
   background: #718096;
 }
@@ -447,14 +387,6 @@ aside .nodes > * {
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(255,255,255,0.3);
-}
-
-/* En mode analyse, le bandeau de suggestions (AnalysisOverlay) se superpose en
-   bas de l'écran : on réserve sa hauteur repliée pour ne pas masquer le bouton. */
-aside.sidebar-low,
-aside.sidebar-medium,
-aside.sidebar-high {
-  padding-bottom: 3.4rem;
 }
 
 @media screen and (min-width: 640px) {
@@ -473,25 +405,3 @@ aside.sidebar-high {
 
 </style>
 
-<!-- Styles du tooltip téléporté hors du composant : non scoped -->
-<style>
-.criterion-tooltip {
-  position: fixed;
-  z-index: 2000;
-  width: 220px;
-  background: #1a202c;
-  color: #fff;
-  padding: 0.5rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  line-height: 1.3;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-}
-.criterion-tooltip .tooltip-desc { color: #cbd5e0; font-weight: 400; }
-.criterion-tooltip .tooltip-line { color: #f6e05e; }
-.criterion-tooltip .tooltip-partial { color: #fbbf24; }
-</style>

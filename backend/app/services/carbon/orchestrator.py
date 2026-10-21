@@ -8,6 +8,8 @@ from .acv import (
     operator as acv_operator,
     storage as acv_storage,
 )
+from .acv.single_score import compute_single_score
+from .acv.reference_usages import compute_reference_scores
 # Famille Ecologits (estimations, vouées à évoluer)
 from .ecologits import llm_call, video
 from .common import (
@@ -184,6 +186,99 @@ def _build_criteria(total_indicators: dict, has_ecologits: bool) -> list:
     return criteria
 
 
+def _attach_pef_contributions(criteria: list, single_score: dict) -> None:
+    """Rattache à chaque critère sa contribution au single score PEF.
+
+    Ajoute deux champs à chaque critère (mutation en place) :
+      - pef_contribution : contribution de l'indicateur au single score (mPt),
+                           telle que calculée par compute_single_score() ;
+      - pef_share        : part de cette contribution dans le score total (%).
+
+    La contribution peut être NÉGATIVE (ex. eau évitée) : elle est conservée
+    telle quelle (méthodologiquement valide) ; le front la signale sans dessiner
+    de segment négatif. Un critère absent des contributions (ex. PEF-LU) reçoit
+    0.0. L'eau ecologits (clé dédiée) n'entre pas dans le single score.
+    """
+    by_key = {c['key']: c for c in single_score.get('contributions', [])}
+    total = single_score.get('single_score', 0.0)
+    for criterion in criteria:
+        contribution = by_key.get(criterion['key'])
+        score = contribution['score'] if contribution else 0.0
+        criterion['pef_contribution'] = score
+        # Part du score total : indéfinie si le score total est nul.
+        criterion['pef_share'] = (score / total * 100.0) if total else 0.0
+
+
+def _attach_node_threshold_ratios(nodes_analysis: list) -> None:
+    """Rattache à chaque nœud son ratio au seuil mensuel par indicateur (%).
+
+    Pour chaque nœud portant un bloc `indicators`, on calcule pour chaque
+    indicateur le pourcentage du seuil mensuel par habitant atteint par CE nœud :
+        ratio_pct = (valeur_nœud × display_factor) / threshold_display × 100
+
+    où `threshold_display` est le seuil mensuel converti dans l'unité affichée
+    (mêmes conversions que le ratio global de `_build_criteria`, ex. m³ -> L
+    pour l'eau). On stocke le résultat dans `node['threshold_ratios']` sous
+    forme d'un dict { clé_indicateur: pourcentage }.
+
+    IMPORTANT : seules les clés RÉELLEMENT présentes dans `indicators` figurent
+    dans `threshold_ratios`. Une clé absente signifie « pas de données » pour ce
+    nœud (ex. nœud ecologits qui ne remonte que GWP/ADPe/ADPf) : le front la
+    distingue d'un ratio nul (0 %). Un indicateur sans seuil (ex. PEF-LU) est
+    ignoré. L'eau ecologits (clé dédiée, en litres) n'est pas comparable au
+    seuil (m³ eq) : elle est exclue.
+
+    Un nœud sans `indicators` (nœud de représentation, ex. « Données ») ne
+    reçoit pas de bloc `threshold_ratios`.
+    """
+    for node in nodes_analysis:
+        indicators = node.get('indicators')
+        if not indicators:
+            continue
+        ratios = {}
+        for key, value in indicators.items():
+            if key == WATER_ECOLOGITS_KEY:
+                continue
+            meta = ACV_CRITERIA.get(key)
+            if not meta:
+                continue
+            pb_monthly = meta.get('pb_monthly')
+            if not pb_monthly:
+                continue
+            display_factor = meta.get('display_factor', 1.0)
+            threshold_display = pb_monthly * display_factor
+            ratios[key] = (value * display_factor) / threshold_display * 100.0
+        node['threshold_ratios'] = ratios
+
+
+def _attach_node_pef_contributions(nodes_analysis: list) -> None:
+    """Rattache à chaque nœud ses contributions PEF par indicateur (mPt).
+
+    Pour chaque nœud portant un bloc `indicators`, on calcule le single score
+    de CE nœud via `compute_single_score()` (mêmes NF/WF EF 3.1 que le pipeline)
+    et on stocke le résultat dans `node['pef_contributions']` sous forme d'un
+    dict { clé_indicateur: score_mPt }.
+
+    IMPORTANT : seules les clés RÉELLEMENT présentes dans `indicators` figurent
+    dans `pef_contributions`. Une clé absente signifie « pas de données » pour
+    ce nœud (ex. nœud ecologits qui ne remonte que GWP/ADPe/ADPf) : le front la
+    distingue d'une contribution nulle (0 mPt). L'eau ecologits (clé dédiée, en
+    litres) est ignorée par `compute_single_score` : elle n'apparaît donc pas.
+
+    Un nœud sans `indicators` (nœud de représentation, ex. « Données ») ne
+    reçoit pas de bloc `pef_contributions`.
+    """
+    for node in nodes_analysis:
+        indicators = node.get('indicators')
+        if not indicators:
+            continue
+        criteria = [{'key': key, 'value': value} for key, value in indicators.items()]
+        score = compute_single_score(criteria)
+        node['pef_contributions'] = {
+            c['key']: c['score'] for c in score['contributions']
+        }
+
+
 def _global_level(criteria: list) -> str:
     """Couleur globale : celle du PIRE facteur (ratio valeur/seuil le plus haut).
 
@@ -273,10 +368,34 @@ def compute_impact(pipeline: dict) -> dict:
     has_ecologits = _has_ecologits_node(nodes_analysis)
     criteria = _build_criteria(total_indicators, has_ecologits)
 
+    # Single score ACV (note générale) : agrégation normalisée + pondérée des
+    # critères, avec la contribution de chaque indicateur (barre empilée front).
+    single_score = compute_single_score(criteria)
+
+    # On rattache à chaque critère sa contribution au single score PEF (mPt) et
+    # sa part du score total (%). Le front affiche ainsi, dans l'onglet d'un
+    # indicateur, une barre « contribution au score PEF » cohérente avec la
+    # barre empilée de l'analyse globale (mêmes NF/WF EF 3.1).
+    _attach_pef_contributions(criteria, single_score)
+
+    # On rattache aussi à chaque nœud son ratio au seuil mensuel par indicateur
+    # (%) : le front en tire une heatmap nœuds × indicateurs (hotspots).
+    _attach_node_threshold_ratios(nodes_analysis)
+
+    # Et ses contributions PEF par indicateur (mPt) : le front en tire un
+    # treemap (surface ∝ contribution du nœud à l'indicateur).
+    _attach_node_pef_contributions(nodes_analysis)
+
+    # Usages de référence (avion, ciment, bœuf) : même formule PEF, pour
+    # contextualiser le single score du pipeline.
+    reference_usages = compute_reference_scores()
+
     return {
         'total_impact_kg': round(total_impact, 2),
         'total_indicators': total_indicators,
         'criteria': criteria,
+        'single_score': single_score,
+        'reference_usages': reference_usages,
         'has_ecologits_node': has_ecologits,
         'global_level': _global_level(criteria),
         'nodes': nodes_analysis,
