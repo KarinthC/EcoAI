@@ -10,11 +10,11 @@ import {
 } from '@/components/pipeline/analysis/useStakesReveal.js'
 
 // Monte un composant minimal qui expose le composable.
-function mountReveal() {
+function mountReveal(options) {
   let api
   const Comp = defineComponent({
     setup() {
-      api = useStakesReveal()
+      api = useStakesReveal(options)
       return () => h('div')
     },
   })
@@ -108,6 +108,35 @@ describe('useStakesReveal', () => {
     mockMedia({ hover: false })
     const { api } = mountReveal()
     api.onEnter()
+    expect(api.phase.value).toBe('idle')
+  })
+
+  it('respecte une durée de pulsation propre au critère', () => {
+    const { api } = mountReveal({ pulseDurationMs: 1000 })
+    api.onEnter()
+    vi.advanceTimersByTime(999)
+    expect(api.phase.value).toBe('pulsing')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('revealed')
+  })
+
+  it('respecte une durée de citation propre au critère', () => {
+    const { api } = mountReveal({ pulseDurationMs: 1000, quoteDurationMs: 2000 })
+    api.onEnter()
+    vi.advanceTimersByTime(1000 + 1999)
+    expect(api.phase.value).toBe('revealed')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('idle')
+  })
+
+  it('retombe sur les durées par défaut si elles sont invalides', () => {
+    const { api } = mountReveal({ pulseDurationMs: NaN, quoteDurationMs: undefined })
+    api.onEnter()
+    vi.advanceTimersByTime(PULSE_DURATION_MS - 1)
+    expect(api.phase.value).toBe('pulsing')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('revealed')
+    vi.advanceTimersByTime(QUOTE_DURATION_MS)
     expect(api.phase.value).toBe('idle')
   })
 })

@@ -3,10 +3,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import StakesCard from '@/components/pipeline/analysis/StakesCard.vue'
-import {
-  PULSE_DURATION_MS,
-  LEAVE_GRACE_MS,
-} from '@/components/pipeline/analysis/useStakesReveal.js'
+import { LEAVE_GRACE_MS } from '@/components/pipeline/analysis/useStakesReveal.js'
+
+// Durées de révélation du critère mocké (cf. mock de stakesImages ci-dessous).
+const MOCK_PULSE_MS = 1000
 
 // i18n mocké : on renvoie la clé brute (suffisant pour vérifier le rendu).
 vi.mock('vue-i18n', () => ({
@@ -22,6 +22,7 @@ vi.mock('@/components/pipeline/analysis/stakesImages.js', () => ({
           focal: { x: 1000, y: 400 },
           focalWide: { x: 0.5, y: 0.25 },
           zoom: 0.5,
+          reveal: { pulseMs: 1000, quoteMs: 2000 },
         }
       : null,
 }))
@@ -58,6 +59,16 @@ describe('StakesCard', () => {
       global,
     })
     expect(wrapper.text()).toContain('Un paragraphe sur le climat.')
+  })
+
+  it('conserve les sauts de ligne du texte (rendus par white-space: pre-line)', () => {
+    const wrapper = mount(StakesCard, {
+      props: { criterionKey: 'PEF-GWP', text: 'Ligne 1\nLigne 2' },
+      global,
+    })
+    // jsdom ne calcule pas white-space : on vérifie que le « \n » est bien
+    // présent dans le nœud texte, le rendu visuel étant assuré par le CSS.
+    expect(wrapper.find('.stakes-text').element.textContent).toContain('\n')
   })
 
   it('affiche une image pour un critère qui en a une', () => {
@@ -103,7 +114,7 @@ describe('StakesCard', () => {
       global,
     })
     await wrapper.find('.stakes-image-zone').trigger('mouseenter')
-    vi.advanceTimersByTime(PULSE_DURATION_MS)
+    vi.advanceTimersByTime(MOCK_PULSE_MS)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.stakes-card').classes()).toContain('is-revealed')
   })
@@ -123,7 +134,7 @@ describe('StakesCard', () => {
       global,
     })
     await wrapper.find('.stakes-image-zone').trigger('mouseenter')
-    vi.advanceTimersByTime(PULSE_DURATION_MS)
+    vi.advanceTimersByTime(MOCK_PULSE_MS)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.stakes-card').classes()).toContain('is-revealed')
   })
@@ -150,7 +161,7 @@ describe('StakesCard', () => {
       global,
     })
     await wrapper.find('.stakes-image-zone').trigger('mouseenter')
-    vi.advanceTimersByTime(PULSE_DURATION_MS)
+    vi.advanceTimersByTime(MOCK_PULSE_MS)
     await wrapper.vm.$nextTick()
     expect(wrapper.find('.stakes-content').classes()).toContain('is-hidden')
   })

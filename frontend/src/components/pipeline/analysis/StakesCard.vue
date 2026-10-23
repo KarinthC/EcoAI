@@ -63,7 +63,12 @@ const wideObjectPosition = computed(() => {
 const quote = computed(() => indicatorQuote(props.criterionKey, locale.value))
 
 // État de l'effet de révélation (ondulation -> submersion -> citation).
-const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
+// Les durées sont propres au critère (cf. stakesImages.js), avec repli sur les
+// valeurs par défaut du composable.
+const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal({
+  pulseDurationMs: image.value?.reveal?.pulseMs,
+  quoteDurationMs: image.value?.reveal?.quoteMs,
+})
 </script>
 
 <template>
@@ -252,6 +257,9 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
   font-size: 0.85rem;
   line-height: 1.55;
   color: #2d3748;
+  /* Les « \n » du contenu deviennent de vrais sauts de ligne (les espaces
+     multiples restent collapsés, contrairement à pre-wrap). */
+  white-space: pre-line;
 }
 /* Citation révélée : voile sombre semi-transparent + texte en fondu. */
 .stakes-quote {
@@ -278,5 +286,7 @@ const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal()
   font-style: italic;
   line-height: 1.5;
   color: #f7fafc;
+  /* Idem : les « \n » de la citation sont rendus comme des sauts de ligne. */
+  white-space: pre-line;
 }
 </style>

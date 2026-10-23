@@ -22,9 +22,10 @@
 
 import { ref, computed, onUnmounted } from 'vue'
 
-// Durée d'ondulation avant submersion (ms).
+// Durées par défaut (ms), surchargées par critère via les options.
+// Durée d'ondulation avant submersion.
 export const PULSE_DURATION_MS = 5000
-// Durée d'affichage de la citation (ms), après la submersion.
+// Durée d'affichage de la citation, après la submersion.
 export const QUOTE_DURATION_MS = 10000
 // Délai de grâce avant annulation à la sortie de souris (ms) : absorbe les
 // micro-mouvements du curseur sans interrompre l'effet.
@@ -44,6 +45,10 @@ function canReveal() {
 
 /**
  * Pilote l'effet de révélation de l'encart Enjeux.
+ * @param {{
+ *   pulseDurationMs?: number,
+ *   quoteDurationMs?: number,
+ * }} [options] durées propres au critère (repli sur les valeurs par défaut)
  * @returns {{
  *   phase: import('vue').Ref<string>,
  *   isPulsing: import('vue').ComputedRef<boolean>,
@@ -53,7 +58,15 @@ function canReveal() {
  *   onLeave: () => void,
  * }}
  */
-export function useStakesReveal() {
+export function useStakesReveal(options = {}) {
+  // Durées effectives : une valeur absente ou invalide retombe sur le défaut.
+  const pulseDurationMs = Number.isFinite(options.pulseDurationMs)
+    ? options.pulseDurationMs
+    : PULSE_DURATION_MS
+  const quoteDurationMs = Number.isFinite(options.quoteDurationMs)
+    ? options.quoteDurationMs
+    : QUOTE_DURATION_MS
+
   const phase = ref('idle')
   let pulseTimer = null
   let quoteTimer = null
@@ -91,8 +104,8 @@ export function useStakesReveal() {
       quoteTimer = setTimeout(() => {
         quoteTimer = null
         phase.value = 'idle'
-      }, QUOTE_DURATION_MS)
-    }, PULSE_DURATION_MS)
+      }, quoteDurationMs)
+    }, pulseDurationMs)
   }
 
   // Sortie de souris : annule tant que la submersion n'a pas eu lieu, après un
