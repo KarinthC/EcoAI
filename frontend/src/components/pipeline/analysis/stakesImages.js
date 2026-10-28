@@ -27,6 +27,7 @@
 import climateImg from '@/assets/stakes/flood.webp'
 import ozone from '@/assets/stakes/ozone.webp'
 import fossil from '@/assets/stakes/bagdad.webp'
+import PM from '@/assets/stakes/PM.webp'
 
 const STAKES_IMAGES = {
   'PEF-GWP': {
@@ -43,7 +44,7 @@ const STAKES_IMAGES = {
     focalWide: { x: 1, y: 1 },
     zoom: 0.17,
     // Citation longue : on laisse plus de temps de lecture.
-    reveal: { pulseMs: 5000, quoteMs: 30000 },
+    reveal: { pulseMs: 5000, quoteMs: 35000 },
   },
   'PEF-ADPf':{
     src: fossil,
@@ -52,6 +53,15 @@ const STAKES_IMAGES = {
     zoom: 0.17,
     // Citation longue : on laisse plus de temps de lecture.
     reveal: { pulseMs: 5000, quoteMs: 30000 },    
+
+  },
+  'PEF-PM':{
+    src: PM,
+    focal: { x: 1200, y: 200 },
+    focalWide: { x: 1, y: 1 },
+    zoom: 0.25,
+    // Citation longue : on laisse plus de temps de lecture.
+    reveal: { pulseMs: 5000, quoteMs: 25000 },    
 
   }
 }
