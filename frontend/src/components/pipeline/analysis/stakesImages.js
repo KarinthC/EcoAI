@@ -36,7 +36,7 @@ const STAKES_IMAGES = {
     // 960/1920 et 450/900 : centre de l'image source (1920×900).
     focalWide: { x: 0.5, y: 0.5 },
     zoom: 0.25,
-    reveal: { pulseMs: 5000, quoteMs: 10000 },
+    reveal: { pulseMs: 10000, quoteMs: 12000 },
   },
   'PEF-ODP':{
     src: ozone,
@@ -44,7 +44,7 @@ const STAKES_IMAGES = {
     focalWide: { x: 1, y: 1 },
     zoom: 0.17,
     // Citation longue : on laisse plus de temps de lecture.
-    reveal: { pulseMs: 5000, quoteMs: 35000 },
+    reveal: { pulseMs: 10000, quoteMs: 35000 },
   },
   'PEF-ADPf':{
     src: fossil,
@@ -52,7 +52,7 @@ const STAKES_IMAGES = {
     focalWide: { x: 1, y: 1 },
     zoom: 0.17,
     // Citation longue : on laisse plus de temps de lecture.
-    reveal: { pulseMs: 5000, quoteMs: 30000 },    
+    reveal: { pulseMs: 10000, quoteMs: 30000 },    
 
   },
   'PEF-PM':{
