@@ -20,16 +20,28 @@
 //   - sortie de souris avant la submersion : annulation (après un court délai
 //     de grâce pour absorber les micro-mouvements du curseur).
 
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, unref, onUnmounted } from 'vue'
 
 // Durées par défaut (ms), surchargées par critère via les options.
 // Durée d'ondulation avant submersion.
-export const PULSE_DURATION_MS = 5000
-// Durée d'affichage de la citation, après la submersion.
-export const QUOTE_DURATION_MS = 10000
+export const PULSE_DURATION_MS = 10000
+// Durée TOTALE de la submersion (image + citation), après l'ondulation.
+export const QUOTE_DURATION_MS = 30000
 // Délai de grâce avant annulation à la sortie de souris (ms) : absorbe les
 // micro-mouvements du curseur sans interrompre l'effet.
 export const LEAVE_GRACE_MS = 300
+
+/**
+ * Résout une durée optionnelle : accepte un scalaire ou une ref/computed.
+ * Une valeur absente ou invalide retombe sur le défaut.
+ * @param {number|import('vue').Ref<number>|undefined} value
+ * @param {number} fallback
+ * @returns {number}
+ */
+function resolveDuration(value, fallback) {
+  const raw = unref(value)
+  return Number.isFinite(raw) ? raw : fallback
+}
 
 /**
  * Détecte si l'effet peut se déclencher : appareil avec survol réel (pas
@@ -46,9 +58,11 @@ function canReveal() {
 /**
  * Pilote l'effet de révélation de l'encart Enjeux.
  * @param {{
- *   pulseDurationMs?: number,
- *   quoteDurationMs?: number,
- * }} [options] durées propres au critère (repli sur les valeurs par défaut)
+ *   pulseDurationMs?: number|import('vue').Ref<number>,
+ *   quoteDurationMs?: number|import('vue').Ref<number>,
+ * }} [options] durées propres au critère (scalaire ou ref/computed, repli sur
+ *   les valeurs par défaut). Les refs sont relues à chaque survol : un
+ *   changement de critère sans remontage est donc pris en compte.
  * @returns {{
  *   phase: import('vue').Ref<string>,
  *   isPulsing: import('vue').ComputedRef<boolean>,
@@ -59,14 +73,6 @@ function canReveal() {
  * }}
  */
 export function useStakesReveal(options = {}) {
-  // Durées effectives : une valeur absente ou invalide retombe sur le défaut.
-  const pulseDurationMs = Number.isFinite(options.pulseDurationMs)
-    ? options.pulseDurationMs
-    : PULSE_DURATION_MS
-  const quoteDurationMs = Number.isFinite(options.quoteDurationMs)
-    ? options.quoteDurationMs
-    : QUOTE_DURATION_MS
-
   const phase = ref('idle')
   let pulseTimer = null
   let quoteTimer = null
@@ -96,6 +102,9 @@ export function useStakesReveal(options = {}) {
       leaveTimer = null
     }
     if (phase.value !== 'idle') return
+    // Durées relues à chaque survol : elles peuvent dépendre du critère actif.
+    const pulseDurationMs = resolveDuration(options.pulseDurationMs, PULSE_DURATION_MS)
+    const quoteDurationMs = resolveDuration(options.quoteDurationMs, QUOTE_DURATION_MS)
     phase.value = 'pulsing'
     pulseTimer = setTimeout(() => {
       pulseTimer = null

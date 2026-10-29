@@ -19,9 +19,10 @@
 //                 Défaut : 1.
 //   - reveal    : durées de l'effet de révélation, en millisecondes
 //                 { pulseMs, quoteMs }. `pulseMs` = temps de survol avant que
-//                 l'image submerge le bloc ; `quoteMs` = temps d'affichage de
-//                 la citation. Chaque champ est optionnel : absent, il retombe
-//                 sur les valeurs par défaut de useStakesReveal.js.
+//                 l'image submerge le bloc ; `quoteMs` = durée TOTALE de la
+//                 submersion (image + citation), à partir de la submersion.
+//                 Chaque champ est optionnel : absent, il retombe sur les
+//                 valeurs par défaut de useStakesReveal.js (10 s / 30 s).
 //
 // Un critère absent du mapping n'affiche aucune image (repli silencieux).
 import climateImg from '@/assets/stakes/flood.webp'
@@ -61,7 +62,7 @@ const STAKES_IMAGES = {
     focalWide: { x: 1, y: 1 },
     zoom: 0.25,
     // Citation longue : on laisse plus de temps de lecture.
-    reveal: { pulseMs: 5000, quoteMs: 25000 },    
+    reveal: { pulseMs: 10000, quoteMs: 30000 },    
 
   }
 }

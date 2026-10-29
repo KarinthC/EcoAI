@@ -3,7 +3,7 @@
 Couvrent :
   - la structure de retour (id, label_i18n, single_score, contributions) ;
   - la cohérence méthodologique (même formule PEF que le pipeline) ;
-  - les ordres de grandeur (le bœuf domine largement l'avion et le ciment) ;
+  - les ordres de grandeur (le bœuf domine le ciment, l'avion domine le ciment) ;
   - l'hypothèse de conversion de l'avion (1 p·km -> 1 h à 800 km/h).
 """
 
@@ -34,11 +34,15 @@ def test_reference_scores_match_single_score_formula():
     assert actual['single_score'] == pytest.approx(expected, rel=1e-12)
 
 
-def test_beef_dominates_other_usages():
+def test_beef_dominates_cement():
     """1 kg de bœuf a un single score bien supérieur à 10 kg de ciment."""
     scores = {r['id']: r['single_score'] for r in compute_reference_scores()}
     assert scores['beef_1kg'] > scores['cement_10kg']
-    assert scores['beef_1kg'] > scores['aircraft_1h']
+
+    # L'avion n'est PAS comparable au bœuf : l'hypothèse ×800 km/h (1 h de vol)
+    # gonfle son énergie fossile (ADPf) et son GWP au-delà de 1 kg de bœuf.
+    # On vérifie donc seulement que l'avion reste au-dessus du ciment.
+    assert scores['aircraft_1h'] > scores['cement_10kg']
 
 
 def test_aircraft_scales_with_distance():

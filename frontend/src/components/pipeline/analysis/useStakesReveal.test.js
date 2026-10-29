@@ -1,6 +1,6 @@
 // Tests de useStakesReveal : phases de l'effet de révélation (fake timers).
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import { mount } from '@vue/test-utils'
 import {
   useStakesReveal,
@@ -138,5 +138,46 @@ describe('useStakesReveal', () => {
     expect(api.phase.value).toBe('revealed')
     vi.advanceTimersByTime(QUOTE_DURATION_MS)
     expect(api.phase.value).toBe('idle')
+  })
+
+  it('applique les durées par défaut (10 s / 30 s) sans option', () => {
+    expect(PULSE_DURATION_MS).toBe(10000)
+    expect(QUOTE_DURATION_MS).toBe(30000)
+  })
+
+  it('accepte des durées réactives (ref) relues à chaque survol', () => {
+    const pulse = ref(1000)
+    const quote = ref(2000)
+    const { api } = mountReveal({ pulseDurationMs: pulse, quoteDurationMs: quote })
+
+    api.onEnter()
+    vi.advanceTimersByTime(1000)
+    expect(api.phase.value).toBe('revealed')
+    vi.advanceTimersByTime(2000)
+    expect(api.phase.value).toBe('idle')
+
+    // Le critère change sans remontage : les nouvelles durées s'appliquent.
+    pulse.value = 3000
+    quote.value = 4000
+    api.onEnter()
+    vi.advanceTimersByTime(2999)
+    expect(api.phase.value).toBe('pulsing')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('revealed')
+    vi.advanceTimersByTime(3999)
+    expect(api.phase.value).toBe('revealed')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('idle')
+  })
+
+  it('retombe sur le défaut si la ref devient invalide', () => {
+    const pulse = ref(1000)
+    const { api } = mountReveal({ pulseDurationMs: pulse })
+    pulse.value = undefined
+    api.onEnter()
+    vi.advanceTimersByTime(PULSE_DURATION_MS - 1)
+    expect(api.phase.value).toBe('pulsing')
+    vi.advanceTimersByTime(1)
+    expect(api.phase.value).toBe('revealed')
   })
 })

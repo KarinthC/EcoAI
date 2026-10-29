@@ -8,8 +8,11 @@
 //
 // Effet de révélation (survol de la zone image uniquement) :
 //   - le bord du dégradé ondule doucement (animation du ::after) ;
-//   - après 5 s de survol continu, l'image submerge le bloc (fondu) ;
-//   - une citation apparaît alors sur un voile sombre, puis disparaît (10 s).
+//   - après `pulseMs` de survol continu, l'image submerge le bloc (fondu) ;
+//   - une citation apparaît alors sur un voile sombre, puis disparaît au bout
+//     de `quoteMs` (durée TOTALE de la submersion, image + citation).
+// Les durées sont propres au critère (cf. stakesImages.js) ; à défaut, le
+// composable applique ses valeurs par défaut (10 s / 30 s).
 // La logique d'état et de timers vit dans useStakesReveal (composable).
 //
 // Deux régimes de rendu, volontairement disjoints :
@@ -62,12 +65,16 @@ const wideObjectPosition = computed(() => {
 // Citation « révélation » (vide tant qu'elle n'est pas rédigée).
 const quote = computed(() => indicatorQuote(props.criterionKey, locale.value))
 
+// Durées de l'effet, propres au critère (cf. stakesImages.js). Passées sous
+// forme de computed : le composable les relit à chaque survol, donc un
+// changement de critère sans remontage est bien pris en compte.
+const pulseDurationMs = computed(() => image.value?.reveal?.pulseMs)
+const quoteDurationMs = computed(() => image.value?.reveal?.quoteMs)
+
 // État de l'effet de révélation (ondulation -> submersion -> citation).
-// Les durées sont propres au critère (cf. stakesImages.js), avec repli sur les
-// valeurs par défaut du composable.
 const { isPulsing, isRevealed, showQuote, onEnter, onLeave } = useStakesReveal({
-  pulseDurationMs: image.value?.reveal?.pulseMs,
-  quoteDurationMs: image.value?.reveal?.quoteMs,
+  pulseDurationMs,
+  quoteDurationMs,
 })
 </script>
 
