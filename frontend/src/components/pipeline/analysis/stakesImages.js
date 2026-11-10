@@ -29,6 +29,7 @@ import climateImg from '@/assets/stakes/flood.webp'
 import ozone from '@/assets/stakes/ozone.webp'
 import fossil from '@/assets/stakes/bagdad.webp'
 import PM from '@/assets/stakes/PM.webp'
+import gold from '@/assets/stakes/dubaigold.webp'
 
 const STAKES_IMAGES = {
   'PEF-GWP': {
@@ -54,6 +55,15 @@ const STAKES_IMAGES = {
     zoom: 0.17,
     // Citation longue : on laisse plus de temps de lecture.
     reveal: { pulseMs: 10000, quoteMs: 30000 },    
+
+  },
+  'PEF-ADPe':{
+    src: gold,
+    focal: { x: 800, y: 500 },
+    focalWide: { x: 1, y: 1 },
+    zoom: 0.17,
+    // Citation longue : on laisse plus de temps de lecture.
+    reveal: { pulseMs: 10000, quoteMs: 60000 },    
 
   },
   'PEF-PM':{
