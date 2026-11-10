@@ -6,3 +6,7 @@ dist/
 .mypy_cache/
 *.egg-info/
 .continue/
+
+# Secrets et fichiers locaux (ne jamais versionner)
+cookies.txt
+cloudflared.deb
