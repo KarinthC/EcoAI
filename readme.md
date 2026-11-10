@@ -1,274 +1,287 @@
-# EcoAI – Modélisation et analyse d’impact carbone de pipelines data science
+# EcoAI – Carbon impact modeling and analysis for data science pipelines
 
-EcoAI est une application web qui permet de **modéliser graphiquement** des pipelines de data science (enchaînement de traitements, entraînement de modèles, inférence, appels LLM…) et d’**estimer leur empreinte carbone**. L’outil est conçu pour fonctionner en mode “bac à sable” : on dessine un flux, on le paramètre, puis on lance une analyse qui retourne l’impact CO₂ global, des indicateurs par nœud et des suggestions de réduction.
+EcoAI is a web application that lets you **graphically model** data science pipelines (chains of processing steps, model training, inference, LLM calls…) and **estimate their carbon footprint**. The tool is designed to work in a "sandbox" mode: you draw a flow, configure it, then run an analysis that returns the overall CO₂ impact, per-node indicators and reduction suggestions.
 
-L’application est développée avec **Vue 3** (frontend), **Flask** (backend) et **PostgreSQL** (base de données). L’ensemble est conteneurisé avec Docker et s’exécute aussi bien en développement qu’en production derrière un reverse proxy Nginx.
+The application is built with **Vue 3** (frontend), **Flask** (backend) and **PostgreSQL** (database). Everything is containerized with Docker and runs both in development and in production behind an Nginx reverse proxy.
 
-## Fonctionnalités principales
+## Main features
 
-- **Éditeur de pipeline visuel** : glisser-déposer de nœuds (Données, Données persistantes, Données SSD temporaires, Entraînement, Inférence, LLM Call, LLM Expert, etc.) sur un canevas, connexion par arêtes dirigées.
-- **Paramétrage détaillé** : chaque type de nœud expose ses propres paramètres (taille des données, nombre d’epochs, modèle, fournisseur, tokens…) via un panneau latéral.
-- **Analyse carbone** : appel au backend qui utilise la librairie `ecologits` pour les nœuds LLM et des formules ACV documentées (multi-indicateurs PEF) pour les autres nœuds.
-- **Single score PEF** : l’analyse agrège les critères en une note unique en milli-points (mPt) selon la méthode EF 3.1 (JRC 2023, Recommandation (UE) 2021/2279), puis la compare à des usages de référence (avion, ciment, bœuf) pour contextualiser l’impact.
-- **Restitution visuelle** : badges de criticité (vert/orange/rouge) sur les nœuds, panneau de détail par nœud.
-- **Analyse par onglets** : en mode analyse, une barre d’onglets propose une analyse globale (note single score PEF + synthèse + suggestions + heatmap hotspots + treemap des contributions), le graphe parcourable, puis un onglet par indicateur (comparatif jauge vs seuil + contribution par nœud). La barre latérale des critères reste affichée en permanence et sert de navigation.
-- **Gestion multi-pipelines** : système d’onglets, sauvegarde/chargement des pipelines (base PostgreSQL), suppression.
-- **Sessions utilisateur légères** : identification par cookie de session Flask, possibilité de choisir un pseudonyme.
-- **Déploiement simple** : configuration Docker Compose pour le développement (hot reload) et pour la production (Nginx + Gunicorn).
+- **Visual pipeline editor**: drag & drop nodes (Data, Persistent data, Temporary SSD data, Training, Inference, LLM Call, LLM Expert, etc.) onto a canvas, connect them with directed edges.
+- **Detailed configuration**: each node type exposes its own parameters (data size, number of epochs, model, provider, tokens…) through a side panel.
+- **Carbon analysis**: calls the backend, which uses the `ecologits` library for LLM nodes and documented LCA formulas (multi-indicator PEF) for the other nodes.
+- **PEF single score**: the analysis aggregates the criteria into a single score in milli-points (mPt) following the EF 3.1 method (JRC 2023, Recommendation (EU) 2021/2279), then compares it to reference usages (plane, cement, beef) to contextualize the impact.
+- **Visual restitution**: criticality badges (green/orange/red) on nodes, per-node detail panel.
+- **Tabbed analysis**: in analysis mode, a tab bar offers a global analysis (PEF single score + summary + suggestions + hotspots heatmap + contributions treemap), the browsable graph, then one tab per indicator (gauge vs. threshold comparison + per-node contribution). Each indicator tab also shows a narrative **"Stakes"** card (why the indicator matters, with an illustration and a reveal effect) and a **"Foundational references"** card (links to the domain's reference papers/reports). The criteria sidebar stays visible at all times and acts as navigation.
+- **Internationalization (FR/EN)**: all labels go through `vue-i18n`; a language switcher in the header toggles between French and English (choice persisted in `localStorage`).
+- **Multi-pipeline management**: tab system, save/load pipelines (PostgreSQL database), deletion.
+- **Lightweight user sessions**: identification via a Flask session cookie, option to choose a nickname.
+- **Simple deployment**: Docker Compose configuration for development (hot reload) and production (Nginx + Gunicorn).
 
 ## Architecture
 ```bash
-Navigateur ──► Nginx (reverse proxy + fichiers statiques)
+Browser ──► Nginx (reverse proxy + static files)
 │
 ├── /api/* ──► Flask (Gunicorn)
 │ └── PostgreSQL
-└── /* (SPA) ──► fichiers Vue.js
+└── /* (SPA) ──► Vue.js files
 ```
-- **Frontend** : Vue 3 (Composition API), Pinia, VueFlow, Vite.
-- **Backend** : Flask (API REST), SQLAlchemy, Flask-Migrate, ecologits.
-- **Base de données** : PostgreSQL 15.
-- **Conteneurisation** : Docker & Docker Compose.
+- **Frontend**: Vue 3 (Composition API), Pinia, VueFlow, ECharts, Vite, vue-i18n.
+- **Backend**: Flask (REST API), SQLAlchemy, Flask-Migrate, ecologits.
+- **Database**: PostgreSQL 15.
+- **Containerization**: Docker & Docker Compose.
 
-## Prérequis
+## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) et Docker Compose (v2+)
-- Node.js 18+ (pour le développement frontend hors conteneur)
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose (v2+)
+- Node.js 18+ (for frontend development outside the container)
 
-## Installation et lancement
+## Installation and launch
 
-### 1. Cloner le projet
+### 1. Clone the project
 ```bash
 
 git clone https://github.com/KarinthC/EcoAI
 cd ecoai
 ```
 
-### 2. Configurer les variables d’environnement
+### 2. Configure environment variables
 
-Copier le fichier .env.example en .env et renseigner les valeurs :
+Copy the .env.example file to .env and fill in the values:
 ```bash
 
 cp .env.example .env
 
 ```
-Exemple de contenu (à adapter) :
+Example content (to adapt):
 ```bash
 POSTGRES_USER=carbone_user
-POSTGRES_PASSWORD=un_mot_de_passe_solide
+POSTGRES_PASSWORD=a_strong_password
 POSTGRES_DB=carbone_db
-DATABASE_URL=postgresql://carbone_user:un_mot_de_passe_solide@db:5432/carbone_db
-SECRET_KEY=une_cle_secrete
-JWT_SECRET_KEY=une_cle_jwt
+DATABASE_URL=postgresql://carbone_user:a_strong_password@db:5432/carbone_db
+SECRET_KEY=a_secret_key
+JWT_SECRET_KEY=a_jwt_key
 ```
-### 3. Démarrer en mode développement
+### 3. Start in development mode
 
-Le mode développement utilise deux fichiers Compose (docker-compose.yml + docker-compose.dev.yml) et monte les sources en direct pour le hot reload.
+Development mode uses two Compose files (docker-compose.yml + docker-compose.dev.yml) and mounts the sources live for hot reload.
 ```bash
 
-# Lancer les services backend (Flask + PostgreSQL)
+# Start the backend services (Flask + PostgreSQL)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db api
 
-# Appliquer les migrations (création des tables)
+# Apply migrations (table creation)
 docker compose exec api flask db upgrade
 
-# Dans un autre terminal, lancer le frontend avec Vite
+# In another terminal, start the frontend with Vite
 cd frontend
 npm install
 npm run dev
 ```
 
-L’application est accessible sur http://localhost:5173 (le proxy Vite redirige les appels API vers Flask sur le port 5000).
+The application is available at http://localhost:5173 (the Vite proxy forwards API calls to Flask on port 5000).
 
-### 4. Démarrer en mode production
+### 4. Start in production mode
 
 ```bash
 
-# Construire les images et lancer tous les services
+# Build the images and start all services
 docker compose up -d --build
 
-# Appliquer les migrations
+# Apply migrations
 docker compose exec api flask db upgrade
 ```
 
-L’application est disponible sur http://localhost (Nginx écoute sur le port 80).
+The application is available at http://localhost (Nginx listens on port 80).
 
-## Utilisation
+## Usage
 
-    1. Ouvrir l’application, la modale de bienvenue propose de saisir un pseudonyme (facultatif).
+    1. Open the application; the welcome modal offers to enter a nickname (optional).
 
-    2. Créer un pipeline via l’onglet “+” ou en utiliser un existant.
+    2. Create a pipeline via the "+" tab or use an existing one.
 
-    3. Glisser-déposer des nœuds depuis la palette latérale, les connecter.
+    3. Drag & drop nodes from the side palette and connect them.
 
-    4. Configurer chaque nœud en cliquant dessus (panneau de droite).
+    4. Configure each node by clicking on it (right panel).
 
-    5. Sauvegarder le pipeline (💾).
+    5. Save the pipeline (💾).
 
-    6. Lancer l’analyse carbone (🔍) – le mode analyse fige l’édition et ouvre une zone à onglets : « Analyse globale » (note single score PEF + synthèse + suggestions + heatmap hotspots + treemap des contributions), « Graphe » (canevas parcourable) et un onglet par indicateur (comparatif). La barre latérale des critères reste affichée et permet d’ouvrir directement l’onglet d’un indicateur.
+    6. Run the carbon analysis (🔍) – analysis mode freezes editing and opens a tabbed area: "Global analysis" (PEF single score + summary + suggestions + hotspots heatmap + contributions treemap), "Graph" (browsable canvas) and one tab per indicator (comparison). Each indicator tab includes a "Stakes" card and a "Foundational references" card. The criteria sidebar stays visible and lets you open an indicator's tab directly.
 
-    7. Revenir à l’édition avec le même bouton.
+    7. Return to editing with the same button.
 
+## Tests
 
-
-## Tests
-
-Des tests unitaires sont disponibles pour les modules de calcul carbone (backend).
+Unit tests are available for the carbon calculation modules (backend).
 
 ```bash
 
-# Dans le conteneur api, ou en local avec les dépendances
+# Inside the api container, or locally with the dependencies
 cd backend
 pip install -r requirements.txt
 pytest tests/
 ```
 
-Les tests disponibles :
+Available tests:
 
-- `tests/test_llm_call.py` : combinaisons valides de provider/modèle pour les nœuds LLM Call.
-- `tests/test_acv.py` : moteur ACV (linéarité heures/nb_gpu), parc serveurs/GPUs et nœuds Entrainement/Inférence.
-- `tests/test_storage.py` : nœuds de stockage (Données persistantes HDD / Données SSD temporaires), linéarité et ordres de grandeur.
-- `tests/test_datasource.py` : nœud « Données » (représentation sans calcul : impact 0, `computed=False`).
-- `tests/test_single_score.py` : single score PEF (note générale) — conformité à la formule EF 3.1, contributions négatives, ordre stable.
-- `tests/test_reference_usages.py` : usages de référence (avion, ciment, bœuf) — structure, cohérence de formule, ordres de grandeur, hypothèses d’échelle.
-- `tests/test_orchestrator.py` : orchestrateur — dispatch des nœuds, agrégation des indicateurs, construction des critères, single score et usages de référence.
+- `tests/test_llm_call.py`: valid provider/model combinations for LLM Call nodes.
+- `tests/test_acv.py`: LCA engine (hours/nb_gpu linearity), server/GPU fleet and Training/Inference nodes.
+- `tests/test_storage.py`: storage nodes (Persistent HDD data / Temporary SSD data), linearity and orders of magnitude.
+- `tests/test_datasource.py`: "Data" node (representation without calculation: impact 0, `computed=False`).
+- `tests/test_single_score.py`: PEF single score (overall score) — compliance with the EF 3.1 formula, negative contributions, stable ordering.
+- `tests/test_reference_usages.py`: reference usages (plane, cement, beef) — structure, formula consistency, orders of magnitude, scaling assumptions.
+- `tests/test_orchestrator.py`: orchestrator — node dispatch, indicator aggregation, criteria building, single score and reference usages.
 
-Ajoutez vos propres tests au fur et à mesure.
+Add your own tests as you go.
 
-### Tests frontend
+### Frontend tests
 
-Les tests frontend utilisent **Vitest** et **@vue/test-utils**. Par convention, chaque test est **colocalisé** avec son sujet (`Xxx.test.js` à côté de `Xxx.vue` ou `Xxx.js`) ; Vitest les découvre via le motif `src/**/*.test.js` défini dans `vite.config.js`.
+Frontend tests use **Vitest** and **@vue/test-utils**. By convention, each test is **colocated** with its subject (`Xxx.test.js` next to `Xxx.vue` or `Xxx.js`); Vitest discovers them via the `src/**/*.test.js` pattern defined in `vite.config.js`.
 
 ```bash
 
 cd frontend
 npm install
-npm test          # exécution unique
+npm test          # single run
 npm run test:watch
 ```
 
-Les tests couvrent le store (`usePipelineStore`), le composable `useAnalysisTabs`, et les composants du mode analyse : `IndicatorComparison`, `ScoreComparisonChart`, `NodeContributionPie`, `NodeIndicatorHeatmap`, `IndicatorTreemap`, ainsi que les modules de support `indicatorColors`, `nodeColors` et `protectionAreas`. Les composants ECharts sont testés en mockant `vue-echarts` (le rendu Canvas n’est pas supporté en jsdom) et en inspectant l’`option` passée.
+The tests cover the store (`usePipelineStore`), the `useAnalysisTabs` composable, and the analysis-mode components: `IndicatorComparison`, `ScoreComparisonChart`, `NodeContributionPie`, `NodeIndicatorHeatmap`, `IndicatorTreemap`, `StakesCard`, as well as the support modules `indicatorColors`, `nodeColors`, `protectionAreas`, `indicatorStakes`, `indicatorReferences` and `useStakesReveal`. ECharts components are tested by mocking `vue-echarts` (Canvas rendering is not supported in jsdom) and inspecting the passed `option`.
 
+## Detailed project structure
+### Backend folder
 
-## Structure détaillée du projet
-### Dossier backend
-
-Le backend suit une architecture modulaire avec séparation des responsabilités : les routes (API), la logique métier (services) et les modèles de données (models). Le sous‑dossier services/carbon applique le même principe pour les calculs d’impact.
+The backend follows a modular architecture with separation of concerns: routes (API), business logic (services) and data models (models). The services/carbon subfolder applies the same principle to impact calculations.
 ```text
 
 backend/
 ├── app/
-│   ├── api/                    # Endpoints REST (blueprints Flask)
-│   │   ├── analysis.py         # POST /api/analyze (lance l'analyse carbone)
-│   │   ├── health.py           # GET  /api/health (contrôle de l'état)
-│   │   ├── pipelines.py        # CRUD /api/pipelines (gestion des pipelines)
-│   │   ├── session.py          # GET  /api/session (infos de session utilisateur)
-│   │   └── username.py         # POST /api/username (choix du pseudonyme)
-│   ├── models/                 # Modèles SQLAlchemy (tables BDD)
-│   │   ├── pipeline.py         # Table pipelines (id, user_id, nom, JSON du graphe)
-│   │   └── user.py             # Table users (id, public_id, username, dates)
-│   ├── services/               # Logique métier (appelée par les blueprints)
-│   │   ├── carbon/             # Calcul d’impact carbone (2 familles de nœuds)
-│   │   │   ├── common.py       # Fonctions partagées (seuils, critères PEF, NF/WF EF 3.1)
-│   │   │   ├── orchestrator.py # Dispatcheur : label -> compute() du bon module
-│   │   │   ├── acv/            # Famille ACV (données documentées, multi-indicateurs PEF)
-│   │   │   │   ├── gpu_models.py # Modèles ACV GPUs + parc serveurs + moteur compute_acv()
-│   │   │   │   ├── parametric.py # Modèle paramétrable (linéarité heures / nb_gpu)
-│   │   │   │   ├── datasource.py # Nœud “Données” (représentation, aucun calcul)
-│   │   │   │   ├── storage.py    # Nœuds “Données persistantes” (HDD) & “Données SSD temporaires” (SSD)
-│   │   │   │   ├── training.py   # Nœud “Entrainement” (charge 100%)
-│   │   │   │   ├── inference.py  # Nœud “Inférence” (charge 33%)
-│   │   │   │   ├── operator.py   # Nœud “Opérateur” (charge paramétrable)
-│   │   │   │   ├── single_score.py # Single score PEF (note générale, méthode EF 3.1)
-│   │   │   │   └── reference_usages.py # Usages de référence (avion, ciment, bœuf)
-│   │   │   └── ecologits/      # Famille ecologits (estimations, vouée à évoluer)
-│   │   │       ├── llm_call.py   # Nœud “LLM Call”
-│   │   │       ├── llm_expert.py # Nœud “LLM Expert”
-│   │   │       └── video.py      # Nœud “Video Generation”
-│   │   ├── pipeline_service.py # CRUD pipelines
-│   │   └── user_service.py     # Gestion des utilisateurs (cookie session)
-│   ├── config.py               # Configuration Flask (variables d’environnement)
-│   ├── extensions.py           # Instanciation SQLAlchemy et Flask-Migrate
-│   └── __init__.py             # Factory create_app() – assemble l’application
-├── migrations/                 # Scripts Alembic (historique du schéma)
-├── tests/                      # Tests unitaires et fonctionnels
+│   ├── api/                    # REST endpoints (Flask blueprints)
+│   │   ├── analysis.py         # POST /api/analyze (runs the carbon analysis)
+│   │   ├── health.py           # GET  /api/health (health check)
+│   │   ├── pipelines.py        # CRUD /api/pipelines (pipeline management)
+│   │   ├── session.py          # GET  /api/session (user session info)
+│   │   └── username.py         # POST /api/username (nickname choice)
+│   ├── models/                 # SQLAlchemy models (DB tables)
+│   │   ├── pipeline.py         # pipelines table (id, user_id, name, graph JSON)
+│   │   └── user.py             # users table (id, public_id, username, dates)
+│   ├── services/               # Business logic (called by blueprints)
+│   │   ├── carbon/             # Carbon impact calculation (2 node families)
+│   │   │   ├── common.py       # Shared functions (thresholds, PEF criteria, EF 3.1 NF/WF)
+│   │   │   ├── orchestrator.py # Dispatcher: label -> compute() of the right module
+│   │   │   ├── acv/            # LCA family (documented data, multi-indicator PEF)
+│   │   │   │   ├── gpu_models.py # LCA GPU models + server fleet + compute_acv() engine
+│   │   │   │   ├── parametric.py # Parametric model (hours / nb_gpu linearity)
+│   │   │   │   ├── datasource.py # "Data" node (representation, no calculation)
+│   │   │   │   ├── storage.py    # "Persistent data" (HDD) & "Temporary SSD data" (SSD) nodes
+│   │   │   │   ├── training.py   # "Training" node (100% load)
+│   │   │   │   ├── inference.py  # "Inference" node (33% load)
+│   │   │   │   ├── operator.py   # "Operator" node (configurable load)
+│   │   │   │   ├── single_score.py # PEF single score (overall score, EF 3.1 method)
+│   │   │   │   └── reference_usages.py # Reference usages (plane, cement, beef)
+│   │   │   └── ecologits/      # ecologits family (estimates, meant to evolve)
+│   │   │       ├── llm_call.py   # "LLM Call" node
+│   │   │       ├── llm_expert.py # "LLM Expert" node
+│   │   │       └── video.py      # "Video Generation" node
+│   │   ├── pipeline_service.py # Pipeline CRUD
+│   │   └── user_service.py     # User management (session cookie)
+│   ├── config.py               # Flask configuration (environment variables)
+│   ├── extensions.py           # SQLAlchemy and Flask-Migrate instantiation
+│   └── __init__.py             # create_app() factory – assembles the application
+├── migrations/                 # Alembic scripts (schema history)
+├── tests/                      # Unit and functional tests
 └── Dockerfile
 ```
 ### Interactions
 
-    Les blueprints (api/) reçoivent les requêtes HTTP et délèguent aux services (services/).
+    The blueprints (api/) receive HTTP requests and delegate to the services (services/).
 
-    Les services interagissent avec les modèles (models/) pour lire/écrire en base.
+    The services interact with the models (models/) to read/write to the database.
 
-    Le sous‑package carbon/ est isolé et organisé en deux familles de nœuds : `acv/` (calculs ACV documentés, multi‑indicateurs PEF, confiance `high`) et `ecologits/` (estimations, confiance `low`, vouées à évoluer). L’orchestrateur mappe chaque label de nœud vers la fonction `compute()` du module correspondant, puis agrège les impacts et les indicateurs. Il calcule aussi le single score PEF (`acv/single_score.py`, méthode EF 3.1) et les usages de référence (`acv/reference_usages.py`), et rattache à chaque nœud ses ratios au seuil mensuel (`threshold_ratios`) et ses contributions PEF (`pef_contributions`).
+    The carbon/ subpackage is isolated and organized into two node families: `acv/` (documented LCA calculations, multi-indicator PEF, `high` confidence) and `ecologits/` (estimates, `low` confidence, meant to evolve). The orchestrator maps each node label to the `compute()` function of the corresponding module, then aggregates impacts and indicators. It also computes the PEF single score (`acv/single_score.py`, EF 3.1 method) and the reference usages (`acv/reference_usages.py`), and attaches to each node its ratios to the monthly threshold (`threshold_ratios`) and its PEF contributions (`pef_contributions`).
 
-    Les extensions (extensions.py) sont importées dans la factory pour lier SQLAlchemy et Flask-Migrate à l’application.
+    The extensions (extensions.py) are imported in the factory to bind SQLAlchemy and Flask-Migrate to the application.
 
-### Dossier frontend
+### Frontend folder
 
-Le frontend est organisé autour de composants Vue réutilisables, d’un store centralisé (Pinia) et d’un routeur. Les fichiers de configuration statique (comme la définition des champs par type de nœud) sont rangés dans un dossier config/.
+The frontend is organized around reusable Vue components, a centralized store (Pinia) and a router. Static configuration files (such as the field definitions per node type) live in a config/ folder. All user-facing text goes through `vue-i18n` (`src/i18n/locales/fr.json` and `en.json`); long editorial content (indicator "Stakes" texts, quotes) lives in dedicated modules outside the locale files.
 ```text
 
 frontend/
 ├── src/
 │   ├── assets/
-│   │   └── main.css            # Styles globaux (VueFlow, bordures de nœuds)
+│   │   ├── main.css            # Global styles (VueFlow, node borders)
+│   │   └── stakes/             # Illustration images + reference PDFs (Stakes cards)
 │   ├── components/
-│   │   ├── pipeline/           # Composants spécifiques à l’éditeur
-│   │   │   ├── analysis/       # Composants du mode analyse (onglets)
-│   │   │   │   ├── AnalysisTabs.vue          # Barre d’onglets d’analyse
-│   │   │   │   ├── AnalysisGlobalTab.vue     # Onglet analyse globale (note + synthèse)
-│   │   │   │   ├── AnalysisGraphTab.vue      # Onglet graphe parcourable
-│   │   │   │   ├── AnalysisIndicatorTab.vue  # Onglet d’un indicateur
-│   │   │   │   ├── IndicatorComparison.vue   # Jauge vs seuil + camembert par nœud
-│   │   │   │   ├── ScoreComparisonChart.vue  # Comparaison single score (usages de référence)
-│   │   │   │   ├── NodeIndicatorHeatmap.vue  # Heatmap hotspots (nœuds × indicateurs)
-│   │   │   │   ├── IndicatorTreemap.vue      # Treemap des contributions PEF
-│   │   │   │   ├── NodeContributionPie.vue   # Camembert de contribution par nœud
-│   │   │   │   ├── indicatorColors.js        # Couleur stable par indicateur
-│   │   │   │   ├── nodeColors.js             # Palette stable par nœud
-│   │   │   │   └── protectionAreas.js        # Aires de protection EF 3.1
-│   │   │   ├── AnalysisNodePanel.vue  # Panneau de détail en mode analyse
-│   │   │   ├── CustomNode.vue         # Rendu d’un nœud dans le graphe
-│   │   │   ├── DropzoneBackground.vue # Fond du canvas avec grille
-│   │   │   ├── ParameterPanel.vue     # Édition des paramètres d’un nœud
-│   │   │   ├── PipelineTabs.vue       # Barre d’onglets (multi‑pipelines)
-│   │   │   ├── Sidebar.vue            # Palette de nœuds + bouton analyse
-│   │   │   ├── nodeConfig.js          # Définition des champs par type de nœud
-│   │   │   ├── nodeTypes.js           # Ids stables de nœuds + libellés i18n
-│   │   │   └── criterionI18n.js       # Résolution i18n des critères PEF
-│   │   ├── ConnectionIndicator.vue    # Indicateur de connexion API
-│   │   ├── UserIdentification.vue     # Affichage du pseudonyme
-│   │   └── UsernameModal.vue          # Modale de saisie du pseudonyme
+│   │   ├── pipeline/           # Editor-specific components
+│   │   │   ├── analysis/       # Analysis-mode components (tabs)
+│   │   │   │   ├── AnalysisTabs.vue          # Analysis tab bar
+│   │   │   │   ├── AnalysisGlobalTab.vue     # Global analysis tab (score + summary)
+│   │   │   │   ├── AnalysisGraphTab.vue      # Browsable graph tab
+│   │   │   │   ├── AnalysisIndicatorTab.vue  # Single indicator tab
+│   │   │   │   ├── IndicatorComparison.vue   # Gauge vs. threshold + per-node pie
+│   │   │   │   ├── IndicatorStakes.vue       # "Stakes" card (narrative per indicator)
+│   │   │   │   ├── StakesCard.vue            # Stakes card rendering (image + reveal effect)
+│   │   │   │   ├── IndicatorReference.vue    # "Foundational references" card
+│   │   │   │   ├── ScoreComparisonChart.vue  # Single score comparison (reference usages)
+│   │   │   │   ├── NodeIndicatorHeatmap.vue  # Hotspots heatmap (nodes × indicators)
+│   │   │   │   ├── IndicatorTreemap.vue      # PEF contributions treemap
+│   │   │   │   ├── NodeContributionPie.vue   # Per-node contribution pie
+│   │   │   │   ├── indicatorColors.js        # Stable color per indicator
+│   │   │   │   ├── indicatorStakes.js        # Stakes texts + quotes per indicator
+│   │   │   │   ├── indicatorReferences.js    # Foundational references per indicator
+│   │   │   │   ├── stakesImages.js           # Illustration image per indicator
+│   │   │   │   ├── useStakesReveal.js        # Stakes reveal effect (hover) composable
+│   │   │   │   ├── nodeColors.js             # Stable palette per node
+│   │   │   │   └── protectionAreas.js        # EF 3.1 protection areas
+│   │   │   ├── AnalysisNodePanel.vue  # Detail panel in analysis mode
+│   │   │   ├── CustomNode.vue         # Rendering of a node in the graph
+│   │   │   ├── DropzoneBackground.vue # Canvas background with grid
+│   │   │   ├── ParameterPanel.vue     # Node parameter editing
+│   │   │   ├── PipelineTabs.vue       # Tab bar (multi-pipeline)
+│   │   │   ├── Sidebar.vue            # Node palette + analysis button
+│   │   │   ├── nodeConfig.js          # Field definitions per node type
+│   │   │   ├── nodeTypes.js           # Stable node ids + i18n labels
+│   │   │   └── criterionI18n.js       # i18n resolution of PEF criteria
+│   │   ├── ConnectionIndicator.vue    # API connection indicator
+│   │   ├── LanguageSwitcher.vue       # FR/EN language switcher
+│   │   ├── UserIdentification.vue     # Nickname display
+│   │   └── UsernameModal.vue          # Nickname input modal
 │   ├── composables/
-│   │   ├── useDnD.js          # Logique de drag & drop réutilisable
-│   │   ├── useImpactColor.js  # Couleur d’impact (vert/orange/rouge) selon un ratio
-│   │   └── useAnalysisTabs.js # Dérivation des onglets d’analyse + navigation
+│   │   ├── useDnD.js          # Reusable drag & drop logic
+│   │   ├── useImpactColor.js  # Impact color (green/orange/red) based on a ratio
+│   │   └── useAnalysisTabs.js # Analysis tabs derivation + navigation
+│   ├── i18n/
+│   │   ├── index.js           # vue-i18n setup (locale detection, persistence)
+│   │   └── locales/
+│   │       ├── fr.json        # French messages
+│   │       └── en.json        # English messages
 │   ├── stores/
-│   │   └── usePipelineStore.js # État global (nœuds, arêtes, analyse, onglets)
+│   │   └── usePipelineStore.js # Global state (nodes, edges, analysis, tabs)
 │   ├── router/
-│   │   └── index.js           # Définition des routes (actuellement /)
+│   │   └── index.js           # Route definitions (currently /)
 │   ├── views/
-│   │   └── HomeView.vue       # Page principale (éditeur + analyse)
-│   ├── App.vue                # Composant racine (layout global)
-│   └── main.js                # Initialisation de Vue, Pinia, Router
+│   │   └── HomeView.vue       # Main page (editor + analysis)
+│   ├── App.vue                # Root component (global layout)
+│   └── main.js                # Vue, Pinia, Router, i18n initialization
 ├── Dockerfile
-├── nginx.conf                 # Configuration du reverse proxy
-└── vite.config.js             # Configuration Vite (alias, proxy dev)
+├── nginx.conf                 # Reverse proxy configuration
+└── vite.config.js             # Vite configuration (aliases, dev proxy)
 ```
 
 ### Interactions
 
-    HomeView.vue orchestre les composants de l’éditeur et la logique d’analyse, en s’appuyant sur le store.
+    HomeView.vue orchestrates the editor components and the analysis logic, relying on the store.
 
-    usePipelineStore.js centralise les données du pipeline actif et expose des actions (ajout de nœuds, sauvegarde, analyse…). Il est consommé par tous les composants pipeline.
+    usePipelineStore.js centralizes the active pipeline's data and exposes actions (adding nodes, saving, analyzing…). It is consumed by all pipeline components.
 
-    Le composable useDnD.js fournit la mécanique de glisser‑déposer ; il utilise également le store pour ajouter les nœuds.
+    The useDnD.js composable provides the drag & drop mechanics; it also uses the store to add nodes.
 
-    Le composable useAnalysisTabs.js dérive la liste des onglets d’analyse (global, graphe, un par indicateur) et gère l’onglet actif, porté par le store.
+    The useAnalysisTabs.js composable derives the list of analysis tabs (global, graph, one per indicator) and manages the active tab, held by the store.
 
-    Les composants de la palette (Sidebar.vue), du canvas (CustomNode.vue) et des paramètres (ParameterPanel.vue) communiquent via le store, sans dépendances directes entre eux.
+    The palette (Sidebar.vue), canvas (CustomNode.vue) and parameter (ParameterPanel.vue) components communicate through the store, with no direct dependencies between them.
 
-    En mode analyse, HomeView.vue affiche la Sidebar (permanente) et la zone à onglets ; les composants du dossier components/pipeline/analysis/ rendent l’onglet actif. Les graphiques (ECharts) sont chargés en import asynchrone (`defineAsyncComponent`) pour isoler ECharts dans un chunk séparé, hors bundle initial.
+    In analysis mode, HomeView.vue displays the Sidebar (permanent) and the tabbed area; the components in components/pipeline/analysis/ render the active tab. Charts (ECharts) are loaded via async import (`defineAsyncComponent`) to isolate ECharts in a separate chunk, outside the initial bundle.
 
-    Les appels HTTP vers le backend (sauvegarde, chargement, analyse) sont encapsulés dans les actions du store, mais pourraient être extraits dans un dossier api/ à l’avenir.
+    i18n keys returned by the backend (e.g. `label_i18n`) are resolved on the frontend with a fallback: if the key is missing, a readable label derived from the `id` is shown rather than the raw key.
 
+    HTTP calls to the backend (save, load, analyze) are encapsulated in the store's actions, but could be extracted into an api/ folder in the future.

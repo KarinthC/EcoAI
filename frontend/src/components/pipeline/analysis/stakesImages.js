@@ -62,7 +62,7 @@ const STAKES_IMAGES = {
     focalWide: { x: 1, y: 1 },
     zoom: 0.25,
     // Citation longue : on laisse plus de temps de lecture.
-    reveal: { pulseMs: 10000, quoteMs: 30000 },    
+    reveal: { pulseMs: 10000, quoteMs: 40000 },    
 
   }
 }
