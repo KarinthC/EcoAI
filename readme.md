@@ -1,6 +1,6 @@
-# EcoAI – Carbon impact modeling and analysis for data science pipelines
+# EcoAI – Environmental footprint modeling and analysis for data science pipelines
 
-EcoAI is a web application that lets you **graphically model** data science pipelines (chains of processing steps, model training, inference, LLM calls…) and **estimate their carbon footprint**. The tool is designed to work in a "sandbox" mode: you draw a flow, configure it, then run an analysis that returns the overall CO₂ impact, per-node indicators and reduction suggestions.
+EcoAI is a web application that lets you **graphically model** data science pipelines (chains of processing steps, model training, inference, LLM calls…) and **estimate their total environmental footprint**. The tool is designed to work in a "sandbox" mode: you draw a flow, configure it, then run an analysis that returns the overall multi-indicator footprint (PEF), per-node indicators and reduction suggestions. CO₂ (climate change) is only one of these indicators, alongside resource use, human health and ecosystem impacts.
 
 The application is built with **Vue 3** (frontend), **Flask** (backend) and **PostgreSQL** (database). Everything is containerized with Docker and runs both in development and in production behind an Nginx reverse proxy.
 
@@ -8,7 +8,7 @@ The application is built with **Vue 3** (frontend), **Flask** (backend) and **Po
 
 - **Visual pipeline editor**: drag & drop nodes (Data, Persistent data, Temporary SSD data, Training, Inference, LLM Call, LLM Expert, etc.) onto a canvas, connect them with directed edges.
 - **Detailed configuration**: each node type exposes its own parameters (data size, number of epochs, model, provider, tokens…) through a side panel.
-- **Carbon analysis**: calls the backend, which uses the `ecologits` library for LLM nodes and documented LCA formulas (multi-indicator PEF) for the other nodes.
+- **Environmental footprint analysis**: calls the backend, which uses the `ecologits` library for LLM nodes and documented LCA formulas (multi-indicator PEF) for the other nodes. The result is a total footprint across all PEF indicators, not just carbon.
 - **PEF single score**: the analysis aggregates the criteria into a single score in milli-points (mPt) following the EF 3.1 method (JRC 2023, Recommendation (EU) 2021/2279), then compares it to reference usages (plane, cement, beef) to contextualize the impact.
 - **Visual restitution**: criticality badges (green/orange/red) on nodes, per-node detail panel.
 - **Tabbed analysis**: in analysis mode, a tab bar offers a global analysis (PEF single score + summary + suggestions + hotspots heatmap + contributions treemap), the browsable graph, then one tab per indicator (gauge vs. threshold comparison + per-node contribution). Each indicator tab also shows a narrative **"Stakes"** card (why the indicator matters, with an illustration and a reveal effect) and a **"Foundational references"** card (links to the domain's reference papers/reports). The criteria sidebar stays visible at all times and acts as navigation.
@@ -105,13 +105,13 @@ The application is available at http://localhost (Nginx listens on port 80).
 
     5. Save the pipeline (💾).
 
-    6. Run the carbon analysis (🔍) – analysis mode freezes editing and opens a tabbed area: "Global analysis" (PEF single score + summary + suggestions + hotspots heatmap + contributions treemap), "Graph" (browsable canvas) and one tab per indicator (comparison). Each indicator tab includes a "Stakes" card and a "Foundational references" card. The criteria sidebar stays visible and lets you open an indicator's tab directly.
+    6. Run the footprint analysis (🔍) – analysis mode freezes editing and opens a tabbed area: "Global analysis" (PEF single score + summary + suggestions + hotspots heatmap + contributions treemap), "Graph" (browsable canvas) and one tab per indicator (comparison). Each indicator tab includes a "Stakes" card and a "Foundational references" card. The criteria sidebar stays visible and lets you open an indicator's tab directly.
 
     7. Return to editing with the same button.
 
 ## Tests
 
-Unit tests are available for the carbon calculation modules (backend).
+Unit tests are available for the footprint calculation modules (backend).
 
 ```bash
 
@@ -156,7 +156,7 @@ The backend follows a modular architecture with separation of concerns: routes (
 backend/
 ├── app/
 │   ├── api/                    # REST endpoints (Flask blueprints)
-│   │   ├── analysis.py         # POST /api/analyze (runs the carbon analysis)
+│   │   ├── analysis.py         # POST /api/analyze (runs the footprint analysis)
 │   │   ├── health.py           # GET  /api/health (health check)
 │   │   ├── pipelines.py        # CRUD /api/pipelines (pipeline management)
 │   │   ├── session.py          # GET  /api/session (user session info)
@@ -165,7 +165,7 @@ backend/
 │   │   ├── pipeline.py         # pipelines table (id, user_id, name, graph JSON)
 │   │   └── user.py             # users table (id, public_id, username, dates)
 │   ├── services/               # Business logic (called by blueprints)
-│   │   ├── carbon/             # Carbon impact calculation (2 node families)
+│   │   ├── carbon/             # Environmental footprint calculation (2 node families)
 │   │   │   ├── common.py       # Shared functions (thresholds, PEF criteria, EF 3.1 NF/WF)
 │   │   │   ├── orchestrator.py # Dispatcher: label -> compute() of the right module
 │   │   │   ├── acv/            # LCA family (documented data, multi-indicator PEF)
