@@ -10,3 +10,6 @@ dist/
 # Secrets et fichiers locaux (ne jamais versionner)
 cookies.txt
 cloudflared.deb
+
+# Dossier de challenge ACME (Certbot webroot)
+certbot/

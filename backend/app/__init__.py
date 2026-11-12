@@ -1,10 +1,15 @@
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from .config import Config
 from .extensions import db, migrate
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Un seul proxy de confiance devant l'API (Nginx) : on lit X-Forwarded-*.
+    # Sans cela, Flask se croit en HTTP et ne pose jamais le cookie Secure.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
     db.init_app(app)
     migrate.init_app(app, db)

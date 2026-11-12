@@ -3,10 +3,17 @@ services:
     build: ./frontend
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      # Certificats Let's Encrypt en lecture seule.
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # Dossier de challenge ACME (renouvellement sans arrêt de service).
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - api
     networks:
       - frontend
+    restart: unless-stopped
 
   api:
     build: ./backend
@@ -14,12 +21,16 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - SECRET_KEY=${SECRET_KEY}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      # Flask doit savoir qu'il est derrière un proxy HTTPS.
+      - PREFERRED_URL_SCHEME=https
+      - SESSION_COOKIE_SECURE=true
     depends_on:
       db:
         condition: service_healthy
     networks:
       - frontend
       - backend
+    restart: unless-stopped
 
   db:
     image: postgres:15-alpine

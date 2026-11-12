@@ -91,7 +91,44 @@ docker compose up -d --build
 docker compose exec api flask db upgrade
 ```
 
-The application is available at http://localhost (Nginx listens on port 80).
+The application is available at https://ecoai-aifootprint.fr (Nginx listens on ports 80 and 443).
+
+#### HTTPS (Let's Encrypt)
+
+In production, Nginx terminates TLS: port 80 redirects to 443, and the
+certificates are read from the host's `/etc/letsencrypt` directory, mounted
+read-only into the `frontend` container. The API is told it runs behind an
+HTTPS proxy (`PREFERRED_URL_SCHEME=https`, `SESSION_COOKIE_SECURE=true`) and
+uses `ProxyFix` to trust the `X-Forwarded-*` headers set by Nginx.
+
+First issuance (port 80 must be free, so the frontend container is temporarily
+bound to `127.0.0.1:8080:80`):
+
+```bash
+# 1. Temporarily free port 80 in docker-compose.yml ("127.0.0.1:8080:80")
+docker compose up -d
+
+# 2. Issue the certificate on the host
+sudo apt install -y certbot
+sudo certbot certonly --standalone \
+  -d ecoai-aifootprint.fr -d www.ecoai-aifootprint.fr
+
+# 3. Restore "80:80", add "443:443", then rebuild
+docker compose up -d --build
+docker compose exec api flask db upgrade
+```
+
+Renewal uses the webroot method (no service interruption): Certbot writes the
+ACME challenge into `./certbot/www`, which Nginx serves on
+`/.well-known/acme-challenge/`. Add a cron entry on the host:
+
+```bash
+sudo certbot renew --webroot -w /path/to/ecoai/certbot/www \
+  --deploy-hook "docker compose -f /path/to/ecoai/docker-compose.yml exec frontend nginx -s reload"
+```
+
+Note: `SESSION_COOKIE_SECURE` defaults to `false`, so development over plain
+HTTP keeps working without any extra override.
 
 ## Usage
 
